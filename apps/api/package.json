@@ -1,0 +1,15 @@
+{
+  "name": "@mstgolf/api",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "echo \"[api] placeholder — NestJS app lands in M1\"",
+    "build": "echo \"[api] placeholder\"",
+    "test": "echo \"[api] no tests yet\""
+  },
+  "dependencies": {
+    "@mstgolf/database": "workspace:*",
+    "@mstgolf/shared": "workspace:*",
+    "@mstgolf/line": "workspace:*"
+  }
+}

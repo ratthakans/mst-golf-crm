@@ -1,0 +1,298 @@
+// MST Golf CRM — multi-tenant, event-driven, config-driven
+// Design principles:
+//   - Event-driven: every customer behavior is written to `Event`.
+//   - Multi-tenant by default: every table (except Organization) has `orgId`.
+//     EVERY query that touches tenant data MUST filter by `orgId`.
+//   - Customize by-project: org config in Organization.settings (JSONB);
+//     golf profile / dynamic fields in Member.attributes (JSONB) + FieldDefinition.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Organization (tenant root)
+// ---------------------------------------------------------------------------
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  plan      Plan     @default(STARTER)
+  settings  Json     @default("{}") // customize by-project (see OrgSettings in @mstgolf/shared)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users             User[]
+  members           Member[]
+  events            Event[]
+  pointTransactions PointTransaction[]
+  fieldDefinitions  FieldDefinition[]
+  lineChannels      LineChannel[]
+  consents          Consent[]
+  segments          Segment[]
+  automations       Automation[]
+  rfmSnapshots      RfmSnapshot[]
+
+  @@map("organizations")
+}
+
+enum Plan {
+  STARTER
+  GROWTH
+  PRO
+}
+
+// ---------------------------------------------------------------------------
+// User (admin/staff of an org — dashboard login)
+// ---------------------------------------------------------------------------
+model User {
+  id           String   @id @default(cuid())
+  orgId        String
+  org          Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  email        String
+  name         String?
+  role         UserRole @default(STAFF)
+  passwordHash String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([orgId, email])
+  @@index([orgId])
+  @@map("users")
+}
+
+enum UserRole {
+  OWNER
+  ADMIN
+  STAFF
+}
+
+// ---------------------------------------------------------------------------
+// Member (end customer, identified via LINE)
+// ---------------------------------------------------------------------------
+model Member {
+  id          String   @id @default(cuid())
+  orgId       String
+  org         Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  lineUserId  String
+  displayName String?
+  pictureUrl  String?
+  phone       String?
+  email       String?
+  attributes  Json     @default("{}") // golf profile: handicap, dominantHand, skillLevel, preferredBrands[], interests[], homeCourse, playFrequency
+  points      Int      @default(0)    // cache; source of truth = PointTransaction
+  tier        String?
+  lastSeenAt  DateTime?
+  consentAt   DateTime?               // quick PDPA flag; full history in Consent
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  events            Event[]
+  pointTransactions PointTransaction[]
+  consents          Consent[]
+  rfmSnapshots      RfmSnapshot[]
+
+  @@unique([orgId, lineUserId])
+  @@index([orgId, lastSeenAt])
+  @@index([orgId, tier])
+  @@map("members")
+}
+
+// ---------------------------------------------------------------------------
+// Event (every customer behavior — basis for all data features)
+// ---------------------------------------------------------------------------
+model Event {
+  id         String    @id @default(cuid())
+  orgId      String
+  org        Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  memberId   String
+  member     Member    @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  type       EventType
+  payload    Json      @default("{}") // typed per EventType — see EventPayload in @mstgolf/shared
+  occurredAt DateTime  @default(now())
+
+  @@index([orgId, type, occurredAt])
+  @@index([orgId, memberId, occurredAt])
+  @@map("events")
+}
+
+enum EventType {
+  SCAN_QR
+  REGISTER
+  PROFILE_UPDATE
+  OPEN_MENU
+  CLICK_PROMO
+  PURCHASE
+  EARN_POINTS
+  REDEEM_POINTS
+  TIER_UP
+  FITTING_BOOKING
+  VISIT
+  MESSAGE_RECEIVED
+}
+
+// ---------------------------------------------------------------------------
+// PointTransaction (ledger — source of truth for points)
+// ---------------------------------------------------------------------------
+model PointTransaction {
+  id        String   @id @default(cuid())
+  orgId     String
+  org       Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  memberId  String
+  member    Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  delta     Int
+  reason    String
+  refId     String?
+  createdAt DateTime @default(now())
+
+  @@index([orgId, memberId, createdAt])
+  @@map("point_transactions")
+}
+
+// ---------------------------------------------------------------------------
+// FieldDefinition (dynamic, config-driven form fields — customize by-project)
+// ---------------------------------------------------------------------------
+model FieldDefinition {
+  id        String   @id @default(cuid())
+  orgId     String
+  org       Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  entity    FieldEntity @default(MEMBER)
+  key       String   // key inside Member.attributes, e.g. "handicap"
+  label     String   // form label, e.g. "Handicap"
+  type      FieldType
+  options   Json     @default("[]") // SELECT/MULTISELECT: [{ value, label }]
+  required  Boolean  @default(false)
+  group     String?  // e.g. "golf_profile"
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([orgId, entity, key])
+  @@index([orgId, entity])
+  @@map("field_definitions")
+}
+
+enum FieldEntity {
+  MEMBER
+}
+
+enum FieldType {
+  TEXT
+  NUMBER
+  SELECT
+  MULTISELECT
+  BOOLEAN
+  DATE
+}
+
+// ---------------------------------------------------------------------------
+// LineChannel (per-org LINE credentials — secrets encrypted at rest)
+// Introduced early so the encryption pattern is established from day one.
+// ---------------------------------------------------------------------------
+model LineChannel {
+  id                     String   @id @default(cuid())
+  orgId                  String
+  org                    Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  channelId              String
+  // The following are AES-256-GCM ciphertext (see encrypt/decrypt in @mstgolf/shared).
+  channelSecretEnc       String
+  channelAccessTokenEnc  String
+  liffId                 String?
+  isActive               Boolean  @default(true)
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  @@unique([orgId, channelId])
+  @@index([orgId])
+  @@map("line_channels")
+}
+
+// ---------------------------------------------------------------------------
+// Consent (versioned PDPA consent history — right to audit / erasure)
+// ---------------------------------------------------------------------------
+model Consent {
+  id         String   @id @default(cuid())
+  orgId      String
+  org        Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  memberId   String
+  member     Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  purpose    String   // e.g. "marketing", "data_processing"
+  version    String   // consent text version, e.g. "v1"
+  granted    Boolean  @default(true)
+  textSnapshot String? // the exact consent wording shown at the time
+  createdAt  DateTime @default(now())
+
+  @@index([orgId, memberId, createdAt])
+  @@map("consents")
+}
+
+// ---------------------------------------------------------------------------
+// Segment (dynamic, rule-based audience — rules evaluated by the segment engine)
+// ---------------------------------------------------------------------------
+model Segment {
+  id          String   @id @default(cuid())
+  orgId       String
+  org         Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  rules       Json     @default("{}") // SegmentRule from @mstgolf/analytics
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([orgId, name])
+  @@index([orgId])
+  @@map("segments")
+}
+
+// ---------------------------------------------------------------------------
+// Automation (behavioural/statistical trigger → action, run by workers/jobs)
+// ---------------------------------------------------------------------------
+model Automation {
+  id        String   @id @default(cuid())
+  orgId     String
+  org       Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  name      String
+  trigger   Json     // AutomationTrigger from @mstgolf/analytics
+  action    Json     // AutomationAction
+  enabled   Boolean  @default(true)
+  lastRunAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([orgId, name])
+  @@index([orgId])
+  @@map("automations")
+}
+
+// ---------------------------------------------------------------------------
+// RfmSnapshot (nightly per-member metric snapshot — powers trend & segment
+// migration; without history you cannot see how the base moves over time).
+// ---------------------------------------------------------------------------
+model RfmSnapshot {
+  id               String   @id @default(cuid())
+  orgId            String
+  org              Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  memberId         String
+  member           Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  snapshotDate     DateTime @db.Date
+  r                Int
+  f                Int
+  m                Int
+  segment          String
+  monetary         Int
+  clv              Int
+  churnProbability Float
+  createdAt        DateTime @default(now())
+
+  @@unique([orgId, memberId, snapshotDate])
+  @@index([orgId, snapshotDate])
+  @@map("rfm_snapshots")
+}
