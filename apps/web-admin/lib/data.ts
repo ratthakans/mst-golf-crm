@@ -135,6 +135,47 @@ export async function getInsightsData(): Promise<InsightsData> {
   };
 }
 
+export interface QuoteData {
+  org: DemoOrg;
+  totalMembers: number;
+  atRiskCount: number; // members past the churn window (win-back pool)
+  moneyAtRisk: number; // their combined 12-month projected value — revenue at stake
+  avgAnnualValue: number; // per at-risk member
+  projectedAnnual: number; // whole-base 12-month projected revenue
+}
+
+/**
+ * Numbers for the in-app quotation / ROI page. Uses the SAME CLV + churn engine
+ * as every other page, so the ROI a salesperson shows is the customer's real
+ * data — not a made-up figure.
+ */
+export async function getQuoteData(): Promise<QuoteData> {
+  const repo = await getRepo();
+  const now = new Date();
+  const [org, members, events] = await Promise.all([
+    repo.getOrg(),
+    repo.listMembers(),
+    repo.listEvents(),
+  ]);
+
+  const clv = computeClv(members, events, now);
+  const churn = computeChurn(members, events, now, { churnDays: org.churnDays });
+  const clvById = new Map(clv.map((c) => [c.memberId, c]));
+
+  const atRisk = churn.filter((c) => c.status === "at_risk" || c.status === "churned");
+  const moneyAtRisk = atRisk.reduce((s, c) => s + (clvById.get(c.memberId)?.predictedAnnual ?? 0), 0);
+  const projectedAnnual = clv.reduce((s, c) => s + c.predictedAnnual, 0);
+
+  return {
+    org,
+    totalMembers: members.length,
+    atRiskCount: atRisk.length,
+    moneyAtRisk,
+    avgAnnualValue: atRisk.length > 0 ? moneyAtRisk / atRisk.length : 0,
+    projectedAnnual,
+  };
+}
+
 export function formatCurrency(amount: number, currency: string): string {
   return new Intl.NumberFormat("en-TH", {
     style: "currency",

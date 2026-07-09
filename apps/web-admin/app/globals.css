@@ -687,6 +687,71 @@ tr:last-child td { border-bottom: none; }
 .area-label { fill: var(--muted); font-size: 10px; }
 .area-max { fill: var(--muted); font-size: 10px; font-weight: 600; }
 
+/* ── Quote / ROI page ───────────────────────────────────────────────────── */
+.quote-toolbar {
+  display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 12px 16px; margin-bottom: 16px; box-shadow: var(--shadow-sm);
+}
+.qt-left { display: flex; align-items: center; gap: 6px; }
+.qt-label { font-size: 12px; color: var(--muted); font-weight: 700; margin-right: 2px; }
+.qt-pill {
+  border: 1px solid var(--border); background: var(--surface); color: var(--muted);
+  border-radius: 999px; padding: 5px 13px; font-size: 13px; cursor: pointer; font-family: inherit; font-weight: 600;
+}
+.qt-pill.on { background: var(--brand); color: #fff; border-color: var(--brand); }
+.quote-toolbar .btn { margin-left: auto; }
+
+.paper {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  box-shadow: var(--shadow-md); padding: 40px 44px; max-width: 900px;
+}
+.paper-head { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid var(--brand); padding-bottom: 16px; }
+.paper-brand { font-size: 20px; font-weight: 800; color: var(--brand); }
+.paper-sub { font-size: 13px; color: var(--muted); margin-top: 2px; }
+.paper-meta { text-align: right; font-size: 13px; color: var(--muted); line-height: 1.7; }
+.paper-meta b { color: var(--text); font-size: 15px; }
+.paper-to { margin: 18px 0; font-size: 14px; }
+.paper-to .paper-k { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-right: 10px; }
+
+.roi-hero {
+  background: linear-gradient(120deg, #0d4a30, var(--brand-dark)); color: #fff;
+  border-radius: 14px; padding: 20px 22px; margin: 8px 0 24px; position: relative; overflow: hidden;
+}
+.roi-title { font-size: 14px; font-weight: 700; margin-bottom: 14px; }
+.roi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+@media (max-width: 720px) { .roi-grid { grid-template-columns: 1fr 1fr; } }
+.roi-num { font-size: 24px; font-weight: 800; letter-spacing: -0.5px; line-height: 1.15; }
+.roi-num.accent { color: #7ee2ab; }
+.roi-num.warn { color: #fca5a5; }
+.roi-cap { font-size: 12px; color: #b9cfc4; margin-top: 4px; line-height: 1.35; }
+.roi-foot { margin-top: 18px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.14); font-size: 13px; color: #dbe7e0; line-height: 1.6; }
+.roi-foot b { color: #7ee2ab; }
+
+.paper-h3 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--brand); margin: 22px 0 10px; }
+.paper-tbl { width: 100%; border-collapse: collapse; font-size: 14px; }
+.paper-tbl th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; color: var(--muted); padding: 8px 10px; border-bottom: 1px solid var(--border); background: none; position: static; }
+.paper-tbl th.num, .paper-tbl td.num { text-align: right; font-variant-numeric: tabular-nums; }
+.paper-tbl td { padding: 9px 10px; border-bottom: 1px solid var(--border); }
+.paper-tbl tr:last-child td { border-bottom: none; }
+.paper-tbl tr.sel { background: var(--brand-tint); }
+.paper-tbl .dim { color: var(--muted); }
+.rec-tag { background: var(--brand); color: #fff; font-size: 10px; font-weight: 700; padding: 1px 7px; border-radius: 999px; margin-left: 8px; }
+.paper-note { font-size: 12px; color: var(--muted); margin-top: 8px; }
+.paper-terms { margin: 22px 0; font-size: 13px; color: var(--text); line-height: 1.6; background: var(--brand-tint); padding: 12px 14px; border-radius: 10px; }
+.paper-sign { display: flex; gap: 60px; margin-top: 34px; font-size: 13px; color: var(--muted); }
+.sign-line { border-top: 1px solid var(--text); width: 200px; margin-bottom: 6px; padding-top: 34px; }
+
+/* Print: strip the app chrome, show only the document */
+@media print {
+  .no-print, .sidebar, .cmd-hint, .theme-toggle, .src-badge { display: none !important; }
+  .layout, .main { display: block; padding: 0; margin: 0; max-width: none; }
+  .main > * { animation: none !important; }
+  body { background: #fff; }
+  .paper { box-shadow: none; border: none; border-radius: 0; max-width: none; padding: 0; }
+  .roi-hero { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+
 /* Trend arrow */
 .trend { font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; }
 .trend.up { color: #15803d; }

@@ -6,6 +6,7 @@ import Link from "next/link";
 const LINKS = [
   { href: "/", label: "ภาพรวม", icon: "📊" },
   { href: "/playbook", label: "แผนลงมือ", icon: "🎬" },
+  { href: "/quote", label: "ใบเสนอราคา & ROI", icon: "💰" },
   { href: "/analytics", label: "วิเคราะห์ข้อมูล", icon: "📈" },
   { href: "/insights", label: "สัญญาณ & เคลื่อนไหว", icon: "🧠" },
   { href: "/operations", label: "เชิงลึก", icon: "🔎" },
