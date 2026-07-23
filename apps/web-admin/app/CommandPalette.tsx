@@ -18,6 +18,7 @@ const PAGES: Array<{ label: string; href: string; icon: string; hint: string }> 
   { label: "เชิงลึกเชิงปฏิบัติการ", href: "/operations", icon: "🔎", hint: "Operations" },
   { label: "สมาชิก", href: "/members", icon: "👥", hint: "Members" },
   { label: "กลุ่มลูกค้า", href: "/segments", icon: "🎯", hint: "Segments" },
+  { label: "ใบเสนอราคา & ROI", href: "/quote", icon: "💰", hint: "Quote ROI" },
   { label: "ระบบอัตโนมัติ", href: "/automations", icon: "⚡", hint: "Automations" },
   { label: "ข้อมูลดิบ", href: "/raw", icon: "🧾", hint: "Raw events" },
   { label: "นำเข้า POS", href: "/import", icon: "📥", hint: "Import" },

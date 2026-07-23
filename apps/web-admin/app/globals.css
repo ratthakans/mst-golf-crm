@@ -156,6 +156,23 @@ button, input, select { font-family: inherit; }
   content: ""; position: absolute; left: -14px; top: 50%; transform: translateY(-50%);
   width: 4px; height: 22px; border-radius: 0 4px 4px 0; background: #7ee2ab;
 }
+/* Grouped nav: four primary links, the rest folded under a "เครื่องมือ" toggle */
+.nav { display: flex; flex-direction: column; gap: 4px; }
+.nav-group { display: flex; flex-direction: column; gap: 3px; }
+.nav-section {
+  display: flex; align-items: center; gap: 8px; width: 100%;
+  margin-top: 10px; padding: 7px 12px; background: none; border: 0;
+  color: #8ba79a; font-family: inherit; font-size: 11px; font-weight: 700;
+  letter-spacing: 1.2px; text-transform: uppercase; cursor: pointer;
+  border-radius: var(--radius-sm); transition: color 0.18s var(--ease), background 0.18s var(--ease);
+}
+.nav-section:hover { color: #dbe7e0; background: rgba(255,255,255,0.06); }
+.nav-section-label { flex: 1; text-align: left; }
+/* Marks a collapsed group that contains the page you're on */
+.nav-section-dot { width: 6px; height: 6px; border-radius: 50%; background: #7ee2ab; flex-shrink: 0; }
+.nav-caret { font-size: 13px; line-height: 1; transition: transform 0.2s var(--ease); }
+.nav-section.open .nav-caret { transform: rotate(180deg); }
+
 .sidebar .spacer { flex: 1; }
 .theme-toggle {
   display: flex; align-items: center; gap: 10px; width: 100%; margin-bottom: 10px;
@@ -187,7 +204,9 @@ button, input, select { font-family: inherit; }
 .src-hint { flex-basis: 100%; font-weight: 400; color: #9fb6ab; font-size: 11px; margin-top: 2px; }
 
 /* Main */
-.main { flex: 1; padding: 30px 34px; max-width: 1200px; }
+/* min-width:0 lets this flex item shrink to the viewport instead of being held
+   open by wide content (tables); the wide bits get their own scroll container. */
+.main { flex: 1; min-width: 0; padding: 30px 34px; max-width: 1200px; }
 .page-head { margin-bottom: 22px; }
 .page-head h1 { margin: 0 0 5px; font-size: 25px; font-weight: 700; letter-spacing: -0.4px; }
 .page-head p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.5; max-width: 780px; }
@@ -249,7 +268,7 @@ tbody tr:hover { background: var(--brand-tint); }
 tr:last-child td { border-bottom: none; }
 .member-name { font-weight: 600; }
 
-.badge { display: inline-block; padding: 3px 9px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+.badge { display: inline-block; padding: 3px 9px; border-radius: 999px; font-size: 12px; font-weight: 600; white-space: nowrap; }
 .tier-Platinum { background: #eef2f7; color: #475569; }
 .tier-Gold { background: #fdf3d7; color: #a16207; }
 .tier-Silver { background: #eef2ef; color: #64748b; }
@@ -289,6 +308,9 @@ tr:last-child td { border-bottom: none; }
 .field input, .field select {
   padding: 10px 12px; border: 1px solid var(--border); border-radius: 9px;
   font-size: 14px; background: #fff; font-family: inherit; color: var(--text);
+  /* Fill the column instead of the browser's intrinsic input width, which would
+     otherwise hold .field-row open wider than a phone screen. */
+  width: 100%; min-width: 0;
 }
 .field input:focus, .field select:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-tint); }
 .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -794,6 +816,105 @@ tr:last-child td { border-bottom: none; }
 .sk-num { height: 34px; width: 60%; margin-bottom: 12px; }
 .sk-chart { height: 130px; width: 100%; border-radius: 10px; }
 @media (prefers-reduced-motion: reduce) { .sk { animation: none; } }
+
+/* ── Responsive shell ───────────────────────────────────────────────────────
+   Desktop keeps the static sidebar column. At <=900px the sidebar turns into
+   an off-canvas drawer driven by AppShell, opened from a sticky top bar.     */
+
+/* Desktop: the mobile-only chrome stays out of the way */
+.topbar, .scrim, .drawer-close { display: none; }
+
+.topbar {
+  align-items: center; gap: 12px;
+  padding: 10px 14px; padding-top: max(10px, env(safe-area-inset-top));
+  background: linear-gradient(180deg, #0d4a30 0%, var(--brand-dark) 100%);
+  border-bottom: 1px solid rgba(0,0,0,0.2);
+  position: sticky; top: 0; z-index: 40;
+}
+.topbar-logo { height: 24px; width: auto; background: #fff; border-radius: 7px; padding: 4px 8px; }
+.topbar-tag {
+  margin-left: auto; font-size: 11px; font-weight: 700; color: #f5d190;
+  background: rgba(245,158,11,0.16); padding: 4px 9px; border-radius: 999px;
+}
+.hamburger {
+  display: flex; flex-direction: column; justify-content: center; gap: 4px;
+  width: 40px; height: 40px; padding: 0 9px; flex-shrink: 0;
+  background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.10);
+  border-radius: var(--radius-sm); cursor: pointer;
+}
+.hamburger span { display: block; height: 2px; border-radius: 2px; background: #dbe7e0; }
+
+.scrim {
+  position: fixed; inset: 0; z-index: 50; background: rgba(6,20,14,0.5);
+  opacity: 0; pointer-events: none; transition: opacity 0.24s var(--ease);
+}
+.scrim.show { opacity: 1; pointer-events: auto; }
+
+.drawer-close {
+  position: absolute; top: 12px; right: 12px;
+  width: 34px; height: 34px; align-items: center; justify-content: center;
+  background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 50%; color: #dbe7e0; font-size: 14px; cursor: pointer;
+}
+
+@media (max-width: 900px) {
+  .topbar { display: flex; }
+
+  .sidebar {
+    position: fixed; top: 0; left: 0; z-index: 60;
+    height: 100dvh; width: 82vw; max-width: 300px;
+    padding-top: max(20px, env(safe-area-inset-top));
+    overflow-y: auto; overscroll-behavior: contain;
+    transform: translateX(-100%);
+    transition: transform 0.26s var(--ease);
+    box-shadow: 0 0 40px rgba(0,0,0,0.3);
+  }
+  .sidebar.open { transform: none; }
+  .drawer-close { display: flex; }
+  /* The drawer is its own scroll area — don't let the spacer stretch it */
+  .sidebar .spacer { flex: 0 0 18px; }
+  .brand { margin-right: 44px; }
+
+  .main { padding: 18px 16px 40px; max-width: none; }
+  .page-head { margin-bottom: 16px; }
+  .page-head h1 { font-size: 21px; }
+  .page-head p { font-size: 13.5px; }
+
+  /* Wide content (tables) scrolls inside its own container, never the page body.
+     The min-width keeps columns readable — without it Thai text wraps per
+     character and the table crushes instead of scrolling. */
+  .card, .paper { overflow-x: auto; }
+  .card table, .card .tbl { min-width: 440px; }
+
+  .bento { grid-template-columns: 1fr 1fr; }
+  .bento .span-2 { grid-column: span 2; }
+  .bento .row-2 { grid-row: auto; }
+}
+
+@media (max-width: 560px) {
+  .main { padding: 14px 12px 36px; }
+  .card { padding: 16px; }
+  .grid, .bento { gap: 12px; }
+
+  /* Single column — two stat cards side by side is unreadable this narrow */
+  .grid-4, .bento { grid-template-columns: 1fr; }
+  .bento .span-2 { grid-column: auto; }
+  .stat .value { font-size: 26px; }
+  .bento-hero .value { font-size: 30px; }
+
+  .seg-name { width: 74px; font-size: 12.5px; }
+  .roi-grid { grid-template-columns: 1fr; }
+  .paper { padding: 18px 16px; }
+  .paper-head { flex-direction: column; gap: 12px; }
+  .paper-meta { text-align: left; }
+  .quote-toolbar { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .quote-toolbar .btn { margin-left: 0; width: 100%; }
+  .paper-sign { flex-direction: column; gap: 22px; }
+  .sign-line { width: 100%; max-width: 200px; }
+  .mt-controls { flex-direction: column; align-items: stretch; }
+  .mt-search { min-width: 0; width: 100%; }
+  .field-row { grid-template-columns: 1fr; }
+}
 
 /* ── Command palette (⌘K) ───────────────────────────────────────────────── */
 .cmd-hint {
