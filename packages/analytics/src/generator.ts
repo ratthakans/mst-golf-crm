@@ -1,4 +1,5 @@
-import { DEMO_ORG, tierForPoints } from "./fixture";
+import { spendInWindow, tierForSpend } from "@mstgolf/shared/tiers";
+import { DEMO_ORG } from "./fixture";
 import type { DemoDataset } from "./fixture";
 import type { EventLike, MemberLike, PurchaseItemLike } from "./types";
 
@@ -198,7 +199,14 @@ export function generateDataset(now: Date, seed = 42): DemoDataset {
     }
 
     const points = Math.round(totalSpend + (spec.name === "new" ? DEMO_ORG.signupBonus : int(rng, 0, 800)));
-    const tier = tierForPoints(points, DEMO_ORG.tiers);
+    // Tier follows the last 12 months of spend, not the points balance.
+    const spend12m = spendInWindow(
+      memberEvents
+        .filter((e) => e.type === "PURCHASE")
+        .map((e) => ({ amount: Number(e.payload?.amount ?? 0), at: e.occurredAt })),
+      now,
+    );
+    const tier = tierForSpend(spend12m, DEMO_ORG.tiers).name;
 
     members.push({ id, displayName, tier, points, lastSeenAt, createdAt, attributes, phone: `+66${int(rng, 810000000, 899999999)}` });
 

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { getRepo } from "../../../lib/repo";
+import { normalizeThaiMobile } from "@mstgolf/shared/phone";
+import { DuplicateMemberError, getRepo } from "../../../lib/repo";
 import type { CreateMemberInput } from "../../../lib/repo";
 
 // Compact search index for the ⌘K command palette (id + name + tier + points).
@@ -26,13 +27,26 @@ export async function POST(req: Request) {
   const displayName = (body.displayName ?? "").trim();
   const attributes = (body.attributes ?? {}) as Record<string, unknown>;
   const consent = body.consent === true;
+  const source = body.source === "admin" ? "admin" : "signup";
+  const rawPhone = body.phone?.toString().trim() ?? "";
+  const phone = rawPhone ? normalizeThaiMobile(rawPhone) : null;
 
   if (!displayName) {
-    return NextResponse.json({ error: "Full name is required" }, { status: 400 });
+    return NextResponse.json({ error: "กรุณากรอกชื่อ-นามสกุล" }, { status: 400 });
+  }
+  if (rawPhone && !phone) {
+    return NextResponse.json(
+      { error: "เบอร์มือถือไม่ถูกต้อง — ใช้เบอร์ 10 หลักที่ขึ้นต้นด้วย 06, 08 หรือ 09" },
+      { status: 400 },
+    );
+  }
+  // The public link needs a phone: it is how the store finds the member at the till.
+  if (source === "signup" && !phone) {
+    return NextResponse.json({ error: "กรุณากรอกเบอร์มือถือ" }, { status: 400 });
   }
   if (!consent) {
     return NextResponse.json(
-      { error: "PDPA consent is required to create a membership" },
+      { error: "ต้องยินยอมตามนโยบายความเป็นส่วนตัว (PDPA) ก่อนสมัครสมาชิก" },
       { status: 400 },
     );
   }
@@ -51,19 +65,34 @@ export async function POST(req: Request) {
       (Array.isArray(v) && v.length === 0);
     if (missing) {
       return NextResponse.json(
-        { error: `${f.label} is required` },
+        { error: `กรุณากรอก${f.label}` },
         { status: 400 },
       );
     }
   }
 
-  const result = await repo.createMember({
-    displayName,
-    phone: body.phone?.toString().trim() || undefined,
-    email: body.email?.toString().trim() || undefined,
-    attributes,
-    consent,
-  });
+  let result;
+  try {
+    result = await repo.createMember({
+      displayName,
+      phone: phone ?? undefined,
+      email: body.email?.toString().trim() || undefined,
+      attributes,
+      consent,
+      source,
+    });
+  } catch (e) {
+    if (e instanceof DuplicateMemberError) {
+      // Staff get the existing record; the public form must not reveal it.
+      return NextResponse.json(
+        source === "admin"
+          ? { error: "เบอร์นี้เป็นสมาชิกอยู่แล้ว", memberId: e.memberId }
+          : { error: "เบอร์นี้เป็นสมาชิกอยู่แล้ว — สอบถามพนักงานที่ร้านได้เลย" },
+        { status: 409 },
+      );
+    }
+    throw e;
+  }
 
   return NextResponse.json(
     {

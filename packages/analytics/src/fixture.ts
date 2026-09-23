@@ -1,3 +1,5 @@
+import type { TierSettings } from "@mstgolf/shared";
+import { DEFAULT_TIERS, spendInWindow, tierForSpend } from "@mstgolf/shared/tiers";
 import type { EventLike, FieldDefinitionLike, MemberLike } from "./types";
 
 // MST Golf demo dataset (Bangkok, Thailand) — mirrors the seed so the app can
@@ -6,6 +8,7 @@ import type { EventLike, FieldDefinitionLike, MemberLike } from "./types";
 
 export interface DemoOrg {
   name: string;
+  productName: string; // back-office name shown to staff
   slug: string;
   currency: string;
   brandColor: string;
@@ -13,7 +16,7 @@ export interface DemoOrg {
   signupBonus: number;
   perCurrencyUnit: number; // points earned per 1 unit spent
   consentText: string;
-  tiers: Array<{ name: string; minPoints: number }>;
+  tiers: TierSettings[];
 }
 
 export interface DemoDataset {
@@ -24,6 +27,7 @@ export interface DemoDataset {
 
 export const DEMO_ORG: DemoOrg = {
   name: "MST Golf",
+  productName: "MST Golf Platform",
   slug: "mst-golf",
   currency: "THB",
   brandColor: "#0a5c36",
@@ -32,11 +36,7 @@ export const DEMO_ORG: DemoOrg = {
   perCurrencyUnit: 0.01,
   consentText:
     "ข้าพเจ้ายินยอมให้ MST Golf เก็บและใช้ข้อมูลส่วนบุคคลของข้าพเจ้าเพื่อการเป็นสมาชิก การตลาด และการให้บริการ ตาม พ.ร.บ.คุ้มครองข้อมูลส่วนบุคคล (PDPA)",
-  tiers: [
-    { name: "Silver", minPoints: 0 },
-    { name: "Gold", minPoints: 16000 },
-    { name: "Platinum", minPoints: 40000 },
-  ],
+  tiers: DEFAULT_TIERS,
 };
 
 // The 7 golf-profile fields collected on sign-up (mirror of seed FieldDefinition).
@@ -79,12 +79,6 @@ export const DEMO_FIELD_DEFINITIONS: FieldDefinitionLike[] = [
   },
 ];
 
-export function tierForPoints(points: number, tiers: DemoOrg["tiers"]): string {
-  let name = tiers[0]?.name ?? "Silver";
-  for (const t of tiers) if (points >= t.minPoints) name = t.name;
-  return name;
-}
-
 /** Points earned for a purchase amount, per the org's points config. */
 export function pointsForAmount(amount: number, perCurrencyUnit: number): number {
   // perCurrencyUnit is "points per 1 currency unit" scaled ×100 (config convention).
@@ -101,7 +95,6 @@ interface MemberSpec {
   id: string;
   displayName: string;
   phone: string;
-  tier: string;
   points: number;
   lastSeenDays: number;
   attributes: Record<string, unknown>;
@@ -115,7 +108,7 @@ interface MemberSpec {
 const MEMBER_SPECS: MemberSpec[] = [
   {
     id: "U_champion_001", displayName: "Somchai Rattanakul", phone: "+66811112201",
-    tier: "Platinum", points: 43200, lastSeenDays: 2,
+    points: 43200, lastSeenDays: 2,
     attributes: {
       handicap: 6, dominantHand: "right", skillLevel: "advanced",
       preferredBrands: ["titleist", "taylormade"], interests: ["clubs", "fitting"],
@@ -136,7 +129,7 @@ const MEMBER_SPECS: MemberSpec[] = [
   },
   {
     id: "U_loyal_002", displayName: "Nattaya Phongsak", phone: "+66811112202",
-    tier: "Gold", points: 20800, lastSeenDays: 10,
+    points: 20800, lastSeenDays: 10,
     attributes: {
       handicap: 14, dominantHand: "right", skillLevel: "intermediate",
       preferredBrands: ["callaway", "footjoy"], interests: ["apparel", "footwear", "lessons"],
@@ -156,7 +149,7 @@ const MEMBER_SPECS: MemberSpec[] = [
   },
   {
     id: "U_new_003", displayName: "Anucha Meesap", phone: "+66811112203",
-    tier: "Silver", points: 1600, lastSeenDays: 1,
+    points: 1600, lastSeenDays: 1,
     attributes: {
       handicap: 24, dominantHand: "left", skillLevel: "beginner",
       preferredBrands: ["honma"], interests: ["clubs", "lessons"], playFrequency: "occasionally",
@@ -166,7 +159,7 @@ const MEMBER_SPECS: MemberSpec[] = [
   },
   {
     id: "U_atrisk_004", displayName: "Prasit Chaiyaphon", phone: "+66811112204",
-    tier: "Gold", points: 16800, lastSeenDays: 120,
+    points: 16800, lastSeenDays: 120,
     attributes: {
       handicap: 11, dominantHand: "right", skillLevel: "advanced",
       preferredBrands: ["mizuno", "titleist"], interests: ["clubs", "fitting"],
@@ -183,7 +176,7 @@ const MEMBER_SPECS: MemberSpec[] = [
   },
   {
     id: "U_dormant_005", displayName: "Wanida Srisuk", phone: "+66811112205",
-    tier: "Silver", points: 2800, lastSeenDays: 260,
+    points: 2800, lastSeenDays: 260,
     attributes: {
       handicap: 20, dominantHand: "right", skillLevel: "beginner",
       preferredBrands: ["callaway"], interests: ["apparel"], playFrequency: "occasionally",
@@ -206,7 +199,10 @@ export function buildDemoDataset(now: Date): DemoDataset {
       id: spec.id,
       displayName: spec.displayName,
       phone: spec.phone,
-      tier: spec.tier,
+      tier: tierForSpend(
+        spendInWindow(spec.purchases.map((p) => ({ amount: p.amount, at: daysAgo(p.daysAgo) })), now),
+        DEMO_ORG.tiers,
+      ).name,
       points: spec.points,
       lastSeenAt: daysAgo(spec.lastSeenDays),
       createdAt,

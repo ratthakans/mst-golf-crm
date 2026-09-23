@@ -5,15 +5,20 @@ import { usePathname } from "next/navigation";
 import { Nav } from "./Nav";
 import { CommandHint } from "./CommandHint";
 import { ThemeToggle } from "./ThemeToggle";
+import { isPublicPath } from "../lib/public-paths";
 
 // Owns the responsive shell: on desktop the sidebar is a static column, on
 // narrow screens it becomes an off-canvas drawer opened from the top bar.
 // The CSS decides which of the two it is — this only tracks open/closed.
 export function AppShell({
   live,
+  orgName,
+  productName,
   children,
 }: {
   live: boolean;
+  orgName: string;
+  productName: string;
   children: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
@@ -41,6 +46,9 @@ export function AppShell({
     };
   }, [open]);
 
+  // Customer-facing pages (the sign-up link) never show the back office.
+  if (isPublicPath(pathname)) return <>{children}</>;
+
   return (
     <>
       <header className="topbar">
@@ -57,7 +65,7 @@ export function AppShell({
           <span />
         </button>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/mst-logo.png" alt="MST Golf" className="topbar-logo" />
+        <img src="/mst-logo.png" alt={orgName} className="topbar-logo" />
         {!live && <span className="topbar-tag">ตัวอย่าง</span>}
       </header>
 
@@ -79,9 +87,9 @@ export function AppShell({
           </button>
           <div className="brand">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/mst-logo.png" alt="MST Golf" className="brand-logo" />
+            <img src="/mst-logo.png" alt={orgName} className="brand-logo" />
           </div>
-          <div className="brand-sub">ระบบสมาชิก CRM</div>
+          <div className="brand-sub">{productName}</div>
           <CommandHint />
           <Nav />
           <div className="spacer" />

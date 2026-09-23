@@ -2,6 +2,7 @@ import type { EvBar, EvPoint } from "../app/evidence";
 import { getCrmData } from "./data";
 import { getTask, type TaskStatus } from "./tasks";
 import type { MemberProfile } from "@mstgolf/analytics";
+import { resolveTiers } from "@mstgolf/shared/tiers";
 
 // Computes the Playbook entirely from the live synthetic dataset — so every
 // count, audience, and named customer matches Overview/Analytics exactly.
@@ -96,10 +97,10 @@ export async function getPlaybookData(): Promise<PlaybookData> {
   // --- bulk plays: rule → matching members ---
   const rules: Record<string, (p: MemberProfile) => boolean> = {
     vip: (p) => p.rfmSegment === "Champion",
-    winback: (p) => (p.tier === "Gold" || p.tier === "Platinum") && p.recencyDays >= 90 && p.recencyDays <= 180,
+    winback: (p) => p.tierRank >= 1 && p.recencyDays >= 90 && p.recencyDays <= 180,
     crosssell: (p) => ctx.recentClubsNoBalls.has(p.memberId),
     fitting: (p) => ctx.fittedNoClubs.has(p.memberId),
-    tierup: (p) => p.points >= 13000 && p.points < 16000,
+    tierup: (p) => p.nextTierPct !== null && p.nextTierPct >= 0.8,
     onboard: (p) => p.frequency === 0 && ctx.newMembers.has(p.memberId),
     brand: (p) => brandOf(p).includes("titleist"),
     browsers: (p) => (ctx.visitCount.get(p.memberId) ?? 0) >= 3 && p.frequency <= 1,
@@ -116,12 +117,16 @@ export async function getPlaybookData(): Promise<PlaybookData> {
   }));
   const activeCount = profiles.filter((p) => p.recencyDays <= org.churnDays).length;
   const dormantCount = match("reactivate").length;
-  const pointBands: EvBar[] = [
-    { label: "0–8k", value: profiles.filter((p) => p.points < 8000).length },
-    { label: "8–13k", value: profiles.filter((p) => p.points >= 8000 && p.points < 13000).length },
-    { label: "13–16k", value: profiles.filter((p) => p.points >= 13000 && p.points < 16000).length, highlight: true },
-    { label: "16k+", value: profiles.filter((p) => p.points >= 16000).length },
+  // Progress toward the next tier on 12-month spend.
+  const progressOf = (p: MemberProfile) => p.nextTierPct;
+  const tierBands: EvBar[] = [
+    { label: "<50%", value: profiles.filter((p) => { const x = progressOf(p); return x !== null && x < 0.5; }).length },
+    { label: "50–80%", value: profiles.filter((p) => { const x = progressOf(p); return x !== null && x >= 0.5 && x < 0.8; }).length },
+    { label: "80–99%", value: profiles.filter((p) => { const x = progressOf(p); return x !== null && x >= 0.8; }).length, highlight: true },
+    { label: "ระดับสูงสุด", value: profiles.filter((p) => p.nextTier === null).length },
   ];
+  const tiers = resolveTiers(org.tiers);
+  const upperTierNames = tiers.slice(1).map((t) => t.name).join("/");
 
   const bulkTemplates: Array<Omit<BulkPlay, "count" | "sample"> & { rule: string }> = [
     {
@@ -130,11 +135,11 @@ export async function getPlaybookData(): Promise<PlaybookData> {
       evidence: { kind: "bars", data: [{ label: "2% บนสุด", value: 41, highlight: true }, { label: "ที่เหลือ", value: 59 }], unit: "%", caption: "สัดส่วนรายได้รวม — สมาชิกกลุ่มบนสุดสร้างยอดขายเกือบครึ่ง" },
       interpretation: "คนกลุ่มเล็กแบกทั้งร้าน เสียแชมเปียน 1 คนเจ็บกว่าเสียลูกค้าขาจร 50 คน — เกมนี้ไม่ใช่ส่วนลด แต่คือสถานะและสิทธิพิเศษ",
       playName: "เชิญ VIP ก่อนใคร + Fitting Night", action: "เชิญแชมเปียนชมสินค้าใหม่ก่อนเปิดตัว + ฟิตติ้งฟรี ให้รู้สึกเป็นสมาชิกพิเศษจริง",
-      message: "ในฐานะสมาชิก Platinum คุณได้รับเชิญร่วม VIP Fitting Night วันที่ 20 ก.ค. — ชมชุดเหล็ก T-Series 2026 ก่อนใคร พร้อมวิเคราะห์วงสวิงฟรี ให้จองคิวไว้ไหมครับ?",
+      message: "ในฐานะลูกค้าคนสำคัญของเรา คุณได้รับเชิญร่วม VIP Fitting Night วันที่ 20 ก.ค. — ชมชุดเหล็ก T-Series 2026 ก่อนใคร พร้อมวิเคราะห์วงสวิงฟรี ให้จองคิวไว้ไหมครับ?",
       offer: "ฟิตติ้งฟรี (มูลค่า ฿2,000) + แต้ม 2 เท่า", channel: "LINE 1:1", timing: "ต่อเนื่อง — หลังการซื้อก้อนใหญ่แต่ละครั้ง", perCustomer: 2800, x: 0.14, y: 0.95,
     },
     {
-      id: "winback", rule: "winback", category: "ดึงกลับ", color: "#ef4444", segment: "สมาชิก Gold ที่กำลังห่าง",
+      id: "winback", rule: "winback", category: "ดึงกลับ", color: "#ef4444", segment: `สมาชิก ${upperTierNames} ที่กำลังห่าง`,
       trigger: "สมาชิกมูลค่าสูงกลุ่มนี้กำลังไถลไปหา churn — หน้าต่างที่จะรั้งไว้กำลังจะปิด",
       evidence: { kind: "curve", data: [{ label: "0 วัน", value: 62 }, { label: "30", value: 58 }, { label: "60", value: 52 }, { label: "90", value: 40 }, { label: "120", value: 22 }, { label: "150", value: 14 }], unit: "%", markerIndex: 3, markerLabel: "หน้าผา 90 วัน", caption: "โอกาสกลับมาซื้อเทียบกับจำนวนวันที่หายไป — ร่วงเป็นหน้าผาหลัง 90 วัน" },
       interpretation: "ข้อมูลลากเส้นตายไว้ที่ 90 วัน กลุ่มนี้อยู่ในโซนอันตราย 90–180 วันพอดี — รีบทักด้วยแบรนด์ที่เขาชอบ ไม่ใช่ยิงรวมๆ",
@@ -163,10 +168,10 @@ export async function getPlaybookData(): Promise<PlaybookData> {
     {
       id: "tierup", rule: "tierup", category: "ความภักดี", color: "#0ea5e9", segment: "อีกออเดอร์เดียวเลื่อนระดับ",
       trigger: "กลุ่มนี้ขาดอีกนิดเดียวก็เลื่อนระดับ — ดันเบาๆ ก็ข้าม",
-      evidence: { kind: "bars", data: pointBands, caption: "สมาชิกแยกตามแต้ม — กลุ่มที่กระจุกอยู่ใต้เส้น Gold ที่ 16,000 แต้ม" },
+      evidence: { kind: "bars", data: tierBands, caption: "สมาชิกแยกตามความคืบหน้าสู่ระดับถัดไป (ยอดซื้อ 12 เดือน) — กลุ่มที่ไปถึง 80% แล้ว" },
       interpretation: "มีคนกระจุกใต้เส้นระดับพอดี เขาอยากไต่อยู่แล้ว — ให้แต้มโบนัสก็ยอมซื้อเพื่อไปให้ถึง",
       playName: "ดันเลื่อนระดับ", action: "บอกว่าใกล้แค่ไหน + เปิดหน้าต่างแต้ม 2 เท่าแบบจำกัดเวลา",
-      message: "อีกนิดเดียวก็ถึง Gold แล้ว — ฟิตติ้งฟรี + สิทธิ์จองเวลาออกรอบก่อนใคร สัปดาห์นี้รับแต้ม 2 เท่าทุกชิ้นเสื้อผ้า ไปให้ถึงเร็วขึ้น!",
+      message: "อีกนิดเดียวก็เลื่อนระดับสมาชิกแล้ว — รับแต้มมากขึ้นทุกการซื้อ พร้อมสิทธิ์ซิมและส่วนลดของระดับใหม่ สัปดาห์นี้รับแต้ม 2 เท่าทุกชิ้นเสื้อผ้า ไปให้ถึงเร็วขึ้น!",
       offer: "แต้ม 2 เท่าสัปดาห์นี้", channel: "LINE 1:1", timing: "สัปดาห์นี้", perCustomer: 1200, x: 0.34, y: 0.56,
     },
     {
@@ -288,9 +293,12 @@ export async function getPlaybookData(): Promise<PlaybookData> {
     {
       priority: "Timely", playName: "ดันเลื่อนระดับ", action: "โน้ตส่วนตัวบอกว่าใกล้แค่ไหน + บูสต์แต้มสัปดาห์นี้",
       offer: "แต้ม 2 เท่าสัปดาห์นี้", assignedTo: "เซลส์",
-      cands: match("tierup"), score: (p) => p.points,
-      signal: (_n, id) => `เหลืออีก ~${(16000 - (profiles.find((x) => x.memberId === id)?.points ?? 0)).toLocaleString("en-TH")} แต้มก็ถึง Gold`,
-      message: (n) => `กำลังมาแรงเลยคุณ${n}! อีกนิดเดียวก็ถึง Gold — ฟิตติ้งฟรี + จองเวลาออกรอบก่อนใคร สัปดาห์นี้รับแต้ม 2 เท่าทุกชิ้นเสื้อผ้า ไปให้ถึงเร็วขึ้น!`,
+      cands: match("tierup"), score: (p) => p.nextTierPct ?? 0,
+      signal: (_n, id) => {
+        const p = profiles.find((x) => x.memberId === id);
+        return `ยอด 12 เดือนขาดอีก ~฿${(p?.nextTierGap ?? 0).toLocaleString("en-TH")} ก็ถึง ${p?.nextTier ?? "ระดับถัดไป"}`;
+      },
+      message: (n) => `กำลังมาแรงเลยคุณ${n}! อีกนิดเดียวก็เลื่อนระดับสมาชิก — แต้มมากขึ้นทุกการซื้อพร้อมสิทธิ์ของระดับใหม่ สัปดาห์นี้รับแต้ม 2 เท่าทุกชิ้นเสื้อผ้า ไปให้ถึงเร็วขึ้น!`,
     },
     {
       priority: "Timely", playName: "ของขวัญวันเกิด", action: "ข้อความวันเกิดส่วนตัว + ของขวัญที่ดึงให้แวะร้าน",
@@ -311,7 +319,7 @@ export async function getPlaybookData(): Promise<PlaybookData> {
       offer: "ฟิตติ้งฟรี + แต้ม 2 เท่า", assignedTo: "ผู้เชี่ยวชาญฟิตติ้ง",
       cands: profiles.filter((p) => p.rfmSegment === "Champion" && p.recencyDays <= 20), score: (p) => p.clv,
       signal: (_n, id) => `แชมเปียนที่เพิ่งแอ็กทีฟ (เข้าล่าสุด ${recencyOf(id)} วัน) CLV ~฿${clvOf(id).toLocaleString("en-TH")}`,
-      message: (n) => `สวัสดีครับคุณ${n} — ในฐานะสมาชิก Platinum คุณได้รับเชิญร่วม VIP Fitting Night วันที่ 20 ก.ค. ชมชุดเหล็ก T-Series 2026 ก่อนใคร พร้อมวิเคราะห์วงสวิงฟรี ขอกันคิวไว้ให้ไหมครับ?`,
+      message: (n) => `สวัสดีครับคุณ${n} — ในฐานะลูกค้าคนสำคัญของเรา คุณได้รับเชิญร่วม VIP Fitting Night วันที่ 20 ก.ค. ชมชุดเหล็ก T-Series 2026 ก่อนใคร พร้อมวิเคราะห์วงสวิงฟรี ขอกันคิวไว้ให้ไหมครับ?`,
     },
   ];
 
@@ -324,7 +332,7 @@ export async function getPlaybookData(): Promise<PlaybookData> {
     const id = `p${i}`;
     const task = getTask(id);
     personal.push({
-      id, memberId: m.memberId, name, tier: m.tier ?? "Silver",
+      id, memberId: m.memberId, name, tier: m.tier ?? tiers[0]!.name,
       priority: s.priority, color: PRIORITY_COLOR[s.priority],
       signal: s.signal(name, m.memberId), clv: clvOf(m.memberId), churn: churnPct(m.memberId),
       lastSeen: daysLabel(recencyOf(m.memberId)), spend: spendOf(m.memberId),

@@ -12,4 +12,5 @@ export * from "./automation";
 export * from "./operations";
 export * from "./insights";
 export * from "./fixture";
+export * from "./spend";
 export * from "./generator";

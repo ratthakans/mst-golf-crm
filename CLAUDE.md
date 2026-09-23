@@ -1,7 +1,9 @@
-# CLAUDE.md — MST Golf CRM
+# CLAUDE.md — MST Golf Platform
 
-LINE CRM for **MST Golf (Bangkok, Thailand)** — pro shop + academy + fitting + arena, currency THB, locale `th`, timezone `Asia/Bangkok`.
-Built multi-tenant / config-driven under the hood (so it can serve more orgs later), but the product is branded **MST Golf** — there is no "Golffy" naming anywhere. Package scope is `@mstgolf/*`. TypeScript end-to-end.
+Customer Intelligence platform for **MST Golf (Bangkok, Thailand)** — pro shop + academy + fitting + arena + golf simulator, currency THB, locale `th`, timezone `Asia/Bangkok`.
+It is **our platform** and MST Golf is tenant #1: built multi-tenant / config-driven so more orgs can run on it. The back office is named **MST Golf Platform**; customer-facing LINE screens are branded **MST Golf**. Display names come from tenant config (`Organization.name`, `settings.productName`), never from code. There is no "Golffy" naming anywhere. Package scope is `@mstgolf/*`. TypeScript end-to-end.
+
+**The plan of record is `MST-DEV-PLAN.md`** (phases, schema v2, business rules, weekly sprints). Read it before changing scope.
 
 ## Architecture principles (do not break)
 1. **Event-driven** — every customer behavior is written to `Event`. All data features (RFM, funnel, churn, cohort, CLV) are computed from `Event` / `PointTransaction` / purchase amounts.
@@ -20,13 +22,28 @@ Built multi-tenant / config-driven under the hood (so it can serve more orgs lat
 - Schema change → create a migration **and** update the seed.
 - Write tests for critical features — especially **tenant isolation** and the **points ledger**.
 
+## Platform rules (MST-DEV-PLAN §3 — do not break)
+1. **The LLM is called only to generate text a person will read.** Never per member, per event or per cron job.
+2. **Every score, signal and segment is computed with statistics** in `@mstgolf/analytics` — the LLM explains numbers, it never produces them.
+3. **AI never messages customers.** Every campaign reaches `APPROVED` by a human before it can be sent.
+4. **Imports are idempotent** — importing the same file twice must leave the same state as importing it once.
+5. **`Member.code` is the identity** (schema v2). Phone, LINE and POS IDs are identities linked to it, never the key.
+6. **Points change only through `PointTransaction`.**
+7. **Staff actions that change points, privileges, bookings, members or campaigns write `AuditLog`** (schema v2).
+8. **Business logic lives in `packages/core`** (created with schema v2), not in route handlers.
+
+## Tiers
+Three tiers — **Member / Silver / Gold** — ranked by **net spend over the trailing 12 months**, never by points balance. Logic lives in `@mstgolf/shared/tiers` (pure; import the subpath so client bundles skip the node crypto helpers). Thresholds, point rates and benefits come from `settings.tiers` (`DEFAULT_TIERS` until MST confirms). Upgrades apply immediately after a purchase; downgrades only at the monthly review in the nightly job. Each tier's `pointRate` multiplies base points.
+
 ## Structure
 ```
-apps/api        NestJS API + webhook (M1)      apps/web-admin  Next.js dashboard (built)
-apps/web-liff   LIFF customer app (M1)         packages/database  Prisma — the core
-packages/shared types + crypto                 packages/analytics  RFM/CLV/churn/cohort/affinity + engines
-packages/line   @line/bot-sdk wrapper (M1)     workers/jobs    BullMQ nightly analytics
+apps/web-admin  Next.js back office + admin API   apps/web-liff   LIFF customer app + LINE webhook (phase 1, W8)
+packages/database  Prisma — the core             packages/shared types + crypto + tiers
+packages/analytics RFM/CLV/churn/cohort/affinity  packages/line   @line/bot-sdk wrapper
+workers/jobs    nightly analytics (moves to Vercel Cron routes)
 ```
+
+There is no separate API service — admin endpoints live in web-admin, customer endpoints and the webhook in web-liff. Background work goes through a Postgres `Job` table + Vercel Cron, not Redis/BullMQ.
 
 `@mstgolf/analytics` is pure & framework-free (runs in the browser + on the server + in jobs) so the dashboard, the API, and the workers all share one set of tested statistical functions. The dashboard reads through a repository (`apps/web-admin/lib/repo.ts`) with a sample-data backend (no infra) and a live-Postgres backend (`DATA_SOURCE=database`).
 
@@ -36,12 +53,12 @@ Safety/PDPA: `LineChannel` (encrypted per-org secrets), `Consent` (versioned his
 Data-driven CRM: `Segment` (rule-based audiences), `Automation` (trigger→action), `RfmSnapshot` (nightly per-member metrics for trend & segment-migration).
 `Event.payload` is typed per `EventType` in `@mstgolf/shared`/`@mstgolf/analytics` — `PURCHASE` carries `{ amount, currency, items?, channel? }` so RFM/CLV/affinity are computable.
 
-## Roadmap
-- **M0** ✅ monorepo + docker + schema + seed (MST Golf) + crypto + tenant helper
-- **M1** LINE webhook + LIFF login + dynamic signup + points + Rich Menu + welcome
-- **M2** Tag/Segment + Broadcast (BullMQ) + admin dashboard
-- **M3** RFM/funnel/cohort materialized views + automation engine
-- **M4** SaaS onboarding + per-org LineChannel UI + billing/plan + Postgres RLS
+## Roadmap (detail in MST-DEV-PLAN.md §11)
+- **Sprint 0** (W1) cleanup · rules · three tiers · config-driven names
+- **Phase 1 Foundation** (→ 11 Dec 2026) login + roles + audit · schema v2 · POS import v2 · point engine · tiers/privileges · merge · LINE + LIFF
+- **Phase 2 Engagement** (→ 26 Feb 2027) rewards · simulator booking + PMS · notifications · campaigns + offers
+- **Phase 3 Intelligence** (→ 9 Apr 2027) analytics on SKU data · opportunities · measurement + holdout · A/B
+- **Phase 4** conditional: POS API · automation UI · tenant onboarding + billing
 
 ## Commands
 See `README.md`. TL;DR: `pnpm install` → `pnpm infra:up` → `pnpm db:generate` → `pnpm db:migrate` → `pnpm db:seed` → `pnpm dev`.

@@ -4,10 +4,13 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import type { RfmSegment } from "@mstgolf/analytics";
 import { SEGMENT_COLOR, SEGMENT_LABEL, SEGMENT_ORDER } from "../../lib/segments";
+import { MemberAvatar } from "./MemberAvatar";
 
 export interface MemberRow {
   id: string;
   name: string;
+  phone: string; // canonical "0XXXXXXXXX" when valid, for search
+  photo: string | null; // photo version, null when there is none
   tier: string;
   seg: RfmSegment;
   points: number;
@@ -28,10 +31,11 @@ export function MembersTable({ rows }: { rows: MemberRow[] }) {
 
   const filtered = useMemo(() => {
     const term = q.trim();
+    const digits = term.replace(/\D/g, "");
     return rows.filter(
       (r) =>
         (seg === "all" || r.seg === seg) &&
-        (term === "" || r.name.includes(term)),
+        (term === "" || r.name.includes(term) || (digits.length >= 3 && r.phone.includes(digits))),
     );
   }, [rows, q, seg]);
 
@@ -42,7 +46,7 @@ export function MembersTable({ rows }: { rows: MemberRow[] }) {
       <div className="mt-controls">
         <input
           className="mt-search"
-          placeholder="ค้นหาชื่อสมาชิก…"
+          placeholder="ค้นหาชื่อหรือเบอร์โทร…"
           value={q}
           onChange={(e) => setQ(e.target.value)}
         />
@@ -82,7 +86,10 @@ export function MembersTable({ rows }: { rows: MemberRow[] }) {
               {shown.map((r) => (
                 <tr key={r.id}>
                   <td className="member-name">
-                    <Link href={`/members/${r.id}`} className="member-link">{r.name}</Link>
+                    <span className="member-cell">
+                      <MemberAvatar id={r.id} name={r.name} version={r.photo} size={28} />
+                      <Link href={`/members/${r.id}`} className="member-link">{r.name}</Link>
+                    </span>
                   </td>
                   <td><span className={`badge tier-${r.tier}`}>{r.tier}</span></td>
                   <td>

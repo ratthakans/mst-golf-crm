@@ -1,3 +1,5 @@
+import type { TierSettings } from "@mstgolf/shared";
+import { resolveTiers, tierProgress, tierRank } from "@mstgolf/shared/tiers";
 import type { MemberLike, RfmScore, RfmSegment } from "./types";
 import type { ClvResult } from "./clv";
 import type { ChurnResult } from "./churn";
@@ -8,6 +10,11 @@ export interface MemberProfile {
   memberId: string;
   displayName: string | null;
   tier: string | null;
+  tierRank: number; // 0 = entry tier, -1 = unknown
+  spend12m: number; // spend in the trailing 12 months — what tiers are ranked on
+  nextTier: string | null;
+  nextTierGap: number | null; // spend still needed for the next tier
+  nextTierPct: number | null; // 0–1 progress toward the next tier; null at the top
   points: number;
   recencyDays: number;
   frequency: number;
@@ -23,16 +30,25 @@ export function buildProfiles(
   rfm: RfmScore[],
   clv: ClvResult[],
   churn: ChurnResult[],
+  opts: { spend12m?: Map<string, number>; tiers?: TierSettings[] } = {},
 ): MemberProfile[] {
+  const tiers = resolveTiers(opts.tiers);
   const rfmById = new Map(rfm.map((r) => [r.memberId, r]));
   const clvById = new Map(clv.map((c) => [c.memberId, c]));
   const churnById = new Map(churn.map((c) => [c.memberId, c]));
   return members.map((m) => {
     const r = rfmById.get(m.id);
+    const spend12m = opts.spend12m?.get(m.id) ?? 0;
+    const progress = tierProgress(spend12m, tiers);
     return {
       memberId: m.id,
       displayName: m.displayName,
       tier: m.tier,
+      tierRank: tierRank(m.tier, tiers),
+      spend12m,
+      nextTier: progress.next?.name ?? null,
+      nextTierGap: progress.remaining,
+      nextTierPct: progress.next ? progress.pct : null,
       points: m.points,
       recencyDays: r?.recencyDays ?? 0,
       frequency: r?.frequency ?? 0,

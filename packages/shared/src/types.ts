@@ -69,9 +69,22 @@ export interface PointsSettings {
   expiryMonths: number;
 }
 
+export interface TierBenefits {
+  discountPct: number; // in-store discount
+  birthdayPointMultiplier: number; // points multiplier during the birthday month
+  simDiscountPct: number; // golf simulator discount
+  simBookingDaysAhead: number; // how far ahead the member may book the simulator
+  exclusiveCampaigns: boolean; // eligible for tier-only campaigns
+}
+
+// Tiers rank members by net spend over the trailing 12 months — never by
+// points balance, which drops every time a member redeems.
 export interface TierSettings {
-  name: string;
-  minPoints: number;
+  key: string; // stable id, e.g. "gold"
+  name: string; // display name, e.g. "Gold"
+  minSpend12m: number; // currency units spent in the last 12 months
+  pointRate: number; // multiplier on base points earned per purchase
+  benefits: TierBenefits;
 }
 
 export interface RewardSettings {
@@ -109,6 +122,7 @@ export interface RichMenuButton {
 }
 
 export interface OrgSettings {
+  productName?: string; // back-office name shown to staff, e.g. "MST Golf Platform"
   logoUrl?: string;
   brandColor?: string;
   locale: string; // e.g. "th", "en"

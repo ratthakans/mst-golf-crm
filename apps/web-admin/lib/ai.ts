@@ -2,8 +2,14 @@ import "server-only";
 import Anthropic from "@anthropic-ai/sdk";
 
 // Thin wrapper around the Anthropic SDK for the AI features (campaign copy +
-// daily briefing). Uses Claude Opus 4.8 per Anthropic's default-model guidance.
-// Credentials come from ANTHROPIC_API_KEY (never hardcode).
+// daily briefing). The model comes from AI_MODEL so it can change per
+// environment without a deploy of new code. Credentials come from
+// ANTHROPIC_API_KEY (never hardcode).
+//
+// Calls happen only when a person asks for text they will read — never per
+// member, per event or per cron (CLAUDE.md, rule 1).
+
+const DEFAULT_MODEL = "claude-opus-4-8";
 
 export function isAiConfigured(): boolean {
   return Boolean(process.env.ANTHROPIC_API_KEY);
@@ -17,7 +23,7 @@ export async function generateText(
 ): Promise<string> {
   const client = new Anthropic(); // reads ANTHROPIC_API_KEY from env
   const res = await client.messages.create({
-    model: "claude-opus-4-8",
+    model: process.env.AI_MODEL || DEFAULT_MODEL,
     max_tokens: maxTokens,
     system,
     messages: [{ role: "user", content: user }],

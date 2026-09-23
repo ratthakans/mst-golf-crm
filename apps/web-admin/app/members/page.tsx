@@ -1,8 +1,13 @@
+import Link from "next/link";
+import { normalizeThaiMobile } from "@mstgolf/shared/phone";
+import { lowestTier } from "@mstgolf/shared/tiers";
 import { getCrmData, formatNumber } from "../../lib/data";
 import { MembersTable, type MemberRow } from "./MembersTable";
+import { photoVersion } from "./MemberAvatar";
+import { SignupLinkButton } from "./SignupLinkButton";
 
 export default async function MembersPage() {
-  const { members, rfm, clv, churn } = await getCrmData();
+  const { members, rfm, clv, churn, org } = await getCrmData();
   const rfmById = new Map(rfm.map((r) => [r.memberId, r]));
   const clvById = new Map(clv.map((c) => [c.memberId, c]));
   const churnById = new Map(churn.map((c) => [c.memberId, c]));
@@ -13,7 +18,9 @@ export default async function MembersPage() {
       return {
         id: m.id,
         name: m.displayName ?? m.id,
-        tier: m.tier ?? "Silver",
+        phone: normalizeThaiMobile(m.phone) ?? (m.phone ?? "").replace(/\D/g, ""),
+        photo: photoVersion(m.pictureUrl),
+        tier: m.tier ?? lowestTier(org.tiers).name,
         seg: r?.segment ?? "Regular",
         points: m.points,
         spend: r?.monetary ?? 0,
@@ -27,9 +34,15 @@ export default async function MembersPage() {
 
   return (
     <>
-      <div className="page-head">
-        <h1>สมาชิก</h1>
-        <p>{formatNumber(members.length)} คน · ให้คะแนนจากความถี่ ความสดใหม่ ยอดซื้อ CLV และความเสี่ยงหลุด</p>
+      <div className="page-head page-head-actions">
+        <div>
+          <h1>สมาชิก</h1>
+          <p>{formatNumber(members.length)} คน · ให้คะแนนจากความถี่ ความสดใหม่ ยอดซื้อ CLV และความเสี่ยงหลุด</p>
+        </div>
+        <div className="head-actions">
+          <SignupLinkButton orgName={org.name} signupBonus={org.signupBonus} />
+          <Link href="/members/new" className="btn">+ เพิ่มสมาชิก</Link>
+        </div>
       </div>
       <MembersTable rows={rows} />
     </>

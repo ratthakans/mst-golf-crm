@@ -3,7 +3,10 @@ import { notFound } from "next/navigation";
 import { getCrmData, formatCurrency, formatNumber, formatPct } from "../../../lib/data";
 import { SEGMENT_COLOR, SEGMENT_LABEL } from "../../../lib/segments";
 import { LogPurchase } from "./LogPurchase";
+import { PhotoUploader } from "./PhotoUploader";
+import { photoVersion } from "../MemberAvatar";
 import type { EventTypeName } from "@mstgolf/analytics";
+import { findTier, lowestTier, tierProgress } from "@mstgolf/shared/tiers";
 
 const EVENT_META: Record<string, { icon: string; label: string }> = {
   REGISTER: { icon: "✨", label: "สมัครสมาชิก" },
@@ -15,6 +18,8 @@ const EVENT_META: Record<string, { icon: string; label: string }> = {
   EARN_POINTS: { icon: "➕", label: "ได้แต้ม" },
   OPEN_MENU: { icon: "📱", label: "เปิดเมนู" },
   TIER_UP: { icon: "⬆️", label: "เลื่อนระดับ" },
+  PROFILE_UPDATE: { icon: "✏️", label: "แก้ไขโปรไฟล์" },
+  SCAN_QR: { icon: "🔳", label: "สแกน QR" },
 };
 
 const CHURN_STATUS_TH: Record<string, string> = {
@@ -34,7 +39,7 @@ export default async function MemberDetailPage({
 }: {
   params: { id: string };
 }) {
-  const { org, members, events, rfm, clv, churn } = await getCrmData();
+  const { org, members, events, rfm, clv, churn, profiles } = await getCrmData();
   const member = members.find((m) => m.id === params.id);
   if (!member) notFound();
 
@@ -46,20 +51,32 @@ export default async function MemberDetailPage({
     .filter((e) => e.memberId === member.id)
     .sort((a, b) => b.occurredAt.getTime() - a.occurredAt.getTime());
   const attrs = Object.entries(member.attributes ?? {});
+  const spend12m = profiles.find((p) => p.memberId === member.id)?.spend12m ?? 0;
+  const tier = findTier(member.tier, org.tiers) ?? lowestTier(org.tiers);
+  const progress = tierProgress(spend12m, org.tiers);
 
   return (
     <>
       <div className="page-head">
         <Link href="/members" className="back-link">← สมาชิก</Link>
-        <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 6 }}>
-          <h1 style={{ margin: 0 }}>{member.displayName}</h1>
-          <span className={`badge tier-${member.tier}`}>{member.tier}</span>
-          <span className="badge seg-badge" style={{ background: SEGMENT_COLOR[seg] }}>{SEGMENT_LABEL[seg]}</span>
+        <div className="member-head">
+          <PhotoUploader
+            memberId={member.id}
+            name={member.displayName ?? member.id}
+            version={photoVersion(member.pictureUrl)}
+          />
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+              <h1 style={{ margin: 0 }}>{member.displayName}</h1>
+              <span className={`badge tier-${member.tier}`}>{member.tier}</span>
+              <span className="badge seg-badge" style={{ background: SEGMENT_COLOR[seg] }}>{SEGMENT_LABEL[seg]}</span>
+            </div>
+            <p style={{ marginTop: 6 }}>
+              {member.phone ?? "ไม่มีเบอร์"} · {member.email ?? "ไม่มีอีเมล"} · สมัคร{" "}
+              {member.createdAt.toLocaleDateString("en-GB")}
+            </p>
+          </div>
         </div>
-        <p style={{ marginTop: 6 }}>
-          {member.phone ?? "ไม่มีเบอร์"} · {member.email ?? "ไม่มีอีเมล"} · สมัคร{" "}
-          {member.createdAt.toLocaleDateString("en-GB")}
-        </p>
       </div>
 
       <div className="grid grid-4" style={{ marginBottom: 16 }}>
@@ -67,6 +84,32 @@ export default async function MemberDetailPage({
         <div className="card stat"><div className="label">ยอดซื้อสะสม</div><div className="value">{formatCurrency(r?.monetary ?? 0, org.currency)}</div><div className="sub">{r?.frequency ?? 0} ออเดอร์</div></div>
         <div className="card stat"><div className="label">CLV คาดการณ์</div><div className="value accent">{formatCurrency(Math.round(c?.predictedLifetime ?? 0), org.currency)}</div><div className="sub">เฉลี่ย {formatCurrency(Math.round(c?.avgOrderValue ?? 0), org.currency)}/ครั้ง</div></div>
         <div className="card stat"><div className="label">ความเสี่ยงหลุด</div><div className={`value ${(ch?.probability ?? 0) > 0.5 ? "warn" : ""}`}>{formatPct(ch?.probability ?? 0)}</div><div className="sub">{CHURN_STATUS_TH[ch?.status ?? "active"]} · เงียบ {r?.recencyDays ?? 0} วัน</div></div>
+      </div>
+
+      <div className="card tier-card" style={{ marginBottom: 16 }}>
+        <div className="tier-card-head">
+          <h3 style={{ margin: 0 }}>ระดับสมาชิก</h3>
+          <span className={`badge tier-${tier.name}`}>{tier.name}</span>
+          <span className="tier-card-rate">แต้ม ×{tier.pointRate}</span>
+        </div>
+        <div className="tier-card-meta">
+          <span>ยอดซื้อ 12 เดือน <strong>{formatCurrency(spend12m, org.currency)}</strong></span>
+          <span>
+            {progress.next
+              ? <>อีก <strong>{formatCurrency(progress.remaining ?? 0, org.currency)}</strong> ถึง {progress.next.name}</>
+              : "ระดับสูงสุด"}
+          </span>
+        </div>
+        <div className="tier-track" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress.pct * 100)}>
+          <div className="tier-fill" style={{ width: `${Math.round(progress.pct * 100)}%` }} />
+        </div>
+        <div className="tier-benefits">
+          <span>ส่วนลดร้าน {tier.benefits.discountPct}%</span>
+          <span>ส่วนลดซิม {tier.benefits.simDiscountPct}%</span>
+          <span>จองซิมล่วงหน้า {tier.benefits.simBookingDaysAhead} วัน</span>
+          <span>แต้มเดือนเกิด ×{tier.benefits.birthdayPointMultiplier}</span>
+          {tier.benefits.exclusiveCampaigns && <span>แคมเปญเฉพาะระดับ</span>}
+        </div>
       </div>
 
       <div className="grid grid-2">
@@ -97,7 +140,11 @@ export default async function MemberDetailPage({
           <h3>ไทม์ไลน์พฤติกรรม · {timeline.length} รายการ</h3>
           <div className="timeline">
             {timeline.map((e, i) => {
-              const meta = EVENT_META[e.type as EventTypeName] ?? { icon: "•", label: e.type };
+              const base = EVENT_META[e.type as EventTypeName] ?? { icon: "•", label: e.type };
+              const photoChange = e.type === "PROFILE_UPDATE" && e.payload?.field === "picture";
+              const meta = photoChange
+                ? { icon: "🖼️", label: e.payload?.action === "removed" ? "ลบรูปโปรไฟล์" : "อัปโหลดรูปโปรไฟล์" }
+                : base;
               const amount = e.payload?.amount;
               const items = e.payload?.items ?? [];
               return (

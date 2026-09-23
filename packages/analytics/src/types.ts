@@ -24,6 +24,7 @@ export interface MemberLike {
   createdAt: Date;
   phone?: string | null;
   email?: string | null;
+  pictureUrl?: string | null; // uploaded photo, or the LINE profile picture
   attributes?: Record<string, unknown>;
 }
 

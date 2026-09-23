@@ -1,8 +1,18 @@
 import type { Prisma } from "@mstgolf/database";
-import type { OrgSettings } from "@mstgolf/shared";
+import type { OrgSettings, TierSettings } from "@mstgolf/shared";
+import { phoneVariants } from "@mstgolf/shared/phone";
+import {
+  applyTierRate,
+  findTier,
+  lowestTier,
+  resolveTiers,
+  reviewTier,
+  spendInWindow,
+  TIER_WINDOW_DAYS,
+  tierRank,
+} from "@mstgolf/shared/tiers";
 import {
   pointsForAmount,
-  tierForPoints,
   type DemoOrg,
   type EventLike,
   type EventTypeName,
@@ -11,6 +21,7 @@ import {
   type FieldTypeName,
   type MemberLike,
 } from "@mstgolf/analytics";
+import { DuplicateMemberError } from "./repo";
 import type {
   CreateMemberInput,
   CreateMemberResult,
@@ -25,13 +36,35 @@ const normPhone = (p?: string) => (p ?? "").replace(/[\s-]/g, "");
 
 const ORG_SLUG = "mst-golf";
 
+type OrgClient = ReturnType<typeof import("@mstgolf/database").forOrg>;
+
 // Live Postgres implementation. Every tenant query goes through forOrg(orgId)
 // so it is automatically scoped to MST Golf. The runtime client is imported
 // lazily so sample-data mode never loads Prisma.
+function toMemberLike(m: {
+  id: string; displayName: string | null; tier: string | null; points: number;
+  lastSeenAt: Date | null; createdAt: Date; phone: string | null; email: string | null;
+  pictureUrl: string | null; attributes: unknown;
+}): MemberLike {
+  return {
+    id: m.id,
+    displayName: m.displayName,
+    tier: m.tier,
+    points: m.points,
+    lastSeenAt: m.lastSeenAt,
+    createdAt: m.createdAt,
+    phone: m.phone,
+    email: m.email,
+    pictureUrl: m.pictureUrl,
+    attributes: (m.attributes as Record<string, unknown>) ?? {},
+  };
+}
+
 export class PrismaRepository implements Repository {
   readonly source = "database" as const;
   private orgIdCache: string | null = null;
   private settingsCache: OrgSettings | null = null;
+  private orgNameCache = "";
 
   private async db() {
     return import("@mstgolf/database");
@@ -46,7 +79,45 @@ export class PrismaRepository implements Repository {
     if (!org) throw new Error(`Organization '${ORG_SLUG}' not found — run db:seed`);
     this.orgIdCache = org.id;
     this.settingsCache = org.settings as unknown as OrgSettings;
+    this.orgNameCache = org.name;
     return org.id;
+  }
+
+  private async tiers(): Promise<TierSettings[]> {
+    return resolveTiers((await this.settings()).tiers);
+  }
+
+  /** Purchase spend in the trailing 12 months, straight from the event log. */
+  private async spend12m(client: OrgClient, memberId: string, now: Date): Promise<number> {
+    const since = new Date(now.getTime() - TIER_WINDOW_DAYS * 24 * 60 * 60 * 1000);
+    const rows = await client.event.findMany({
+      where: { memberId, type: "PURCHASE", occurredAt: { gte: since } },
+      select: { payload: true, occurredAt: true },
+    });
+    return spendInWindow(
+      rows.map((r) => ({ amount: Number((r.payload as { amount?: number } | null)?.amount ?? 0), at: r.occurredAt })),
+      now,
+    );
+  }
+
+  /** Upgrade-only review after a purchase; downgrades wait for the nightly monthly review. */
+  private async reviewMemberTier(
+    client: OrgClient,
+    orgId: string,
+    member: { id: string; tier: string | null },
+    spend12m: number,
+  ): Promise<string> {
+    const tiers = await this.tiers();
+    const next = reviewTier(member.tier, spend12m, tiers, { allowDowngrade: false });
+    if (next.name === member.tier) return next.name;
+    await client.member.update({ where: { id: member.id }, data: { tier: next.name } });
+    const from = tierRank(member.tier, tiers);
+    if (from >= 0 && tierRank(next.name, tiers) > from) {
+      await client.event.create({
+        data: { orgId, memberId: member.id, type: "TIER_UP", payload: { from: member.tier, to: next.name } },
+      });
+    }
+    return next.name;
   }
 
   private async settings(): Promise<OrgSettings> {
@@ -58,7 +129,8 @@ export class PrismaRepository implements Repository {
   async getOrg(): Promise<DemoOrg> {
     const s = await this.settings();
     return {
-      name: "MST Golf",
+      name: this.orgNameCache,
+      productName: s.productName ?? `${this.orgNameCache} Platform`,
       slug: ORG_SLUG,
       currency: s.currency,
       brandColor: s.brandColor ?? "#0a5c36",
@@ -66,7 +138,7 @@ export class PrismaRepository implements Repository {
       signupBonus: s.points.signupBonus,
       perCurrencyUnit: s.points.perBaht,
       consentText: s.messaging.consentText,
-      tiers: s.tiers,
+      tiers: await this.tiers(),
     };
   }
 
@@ -94,17 +166,28 @@ export class PrismaRepository implements Repository {
     const rows = await forOrg(orgId).member.findMany({
       orderBy: { createdAt: "desc" },
     });
-    return rows.map((m) => ({
-      id: m.id,
-      displayName: m.displayName,
-      tier: m.tier,
-      points: m.points,
-      lastSeenAt: m.lastSeenAt,
-      createdAt: m.createdAt,
-      phone: m.phone,
-      email: m.email,
-      attributes: (m.attributes as Record<string, unknown>) ?? {},
-    }));
+    return rows.map(toMemberLike);
+  }
+
+  async getMember(id: string): Promise<MemberLike | null> {
+    const orgId = await this.orgId();
+    const { forOrg } = await this.db();
+    const m = await forOrg(orgId).member.findFirst({ where: { id } });
+    return m ? toMemberLike(m) : null;
+  }
+
+  async setMemberPicture(memberId: string, pictureUrl: string | null): Promise<void> {
+    const orgId = await this.orgId();
+    const { forOrg } = await this.db();
+    const client = forOrg(orgId);
+    const updated = await client.member.updateMany({ where: { id: memberId }, data: { pictureUrl } });
+    if (updated.count === 0) throw new Error("Member not found");
+    await client.event.create({
+      data: {
+        orgId, memberId, type: "PROFILE_UPDATE",
+        payload: { field: "picture", action: pictureUrl ? "set" : "removed" },
+      },
+    });
   }
 
   async listEvents(): Promise<EventLike[]> {
@@ -125,9 +208,17 @@ export class PrismaRepository implements Repository {
     const { forOrg } = await this.db();
     const client = forOrg(orgId);
 
+    if (input.phone) {
+      const existing = await client.member.findFirst({
+        where: { phone: { in: phoneVariants(input.phone) } },
+        select: { id: true },
+      });
+      if (existing) throw new DuplicateMemberError(existing.id);
+    }
+
     const now = new Date();
     const points = s.points.signupBonus;
-    const tier = tierForPoints(points, s.tiers);
+    const tier = lowestTier(await this.tiers()).name;
     // Non-LINE web signup — synthesize a stable lineUserId until LINE is wired.
     const lineUserId = `web:${input.phone ?? input.email ?? input.displayName}:${now.getTime()}`;
 
@@ -148,7 +239,7 @@ export class PrismaRepository implements Repository {
 
     // Event-driven + ledger + versioned consent — the real collection path.
     await client.event.create({
-      data: { orgId, memberId: member.id, type: "REGISTER", payload: {} },
+      data: { orgId, memberId: member.id, type: "REGISTER", payload: { source: input.source } },
     });
     await client.pointTransaction.create({
       data: { orgId, memberId: member.id, delta: points, reason: "signup_bonus" },
@@ -167,17 +258,7 @@ export class PrismaRepository implements Repository {
     }
 
     return {
-      member: {
-        id: member.id,
-        displayName: member.displayName,
-        tier: member.tier,
-        points: member.points,
-        lastSeenAt: member.lastSeenAt,
-        createdAt: member.createdAt,
-        phone: member.phone,
-        email: member.email,
-        attributes: input.attributes,
-      },
+      member: toMemberLike(member),
       pointsAwarded: points,
       tier,
     };
@@ -190,7 +271,11 @@ export class PrismaRepository implements Repository {
     const client = forOrg(orgId);
 
     const now = new Date();
-    const pointsAwarded = pointsForAmount(input.amount, s.points.perBaht);
+    const member = await client.member.findFirst({ where: { id: input.memberId } });
+    if (!member) throw new Error("Member not found");
+    const tiers = await this.tiers();
+    const current = findTier(member.tier, tiers) ?? lowestTier(tiers);
+    const pointsAwarded = applyTierRate(pointsForAmount(input.amount, s.points.perBaht), current);
 
     await client.event.create({
       data: {
@@ -209,15 +294,13 @@ export class PrismaRepository implements Repository {
       data: { orgId, memberId: input.memberId, delta: pointsAwarded, reason: "purchase" },
     });
 
-    // Keep the Member.points cache in sync with the ledger, then recompute tier.
+    // Keep the Member.points cache in sync with the ledger, then review the tier
+    // against 12-month spend (this purchase included).
     const updated = await client.member.update({
       where: { id: input.memberId },
       data: { points: { increment: pointsAwarded }, lastSeenAt: now },
     });
-    const newTier = tierForPoints(updated.points, s.tiers);
-    if (newTier !== updated.tier) {
-      await client.member.update({ where: { id: input.memberId }, data: { tier: newTier } });
-    }
+    const newTier = await this.reviewMemberTier(client, orgId, updated, await this.spend12m(client, input.memberId, now));
 
     return {
       memberId: input.memberId,
@@ -235,6 +318,10 @@ export class PrismaRepository implements Repository {
     const client = forOrg(orgId);
     const now = new Date();
     const res: ImportResult = { imported: 0, matched: 0, created: 0, revenue: 0, pointsAwarded: 0, skipped: 0 };
+    const tiers = await this.tiers();
+    // 12-month spend per member, loaded once per member and then kept current
+    // as this file's rows are written.
+    const spendCache = new Map<string, number>();
 
     for (const row of rows) {
       const amount = Number(row.amount);
@@ -257,7 +344,7 @@ export class PrismaRepository implements Repository {
             displayName: name || phone || "ลูกค้า POS",
             phone: phone || null,
             points: 0,
-            tier: "Silver",
+            tier: lowestTier(tiers).name,
             lastSeenAt: now,
           },
         });
@@ -267,7 +354,9 @@ export class PrismaRepository implements Repository {
         res.matched += 1;
       }
 
-      const pointsAwarded = pointsForAmount(amount, s.points.perBaht);
+      if (!spendCache.has(member.id)) spendCache.set(member.id, await this.spend12m(client, member.id, now));
+      const current = findTier(member.tier, tiers) ?? lowestTier(tiers);
+      const pointsAwarded = applyTierRate(pointsForAmount(amount, s.points.perBaht), current);
       const item = {
         name: row.category ? `${row.category}${row.brand ? ` (${row.brand})` : ""}` : "สินค้า",
         category: row.category ?? "other",
@@ -286,8 +375,9 @@ export class PrismaRepository implements Repository {
         where: { id: member.id },
         data: { points: { increment: pointsAwarded }, lastSeenAt: now },
       });
-      const tier = tierForPoints(updated.points, s.tiers);
-      if (tier !== updated.tier) await client.member.update({ where: { id: member.id }, data: { tier } });
+      const spend12m = (spendCache.get(member.id) ?? 0) + amount;
+      spendCache.set(member.id, spend12m);
+      await this.reviewMemberTier(client, orgId, updated, spend12m);
 
       res.imported += 1;
       res.revenue += amount;

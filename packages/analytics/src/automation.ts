@@ -6,7 +6,7 @@ import type { MemberProfile } from "./segments-engine";
 
 export type AutomationTrigger =
   | { type: "no_activity_days"; days: number }
-  | { type: "near_tier_up"; withinPoints: number; tierThreshold: number }
+  | { type: "near_tier_up"; minProgress: number } // 0–1 of the way to the next tier (12-month spend)
   | { type: "high_churn_risk"; minProbability: number }
   | { type: "vip_by_clv"; minClv: number };
 
@@ -28,10 +28,7 @@ export function isEligible(profile: MemberProfile, trigger: AutomationTrigger): 
     case "no_activity_days":
       return profile.recencyDays >= trigger.days;
     case "near_tier_up":
-      return (
-        profile.points < trigger.tierThreshold &&
-        trigger.tierThreshold - profile.points <= trigger.withinPoints
-      );
+      return profile.nextTierPct !== null && profile.nextTierPct >= trigger.minProgress;
     case "high_churn_risk":
       return profile.churnProbability >= trigger.minProbability;
     case "vip_by_clv":
@@ -58,10 +55,10 @@ export const DEFAULT_AUTOMATIONS: Automation[] = [
     enabled: true,
   },
   {
-    id: "near-gold",
-    name: "ใกล้ระดับ Gold (เหลือ ≤2,400 แต้ม)",
-    trigger: { type: "near_tier_up", withinPoints: 2400, tierThreshold: 16000 },
-    action: { type: "send_message", template: "อีกนิดเดียวก็ถึงระดับ Gold แล้ว — ซื้ออีกครั้งก็ถึง!" },
+    id: "near-next-tier",
+    name: "ใกล้เลื่อนระดับ (ยอด 12 เดือนถึง 80% ของระดับถัดไป)",
+    trigger: { type: "near_tier_up", minProgress: 0.8 },
+    action: { type: "send_message", template: "อีกนิดเดียวก็เลื่อนระดับสมาชิกแล้ว — ซื้ออีกครั้งก็ถึง!" },
     enabled: true,
   },
   {

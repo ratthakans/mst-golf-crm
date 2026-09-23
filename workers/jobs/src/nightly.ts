@@ -1,5 +1,6 @@
 import { prisma, forOrg } from "@mstgolf/database";
 import type { OrgSettings } from "@mstgolf/shared";
+import { isMonthlyTierReview, resolveTiers, reviewTier, tierRank } from "@mstgolf/shared/tiers";
 import {
   buildProfiles,
   computeChurn,
@@ -7,6 +8,7 @@ import {
   computeRfm,
   DEFAULT_AUTOMATIONS,
   eligibleMembers,
+  spendByMember,
   type EventLike,
   type EventTypeName,
   type MemberLike,
@@ -16,6 +18,7 @@ export interface NightlySummary {
   orgSlug: string;
   members: number;
   snapshotsWritten: number;
+  tierChanges: { up: number; down: number };
   automationHits: Record<string, number>;
 }
 
@@ -25,6 +28,9 @@ export interface NightlySummary {
  * per-member RfmSnapshot for trend & segment-migration analysis, then evaluates
  * each automation and reports its audience. A real deployment would enqueue the
  * resulting messages/coupons here.
+ *
+ * Tiers are reviewed against 12-month spend: upgrades apply every night,
+ * downgrades only on the 1st of the month (org timezone).
  */
 export async function runNightlyAnalytics(orgSlug: string): Promise<NightlySummary> {
   const org = await prisma.organization.findUnique({ where: { slug: orgSlug } });
@@ -88,7 +94,27 @@ export async function runNightlyAnalytics(orgSlug: string): Promise<NightlySumma
     snapshotsWritten += 1;
   }
 
-  const profiles = buildProfiles(members, rfm, clv, churn);
+  const tiers = resolveTiers(settings.tiers);
+  const spend12m = spendByMember(events, now);
+  const allowDowngrade = isMonthlyTierReview(now, settings.timezone);
+  const tierChanges = { up: 0, down: 0 };
+  for (const m of members) {
+    const next = reviewTier(m.tier, spend12m.get(m.id) ?? 0, tiers, { allowDowngrade });
+    if (next.name === m.tier) continue;
+    const from = tierRank(m.tier, tiers);
+    const up = tierRank(next.name, tiers) > from;
+    await client.member.update({ where: { id: m.id }, data: { tier: next.name } });
+    if (up && from >= 0) {
+      await client.event.create({
+        data: { orgId: org.id, memberId: m.id, type: "TIER_UP", payload: { from: m.tier, to: next.name } },
+      });
+    }
+    if (up) tierChanges.up += 1;
+    else tierChanges.down += 1;
+    m.tier = next.name;
+  }
+
+  const profiles = buildProfiles(members, rfm, clv, churn, { spend12m, tiers });
   const automationHits: Record<string, number> = {};
   for (const a of DEFAULT_AUTOMATIONS) {
     if (!a.enabled) continue;
@@ -101,6 +127,7 @@ export async function runNightlyAnalytics(orgSlug: string): Promise<NightlySumma
     orgSlug,
     members: members.length,
     snapshotsWritten,
+    tierChanges,
     automationHits,
   };
 }

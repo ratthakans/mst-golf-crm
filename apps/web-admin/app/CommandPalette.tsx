@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { isPublicPath } from "../lib/public-paths";
 
 interface MemberHit {
   id: string;
@@ -13,23 +14,17 @@ interface MemberHit {
 const PAGES: Array<{ label: string; href: string; icon: string; hint: string }> = [
   { label: "ภาพรวม", href: "/", icon: "📊", hint: "Overview" },
   { label: "แผนลงมือ", href: "/playbook", icon: "🎬", hint: "Playbook" },
-  { label: "วิเคราะห์ข้อมูล", href: "/analytics", icon: "📈", hint: "Analytics" },
-  { label: "สัญญาณ & การเคลื่อนไหว", href: "/insights", icon: "🧠", hint: "Insights" },
-  { label: "เชิงลึกเชิงปฏิบัติการ", href: "/operations", icon: "🔎", hint: "Operations" },
   { label: "สมาชิก", href: "/members", icon: "👥", hint: "Members" },
-  { label: "กลุ่มลูกค้า", href: "/segments", icon: "🎯", hint: "Segments" },
-  { label: "ใบเสนอราคา & ROI", href: "/quote", icon: "💰", hint: "Quote ROI" },
-  { label: "ระบบอัตโนมัติ", href: "/automations", icon: "⚡", hint: "Automations" },
-  { label: "ข้อมูลดิบ", href: "/raw", icon: "🧾", hint: "Raw events" },
   { label: "นำเข้า POS", href: "/import", icon: "📥", hint: "Import" },
-  { label: "ฟอร์มสมัคร", href: "/join", icon: "📝", hint: "Sign-up" },
-  { label: "โครงสร้างข้อมูล", href: "/data-model", icon: "🗄️", hint: "Data model" },
+  { label: "กลุ่มลูกค้า", href: "/segments", icon: "🎯", hint: "Segments" },
+  { label: "เพิ่มสมาชิก", href: "/members/new", icon: "➕", hint: "New member" },
 ];
 
 const norm = (s: string) => s.toLowerCase().replace(/[\s-]/g, "");
 
 export function CommandPalette() {
   const router = useRouter();
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
   const [members, setMembers] = useState<MemberHit[] | null>(null);
@@ -95,7 +90,7 @@ export function CommandPalette() {
     else router.push(`/members/${r.id}`);
   };
 
-  if (!open) return null;
+  if (!open || isPublicPath(pathname)) return null;
 
   return (
     <div className="cmdk-overlay" onMouseDown={() => setOpen(false)}>

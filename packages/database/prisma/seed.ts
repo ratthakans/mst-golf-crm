@@ -1,5 +1,6 @@
 import { PrismaClient, Prisma } from "@prisma/client";
 import { encrypt, type OrgSettings } from "@mstgolf/shared";
+import { DEFAULT_TIERS, spendInWindow, tierForSpend } from "@mstgolf/shared/tiers";
 import { DEFAULT_AUTOMATIONS } from "@mstgolf/analytics";
 
 const prisma = new PrismaClient();
@@ -12,6 +13,7 @@ async function main() {
   // First customer: MST Golf (Bangkok, Thailand) — pro shop + academy + fitting + arena
   // -------------------------------------------------------------------------
   const settings: OrgSettings = {
+    productName: "MST Golf Platform",
     logoUrl: "https://mstgolf.com/logo.png",
     brandColor: "#0a5c36",
     locale: "th",
@@ -19,11 +21,7 @@ async function main() {
     timezone: "Asia/Bangkok",
     businessType: "pro_shop",
     points: { perBaht: 0.01, signupBonus: 1600, birthdayBonus: 2400, expiryMonths: 12 },
-    tiers: [
-      { name: "Silver", minPoints: 0 },
-      { name: "Gold", minPoints: 16000 },
-      { name: "Platinum", minPoints: 40000 },
-    ],
+    tiers: DEFAULT_TIERS,
     rewards: [
       { name: "Titleist Pro V1 (1 dozen)", costPoints: 4000 },
       { name: "฿400 store voucher", costPoints: 8000 },
@@ -256,7 +254,6 @@ async function main() {
       lineUserId: "U_champion_001",
       displayName: "Somchai Rattanakul",
       phone: "+66811112201",
-      tier: "Platinum",
       points: 43200,
       lastSeenDays: 2,
       attributes: {
@@ -279,7 +276,6 @@ async function main() {
       lineUserId: "U_loyal_002",
       displayName: "Nattaya Phongsak",
       phone: "+66811112202",
-      tier: "Gold",
       points: 20800,
       lastSeenDays: 10,
       attributes: {
@@ -300,7 +296,6 @@ async function main() {
       lineUserId: "U_new_003",
       displayName: "Anucha Meesap",
       phone: "+66811112203",
-      tier: "Silver",
       points: 1600,
       lastSeenDays: 1,
       attributes: {
@@ -318,7 +313,6 @@ async function main() {
       lineUserId: "U_atrisk_004",
       displayName: "Prasit Chaiyaphon",
       phone: "+66811112204",
-      tier: "Gold",
       points: 16800,
       lastSeenDays: 120, // past churnDays (90) → at-risk / win-back
       attributes: {
@@ -339,7 +333,6 @@ async function main() {
       lineUserId: "U_dormant_005",
       displayName: "Wanida Srisuk",
       phone: "+66811112205",
-      tier: "Silver",
       points: 2800,
       lastSeenDays: 260, // long dormant
       attributes: {
@@ -363,7 +356,11 @@ async function main() {
         lineUserId: spec.lineUserId,
         displayName: spec.displayName,
         phone: spec.phone,
-        tier: spec.tier,
+        // Tier follows 12-month spend, the same rule the app applies.
+        tier: tierForSpend(
+          spendInWindow(spec.purchases.map((p) => ({ amount: p.amount, at: daysAgo(p.daysAgo) })), new Date()),
+          settings.tiers,
+        ).name,
         points: spec.points,
         lastSeenAt: daysAgo(spec.lastSeenDays),
         consentAt: daysAgo(spec.lastSeenDays + 1),

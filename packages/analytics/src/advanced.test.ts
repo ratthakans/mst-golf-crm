@@ -8,6 +8,7 @@ import { cohortRetention } from "./cohort";
 import { productAffinity } from "./affinity";
 import { buildProfiles, resolveSegment } from "./segments-engine";
 import { eligibleMembers, isEligible } from "./automation";
+import { spendByMember } from "./spend";
 import {
   mean, median, quantileSorted, quintileScore, twoProportionZTest,
 } from "./stats-core";
@@ -149,10 +150,22 @@ describe("automation eligibility", () => {
       "U_dormant_005",
     ]);
   });
-  it("near_tier_up matches only the 1700–1999 band", () => {
+  it("near_tier_up matches members close to the next tier, never the top tier", () => {
     const base = profiles[0]!;
-    expect(isEligible({ ...base, points: 1800 }, { type: "near_tier_up", withinPoints: 300, tierThreshold: 2000 })).toBe(true);
-    expect(isEligible({ ...base, points: 1500 }, { type: "near_tier_up", withinPoints: 300, tierThreshold: 2000 })).toBe(false);
-    expect(isEligible({ ...base, points: 2100 }, { type: "near_tier_up", withinPoints: 300, tierThreshold: 2000 })).toBe(false);
+    const trigger = { type: "near_tier_up", minProgress: 0.8 } as const;
+    expect(isEligible({ ...base, nextTierPct: 0.85 }, trigger)).toBe(true);
+    expect(isEligible({ ...base, nextTierPct: 0.5 }, trigger)).toBe(false);
+    expect(isEligible({ ...base, nextTierPct: null }, trigger)).toBe(false);
+  });
+  it("profiles carry 12-month spend and tier progress", () => {
+    const withSpend = buildProfiles(members, rfm, clv, churn, {
+      spend12m: spendByMember(events, NOW),
+      tiers: org.tiers,
+    });
+    const champ = withSpend.find((p) => p.memberId === "U_champion_001")!;
+    expect(champ.spend12m).toBe(37_912);
+    expect(champ.tier).toBe("Member");
+    expect(champ.nextTier).toBe("Silver");
+    expect(champ.nextTierGap).toBe(100_000 - 37_912);
   });
 });
