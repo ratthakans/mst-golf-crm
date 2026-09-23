@@ -1,5 +1,6 @@
 import { PrismaClient, Prisma } from "@prisma/client";
 import { encrypt, type OrgSettings } from "@mstgolf/shared";
+import { hashPassword } from "@mstgolf/shared/password";
 import { DEFAULT_TIERS, spendInWindow, tierForSpend } from "@mstgolf/shared/tiers";
 import { DEFAULT_AUTOMATIONS } from "@mstgolf/analytics";
 
@@ -66,20 +67,26 @@ async function main() {
   });
 
   // -------------------------------------------------------------------------
-  // Admin user (OWNER)
+  // First Super Admin — from ADMIN_EMAIL / ADMIN_PASSWORD. Never a default
+  // password: without the env vars the step is skipped (use admin:create).
   // -------------------------------------------------------------------------
-  await prisma.user.upsert({
-    where: { orgId_email: { orgId: org.id, email: "admin@mstgolf.com" } },
-    update: {},
-    create: {
-      orgId: org.id,
-      email: "admin@mstgolf.com",
-      name: "MST Golf Admin",
-      role: "OWNER",
-      // NOTE: real password hashing lands in M1 (auth module). Placeholder only.
-      passwordHash: null,
-    },
-  });
+  const adminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+  const adminPassword = process.env.ADMIN_PASSWORD;
+  if (adminEmail && adminPassword) {
+    await prisma.user.upsert({
+      where: { orgId_email: { orgId: org.id, email: adminEmail } },
+      update: {},
+      create: {
+        orgId: org.id,
+        email: adminEmail,
+        name: "ผู้ดูแลระบบ",
+        role: "SUPER_ADMIN",
+        passwordHash: await hashPassword(adminPassword),
+      },
+    });
+  } else {
+    console.warn("[seed] ADMIN_EMAIL / ADMIN_PASSWORD not set — no admin created. Run: pnpm --filter @mstgolf/database admin:create <email>");
+  }
 
   // -------------------------------------------------------------------------
   // LINE channel (per-org credentials — secrets encrypted at rest)

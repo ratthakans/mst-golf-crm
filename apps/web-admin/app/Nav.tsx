@@ -3,23 +3,27 @@
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { useState } from "react";
+import type { Permission } from "../lib/permissions";
 
-type Item = { href: string; label: string; icon: string; soon?: string };
+type Item = { href: string; label: string; icon: string; soon?: string; perm?: Permission };
 
 // The six back-office menus (MST-DEV-PLAN §6). Campaigns and Simulator ship in
 // phase 2 — shown, but not linked, so the shape of the product is visible now.
 const PRIMARY: Item[] = [
-  { href: "/", label: "ภาพรวม", icon: "📊" },
-  { href: "/playbook", label: "แผนลงมือ", icon: "🎬" },
-  { href: "/members", label: "สมาชิก", icon: "👥" },
-  { href: "/import", label: "นำเข้า POS", icon: "📥" },
+  { href: "/", label: "ภาพรวม", icon: "📊", perm: "overview.view" },
+  { href: "/playbook", label: "แผนลงมือ", icon: "🎬", perm: "playbook.view" },
+  { href: "/members", label: "สมาชิก", icon: "👥", perm: "members.view" },
+  { href: "/import", label: "นำเข้า POS", icon: "📥", perm: "import.run" },
   { href: "/campaigns", label: "แคมเปญ", icon: "📣", soon: "เฟส 2" },
   { href: "/simulator", label: "ซิมกอล์ฟ", icon: "⛳", soon: "เฟส 2" },
 ];
 
-// Interim tools: segments become the WHO step of campaigns in phase 2.
+// Interim tools (segments become the WHO step of campaigns in phase 2) and
+// Super Admin settings.
 const TOOLS: Item[] = [
-  { href: "/segments", label: "กลุ่มลูกค้า", icon: "🎯" },
+  { href: "/segments", label: "กลุ่มลูกค้า", icon: "🎯", perm: "segments.view" },
+  { href: "/settings/users", label: "ผู้ใช้และสิทธิ์", icon: "🔑", perm: "users.manage" },
+  { href: "/settings/audit", label: "บันทึกการใช้งาน", icon: "🧾", perm: "audit.view" },
 ];
 
 const isActive = (href: string, pathname: string) =>
@@ -48,20 +52,24 @@ function NavLink({ item, pathname }: { item: Item; pathname: string }) {
   );
 }
 
-export function Nav() {
+export function Nav({ permissions }: { permissions: Permission[] }) {
   const pathname = usePathname();
-  const toolActive = TOOLS.some((t) => isActive(t.href, pathname));
+  const allowed = (i: Item) => !i.perm || permissions.includes(i.perm);
+  const primary = PRIMARY.filter(allowed);
+  const tools = TOOLS.filter(allowed);
+  const toolActive = tools.some((t) => isActive(t.href, pathname));
   // Open when the current page lives in here, so the active link is never hidden.
   const [open, setOpen] = useState(toolActive);
 
   return (
     <nav className="nav">
       <div className="nav-group">
-        {PRIMARY.map((l) => (
+        {primary.map((l) => (
           <NavLink key={l.href} item={l} pathname={pathname} />
         ))}
       </div>
 
+      {tools.length > 0 && (
       <button
         type="button"
         className={`nav-section${open ? " open" : ""}`}
@@ -76,10 +84,11 @@ export function Nav() {
           ⌄
         </span>
       </button>
+      )}
 
-      {open && (
+      {open && tools.length > 0 && (
         <div className="nav-group" id="nav-tools">
-          {TOOLS.map((l) => (
+          {tools.map((l) => (
             <NavLink key={l.href} item={l} pathname={pathname} />
           ))}
         </div>

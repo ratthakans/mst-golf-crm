@@ -1,4 +1,6 @@
+import { allowPage } from "../lib/auth";
 import { getCrmData, formatNumber } from "../lib/data";
+import { Forbidden } from "./Forbidden";
 import { SEGMENT_ORDER, SEGMENT_COLOR, SEGMENT_LABEL } from "../lib/segments";
 import { AreaChart, Trend } from "./charts";
 import { DailyBriefing } from "./DailyBriefing";
@@ -20,7 +22,10 @@ function mom(series: number[]): number {
   return b > 0 ? (a - b) / b : 0;
 }
 
+export const dynamic = "force-dynamic";
+
 export default async function OverviewPage() {
+  if (!(await allowPage("overview.view"))) return <Forbidden />;
   const { org, stats, segments, funnel, timeseries } = await getCrmData();
   const revSeries = timeseries.map((t) => t.revenue);
   const labels = timeseries.map((t) => t.label);

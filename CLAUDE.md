@@ -32,6 +32,14 @@ It is **our platform** and MST Golf is tenant #1: built multi-tenant / config-dr
 7. **Staff actions that change points, privileges, bookings, members or campaigns write `AuditLog`** (schema v2).
 8. **Business logic lives in `packages/core`** (created with schema v2), not in route handlers.
 
+## Staff login and permissions
+- Email + password (scrypt, `@mstgolf/shared/password`); session = signed HS256 cookie `mst_session` (12 h) via `jose`, key `AUTH_SECRET`.
+- `apps/web-admin/middleware.ts` blocks everything except `/login`, `/register` and `POST /api/members` (public sign-up), `/api/auth/*`. A temporary password forces `/account/password` first.
+- Five roles; the permission matrix is `apps/web-admin/lib/permissions.ts`. **Every page calls `allowPage(perm)` and every API route `requireApi(perm)`** (`lib/auth.ts`) — the nav only hides links, it does not protect anything.
+- `getSessionUser()` re-reads the user each request, so deactivating an account or changing a role applies immediately.
+- Staff actions write `AuditLog` through `audit()`; Super Admins read it at `/settings/audit`.
+- The org always keeps one active Super Admin; recovery is `pnpm --filter @mstgolf/database admin:create <email>`.
+
 ## Tiers
 Three tiers — **Member / Silver / Gold** — ranked by **net spend over the trailing 12 months**, never by points balance. Logic lives in `@mstgolf/shared/tiers` (pure; import the subpath so client bundles skip the node crypto helpers). Thresholds, point rates and benefits come from `settings.tiers` (`DEFAULT_TIERS` until MST confirms). Upgrades apply immediately after a purchase; downgrades only at the monthly review in the nightly job. Each tier's `pointRate` multiplies base points.
 

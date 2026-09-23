@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { generateText, isAiConfigured, MST_BRAND_SYSTEM } from "../../../../lib/ai";
+import { requireApi } from "../../../../lib/auth";
 
 const TONE_TH: Record<string, string> = {
   formal: "โทนสุภาพ เป็นทางการ ให้เกียรติลูกค้า",
@@ -8,6 +9,8 @@ const TONE_TH: Record<string, string> = {
 };
 
 export async function POST(req: Request) {
+  const session = await requireApi("playbook.act");
+  if (session instanceof NextResponse) return session;
   if (!isAiConfigured()) {
     return NextResponse.json({ configured: false });
   }

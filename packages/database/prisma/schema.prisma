@@ -38,6 +38,7 @@ model Organization {
   segments          Segment[]
   automations       Automation[]
   rfmSnapshots      RfmSnapshot[]
+  auditLogs         AuditLog[]
 
   @@map("organizations")
 }
@@ -52,32 +53,65 @@ enum Plan {
 // User (admin/staff of an org — dashboard login)
 // ---------------------------------------------------------------------------
 model User {
-  id           String   @id @default(cuid())
-  orgId        String
-  org          Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
-  email        String
-  name         String?
-  role         UserRole @default(STAFF)
-  passwordHash String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id                 String       @id @default(cuid())
+  orgId              String
+  org                Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  email              String // stored lower-case
+  name               String?
+  role               UserRole     @default(STORE_STAFF)
+  passwordHash       String? // scrypt, see @mstgolf/shared/password
+  mustChangePassword Boolean      @default(false) // set when an admin issues a temporary password
+  isActive           Boolean      @default(true)
+  lastLoginAt        DateTime?
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+
+  auditLogs AuditLog[]
 
   @@unique([orgId, email])
   @@index([orgId])
   @@map("users")
 }
 
+// Five back-office roles (MST-DEV-PLAN §10). Permissions per role live in
+// apps/web-admin/lib/permissions.ts.
 enum UserRole {
-  OWNER
-  ADMIN
-  STAFF
+  SUPER_ADMIN
+  MARKETING
+  STORE_MANAGER
+  STORE_STAFF
+  CUSTOMER_SERVICE
+}
+
+// ---------------------------------------------------------------------------
+// AuditLog (who did what — every staff action that changes members, points,
+// privileges, bookings, campaigns or users)
+// ---------------------------------------------------------------------------
+model AuditLog {
+  id        String       @id @default(cuid())
+  orgId     String
+  org       Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  userId    String?
+  user      User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action    String // e.g. "member.create", "user.role_change"
+  entity    String // e.g. "member", "user"
+  entityId  String?
+  before    Json?
+  after     Json?
+  reason    String?
+  ip        String?
+  createdAt DateTime     @default(now())
+
+  @@index([orgId, createdAt])
+  @@index([orgId, entity, entityId])
+  @@map("audit_logs")
 }
 
 // ---------------------------------------------------------------------------
 // Member (end customer, identified via LINE)
 // ---------------------------------------------------------------------------
 model Member {
-  id          String   @id @default(cuid())
+  id          String       @id @default(cuid())
   orgId       String
   org         Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
   lineUserId  String
@@ -85,13 +119,13 @@ model Member {
   pictureUrl  String?
   phone       String?
   email       String?
-  attributes  Json     @default("{}") // golf profile: handicap, dominantHand, skillLevel, preferredBrands[], interests[], homeCourse, playFrequency
-  points      Int      @default(0)    // cache; source of truth = PointTransaction
+  attributes  Json         @default("{}") // golf profile: handicap, dominantHand, skillLevel, preferredBrands[], interests[], homeCourse, playFrequency
+  points      Int          @default(0) // cache; source of truth = PointTransaction
   tier        String?
   lastSeenAt  DateTime?
-  consentAt   DateTime?               // quick PDPA flag; full history in Consent
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  consentAt   DateTime? // quick PDPA flag; full history in Consent
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 
   events            Event[]
   pointTransactions PointTransaction[]
@@ -108,14 +142,14 @@ model Member {
 // Event (every customer behavior — basis for all data features)
 // ---------------------------------------------------------------------------
 model Event {
-  id         String    @id @default(cuid())
+  id         String       @id @default(cuid())
   orgId      String
   org        Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
   memberId   String
-  member     Member    @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  member     Member       @relation(fields: [memberId], references: [id], onDelete: Cascade)
   type       EventType
-  payload    Json      @default("{}") // typed per EventType — see EventPayload in @mstgolf/shared
-  occurredAt DateTime  @default(now())
+  payload    Json         @default("{}") // typed per EventType — see EventPayload in @mstgolf/shared
+  occurredAt DateTime     @default(now())
 
   @@index([orgId, type, occurredAt])
   @@index([orgId, memberId, occurredAt])
@@ -141,15 +175,15 @@ enum EventType {
 // PointTransaction (ledger — source of truth for points)
 // ---------------------------------------------------------------------------
 model PointTransaction {
-  id        String   @id @default(cuid())
+  id        String       @id @default(cuid())
   orgId     String
   org       Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
   memberId  String
-  member    Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  member    Member       @relation(fields: [memberId], references: [id], onDelete: Cascade)
   delta     Int
   reason    String
   refId     String?
-  createdAt DateTime @default(now())
+  createdAt DateTime     @default(now())
 
   @@index([orgId, memberId, createdAt])
   @@map("point_transactions")
@@ -159,20 +193,20 @@ model PointTransaction {
 // FieldDefinition (dynamic, config-driven form fields — customize by-project)
 // ---------------------------------------------------------------------------
 model FieldDefinition {
-  id        String   @id @default(cuid())
+  id        String       @id @default(cuid())
   orgId     String
   org       Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
-  entity    FieldEntity @default(MEMBER)
-  key       String   // key inside Member.attributes, e.g. "handicap"
-  label     String   // form label, e.g. "Handicap"
+  entity    FieldEntity  @default(MEMBER)
+  key       String // key inside Member.attributes, e.g. "handicap"
+  label     String // form label, e.g. "Handicap"
   type      FieldType
-  options   Json     @default("[]") // SELECT/MULTISELECT: [{ value, label }]
-  required  Boolean  @default(false)
-  group     String?  // e.g. "golf_profile"
-  order     Int      @default(0)
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  options   Json         @default("[]") // SELECT/MULTISELECT: [{ value, label }]
+  required  Boolean      @default(false)
+  group     String? // e.g. "golf_profile"
+  order     Int          @default(0)
+  isActive  Boolean      @default(true)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
 
   @@unique([orgId, entity, key])
   @@index([orgId, entity])
@@ -197,17 +231,17 @@ enum FieldType {
 // Introduced early so the encryption pattern is established from day one.
 // ---------------------------------------------------------------------------
 model LineChannel {
-  id                     String   @id @default(cuid())
-  orgId                  String
-  org                    Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
-  channelId              String
+  id                    String       @id @default(cuid())
+  orgId                 String
+  org                   Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  channelId             String
   // The following are AES-256-GCM ciphertext (see encrypt/decrypt in @mstgolf/shared).
-  channelSecretEnc       String
-  channelAccessTokenEnc  String
-  liffId                 String?
-  isActive               Boolean  @default(true)
-  createdAt              DateTime @default(now())
-  updatedAt              DateTime @updatedAt
+  channelSecretEnc      String
+  channelAccessTokenEnc String
+  liffId                String?
+  isActive              Boolean      @default(true)
+  createdAt             DateTime     @default(now())
+  updatedAt             DateTime     @updatedAt
 
   @@unique([orgId, channelId])
   @@index([orgId])
@@ -218,16 +252,16 @@ model LineChannel {
 // Consent (versioned PDPA consent history — right to audit / erasure)
 // ---------------------------------------------------------------------------
 model Consent {
-  id         String   @id @default(cuid())
-  orgId      String
-  org        Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
-  memberId   String
-  member     Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
-  purpose    String   // e.g. "marketing", "data_processing"
-  version    String   // consent text version, e.g. "v1"
-  granted    Boolean  @default(true)
+  id           String       @id @default(cuid())
+  orgId        String
+  org          Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  memberId     String
+  member       Member       @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  purpose      String // e.g. "marketing", "data_processing"
+  version      String // consent text version, e.g. "v1"
+  granted      Boolean      @default(true)
   textSnapshot String? // the exact consent wording shown at the time
-  createdAt  DateTime @default(now())
+  createdAt    DateTime     @default(now())
 
   @@index([orgId, memberId, createdAt])
   @@map("consents")
@@ -237,15 +271,15 @@ model Consent {
 // Segment (dynamic, rule-based audience — rules evaluated by the segment engine)
 // ---------------------------------------------------------------------------
 model Segment {
-  id          String   @id @default(cuid())
+  id          String       @id @default(cuid())
   orgId       String
   org         Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
   name        String
   description String?
-  rules       Json     @default("{}") // SegmentRule from @mstgolf/analytics
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  rules       Json         @default("{}") // SegmentRule from @mstgolf/analytics
+  isActive    Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 
   @@unique([orgId, name])
   @@index([orgId])
@@ -256,16 +290,16 @@ model Segment {
 // Automation (behavioural/statistical trigger → action, run by workers/jobs)
 // ---------------------------------------------------------------------------
 model Automation {
-  id        String   @id @default(cuid())
+  id        String       @id @default(cuid())
   orgId     String
   org       Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
   name      String
-  trigger   Json     // AutomationTrigger from @mstgolf/analytics
-  action    Json     // AutomationAction
-  enabled   Boolean  @default(true)
+  trigger   Json // AutomationTrigger from @mstgolf/analytics
+  action    Json // AutomationAction
+  enabled   Boolean      @default(true)
   lastRunAt DateTime?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
 
   @@unique([orgId, name])
   @@index([orgId])
@@ -277,12 +311,12 @@ model Automation {
 // migration; without history you cannot see how the base moves over time).
 // ---------------------------------------------------------------------------
 model RfmSnapshot {
-  id               String   @id @default(cuid())
+  id               String       @id @default(cuid())
   orgId            String
   org              Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
   memberId         String
-  member           Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
-  snapshotDate     DateTime @db.Date
+  member           Member       @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  snapshotDate     DateTime     @db.Date
   r                Int
   f                Int
   m                Int
@@ -290,7 +324,7 @@ model RfmSnapshot {
   monetary         Int
   clv              Int
   churnProbability Float
-  createdAt        DateTime @default(now())
+  createdAt        DateTime     @default(now())
 
   @@unique([orgId, memberId, snapshotDate])
   @@index([orgId, snapshotDate])

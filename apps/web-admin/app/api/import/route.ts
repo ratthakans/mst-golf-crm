@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
+import { audit, requireApi } from "../../../lib/auth";
 import { getRepo, type ImportRow } from "../../../lib/repo";
 
 export async function POST(req: Request) {
+  const user = await requireApi("import.run");
+  if (user instanceof NextResponse) return user;
   let body: { rows?: ImportRow[] };
   try {
     body = await req.json();
@@ -17,5 +20,6 @@ export async function POST(req: Request) {
   }
   const repo = await getRepo();
   const result = await repo.importPurchases(rows);
+  await audit(user, { action: "import.run", entity: "import", after: result });
   return NextResponse.json({ ...result, source: repo.source }, { status: 200 });
 }

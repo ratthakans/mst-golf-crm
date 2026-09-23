@@ -4,7 +4,10 @@ import { getCrmData, formatCurrency, formatNumber, formatPct } from "../../../li
 import { SEGMENT_COLOR, SEGMENT_LABEL } from "../../../lib/segments";
 import { LogPurchase } from "./LogPurchase";
 import { PhotoUploader } from "./PhotoUploader";
-import { photoVersion } from "../MemberAvatar";
+import { MemberAvatar, photoVersion } from "../MemberAvatar";
+import { allowPage } from "../../../lib/auth";
+import { can } from "../../../lib/permissions";
+import { Forbidden } from "../../Forbidden";
 import type { EventTypeName } from "@mstgolf/analytics";
 import { findTier, lowestTier, tierProgress } from "@mstgolf/shared/tiers";
 
@@ -39,6 +42,8 @@ export default async function MemberDetailPage({
 }: {
   params: { id: string };
 }) {
+  const user = await allowPage("members.view");
+  if (!user) return <Forbidden />;
   const { org, members, events, rfm, clv, churn, profiles } = await getCrmData();
   const member = members.find((m) => m.id === params.id);
   if (!member) notFound();
@@ -60,11 +65,15 @@ export default async function MemberDetailPage({
       <div className="page-head">
         <Link href="/members" className="back-link">← สมาชิก</Link>
         <div className="member-head">
-          <PhotoUploader
-            memberId={member.id}
-            name={member.displayName ?? member.id}
-            version={photoVersion(member.pictureUrl)}
-          />
+          {can(user.role, "members.edit") ? (
+            <PhotoUploader
+              memberId={member.id}
+              name={member.displayName ?? member.id}
+              version={photoVersion(member.pictureUrl)}
+            />
+          ) : (
+            <MemberAvatar id={member.id} name={member.displayName ?? member.id} version={photoVersion(member.pictureUrl)} size={64} />
+          )}
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
               <h1 style={{ margin: 0 }}>{member.displayName}</h1>
@@ -127,13 +136,15 @@ export default async function MemberDetailPage({
             </div>
           </div>
 
-          <div className="card">
-            <h3>บันทึกการซื้อ</h3>
-            <p style={{ color: "var(--muted)", fontSize: 13, marginTop: 0 }}>
-              สร้าง event การซื้อ + แต้ม + อัปเดตระดับ แล้วคำนวณ RFM/CLV ใหม่ทันที
-            </p>
-            <LogPurchase memberId={member.id} />
-          </div>
+          {can(user.role, "sales.record") && (
+            <div className="card">
+              <h3>บันทึกการซื้อ</h3>
+              <p style={{ color: "var(--muted)", fontSize: 13, marginTop: 0 }}>
+                สร้าง event การซื้อ + แต้ม + อัปเดตระดับ แล้วคำนวณ RFM/CLV ใหม่ทันที
+              </p>
+              <LogPurchase memberId={member.id} />
+            </div>
+          )}
         </div>
 
         <div className="card">

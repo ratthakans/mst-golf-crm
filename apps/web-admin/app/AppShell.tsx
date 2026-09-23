@@ -6,19 +6,28 @@ import { Nav } from "./Nav";
 import { CommandHint } from "./CommandHint";
 import { ThemeToggle } from "./ThemeToggle";
 import { isPublicPath } from "../lib/public-paths";
+import type { Permission } from "../lib/permissions";
 
 // Owns the responsive shell: on desktop the sidebar is a static column, on
 // narrow screens it becomes an off-canvas drawer opened from the top bar.
 // The CSS decides which of the two it is — this only tracks open/closed.
+export interface ShellUser {
+  name: string;
+  roleLabel: string;
+  permissions: Permission[];
+}
+
 export function AppShell({
   live,
   orgName,
   productName,
+  user,
   children,
 }: {
   live: boolean;
   orgName: string;
   productName: string;
+  user: ShellUser | null;
   children: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
@@ -91,8 +100,26 @@ export function AppShell({
           </div>
           <div className="brand-sub">{productName}</div>
           <CommandHint />
-          <Nav />
+          <Nav permissions={user?.permissions ?? []} />
           <div className="spacer" />
+          {user && (
+            <div className="user-box">
+              <div className="user-box-name">{user.name}</div>
+              <div className="user-box-role">{user.roleLabel}</div>
+              <div className="user-box-links">
+                <a href="/account/password">เปลี่ยนรหัสผ่าน</a>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    await fetch("/api/auth/logout", { method: "POST" }).catch(() => undefined);
+                    window.location.assign("/login");
+                  }}
+                >
+                  ออกจากระบบ
+                </button>
+              </div>
+            </div>
+          )}
           <ThemeToggle />
           <div className={`src-badge ${live ? "live" : "sample"}`}>
             <span className="src-dot" />

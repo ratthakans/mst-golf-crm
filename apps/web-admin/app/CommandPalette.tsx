@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { isPublicPath } from "../lib/public-paths";
+import type { Permission } from "../lib/permissions";
 
 interface MemberHit {
   id: string;
@@ -11,18 +12,22 @@ interface MemberHit {
   points: number;
 }
 
-const PAGES: Array<{ label: string; href: string; icon: string; hint: string }> = [
-  { label: "ภาพรวม", href: "/", icon: "📊", hint: "Overview" },
-  { label: "แผนลงมือ", href: "/playbook", icon: "🎬", hint: "Playbook" },
-  { label: "สมาชิก", href: "/members", icon: "👥", hint: "Members" },
-  { label: "นำเข้า POS", href: "/import", icon: "📥", hint: "Import" },
-  { label: "กลุ่มลูกค้า", href: "/segments", icon: "🎯", hint: "Segments" },
-  { label: "เพิ่มสมาชิก", href: "/members/new", icon: "➕", hint: "New member" },
+const ALL_PAGES: Array<{ label: string; href: string; icon: string; hint: string; perm: Permission }> = [
+  { label: "ภาพรวม", href: "/", icon: "📊", hint: "Overview", perm: "overview.view" },
+  { label: "แผนลงมือ", href: "/playbook", icon: "🎬", hint: "Playbook", perm: "playbook.view" },
+  { label: "สมาชิก", href: "/members", icon: "👥", hint: "Members", perm: "members.view" },
+  { label: "นำเข้า POS", href: "/import", icon: "📥", hint: "Import", perm: "import.run" },
+  { label: "กลุ่มลูกค้า", href: "/segments", icon: "🎯", hint: "Segments", perm: "segments.view" },
+  { label: "เพิ่มสมาชิก", href: "/members/new", icon: "➕", hint: "New member", perm: "members.create" },
+  { label: "ผู้ใช้และสิทธิ์", href: "/settings/users", icon: "🔑", hint: "Users", perm: "users.manage" },
+  { label: "บันทึกการใช้งาน", href: "/settings/audit", icon: "🧾", hint: "Audit log", perm: "audit.view" },
 ];
 
 const norm = (s: string) => s.toLowerCase().replace(/[\s-]/g, "");
 
-export function CommandPalette() {
+export function CommandPalette({ permissions }: { permissions: Permission[] }) {
+  const permKey = permissions.join(",");
+  const PAGES = useMemo(() => ALL_PAGES.filter((p) => permKey.split(",").includes(p.perm)), [permKey]);
   const router = useRouter();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -78,7 +83,7 @@ export function CommandPalette() {
           .slice(0, 8)
           .map((m) => ({ kind: "member" as const, ...m }));
     return [...pages.slice(0, nq ? 4 : PAGES.length), ...mem];
-  }, [q, members]);
+  }, [q, members, PAGES]);
 
   useEffect(() => {
     if (active >= results.length) setActive(0);

@@ -1,0 +1,32 @@
+import { NextResponse } from "next/server";
+import { hashPassword, passwordProblem, verifyPassword } from "@mstgolf/shared/password";
+import { audit, getSessionUser, startSession } from "../../../../lib/auth";
+import { getRepo } from "../../../../lib/repo";
+
+export async function POST(req: Request) {
+  const session = await getSessionUser();
+  if (!session) return NextResponse.json({ error: "กรุณาเข้าสู่ระบบ" }, { status: 401 });
+
+  let body: { current?: string; next?: string };
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "ข้อมูลไม่ถูกต้อง" }, { status: 400 });
+  }
+  const repo = await getRepo();
+  const user = await repo.getUser(session.id);
+  if (!user) return NextResponse.json({ error: "ไม่พบบัญชี" }, { status: 404 });
+
+  if (!(await verifyPassword(body.current ?? "", user.passwordHash))) {
+    return NextResponse.json({ error: "รหัสผ่านปัจจุบันไม่ถูกต้อง" }, { status: 400 });
+  }
+  const next = body.next ?? "";
+  const problem = passwordProblem(next);
+  if (problem) return NextResponse.json({ error: problem }, { status: 400 });
+  if (next === body.current) return NextResponse.json({ error: "รหัสผ่านใหม่ต้องไม่ซ้ำรหัสเดิม" }, { status: 400 });
+
+  const updated = await repo.updateUser(user.id, { passwordHash: await hashPassword(next), mustChangePassword: false });
+  await startSession(updated); // re-issue so the "must change" flag clears now
+  await audit(session, { action: "user.password_change", entity: "user", entityId: user.id });
+  return NextResponse.json({ ok: true });
+}

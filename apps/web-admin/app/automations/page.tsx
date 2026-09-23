@@ -1,4 +1,6 @@
+import { allowPage } from "../../lib/auth";
 import { getCrmData } from "../../lib/data";
+import { Forbidden } from "../Forbidden";
 
 function actionText(a: { type: string; template?: string; label?: string; amount?: number }): string {
   if (a.type === "send_message") return `ส่งข้อความ: "${a.template}"`;
@@ -7,17 +9,20 @@ function actionText(a: { type: string; template?: string; label?: string; amount
   return a.type;
 }
 
-function triggerText(t: { type: string; days?: number; withinPoints?: number; tierThreshold?: number; minProbability?: number; minClv?: number }): string {
+function triggerText(t: { type: string; days?: number; minProgress?: number; minProbability?: number; minClv?: number }): string {
   switch (t.type) {
     case "no_activity_days": return `ไม่มีความเคลื่อนไหวเกิน ${t.days} วัน`;
-    case "near_tier_up": return `เหลืออีก ≤ ${t.withinPoints} แต้มถึง ${t.tierThreshold}`;
+    case "near_tier_up": return `ยอดซื้อ 12 เดือนถึง ${Math.round((t.minProgress ?? 0) * 100)}% ของระดับถัดไป`;
     case "high_churn_risk": return `ความเสี่ยงหลุด ≥ ${t.minProbability}`;
     case "vip_by_clv": return `CLV คาดการณ์ ≥ ฿${(t.minClv ?? 0).toLocaleString("en-TH")}`;
     default: return t.type;
   }
 }
 
+export const dynamic = "force-dynamic";
+
 export default async function AutomationsPage() {
+  if (!(await allowPage("automations.view"))) return <Forbidden />;
   const { automations } = await getCrmData();
 
   return (

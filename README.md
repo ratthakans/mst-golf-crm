@@ -14,6 +14,11 @@ pnpm install
 pnpm --filter @mstgolf/web-admin dev   # http://localhost:3100
 ```
 
+Sign in at `/login` — locally in sample mode: `admin@mstgolf.local` /
+`mstgolf-dev-admin` (development only). Deployed builds need `AUTH_SECRET` plus
+`ADMIN_EMAIL` / `ADMIN_PASSWORD` (see `.env.example`). The public sign-up page
+`/register` needs no login.
+
 Back office: **Overview** (KPIs · RFM segments · AI brief) · **Action Plan**
 (playbook) · **Members** (RFM-scored, tier + progress on each 360) · **POS
 Import**. Campaigns and Simulator arrive in phase 2. Interim tools: Segments and

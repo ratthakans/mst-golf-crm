@@ -1,9 +1,12 @@
 import { NextResponse } from "next/server";
+import { requireApi } from "../../../../lib/auth";
 import { setTask, type TaskStatus } from "../../../../lib/tasks";
 
 const VALID: TaskStatus[] = ["pending", "contacted", "won", "lost"];
 
 export async function POST(req: Request) {
+  const user = await requireApi("playbook.act");
+  if (user instanceof NextResponse) return user;
   let body: { id?: string; status?: string; recovered?: number };
   try {
     body = await req.json();

@@ -1,8 +1,11 @@
 import Link from "next/link";
+import { allowPage } from "../../../lib/auth";
 import { getRepo } from "../../../lib/repo";
+import { Forbidden } from "../../Forbidden";
 import { SignupForm } from "../../register/SignupForm";
 
 export default async function NewMemberPage() {
+  if (!(await allowPage("members.create"))) return <Forbidden />;
   const repo = await getRepo();
   const [org, fields] = await Promise.all([repo.getOrg(), repo.getFieldDefinitions()]);
 

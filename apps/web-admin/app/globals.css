@@ -50,6 +50,8 @@
     radial-gradient(1200px 500px at 100% -10%, #12251b 0%, rgba(18,37,27,0) 55%),
     var(--bg);
 }
+/* html keeps the light gradient otherwise — visible under pages shorter than the window. */
+html[data-theme="dark"] { background: var(--bg); }
 [data-theme="dark"] .stat:hover { border-color: #33463b; }
 /* Bar/track backgrounds */
 [data-theme="dark"] .seg-bar-wrap,
@@ -1066,3 +1068,65 @@ tr:last-child td { border-bottom: none; }
 
 [data-theme="dark"] .link-input { background: #1b251f; }
 [data-theme="dark"] .photo-up-error { background: #2a1616; border-color: #5b2323; color: #fca5a5; }
+
+/* ── Auth ───────────────────────────────────────────────────────────────── */
+.login-page { max-width: 420px; padding-top: 12vh; }
+.login-foot { margin: 14px 0 0; font-size: 12.5px; color: var(--muted); text-align: center; line-height: 1.5; }
+.login-dev-hint { margin-top: 16px; text-align: center; font-size: 12.5px; color: var(--muted); }
+.login-dev-hint code, .issued-row code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace; background: var(--brand-tint);
+  padding: 2px 6px; border-radius: 6px; color: var(--text);
+}
+.user-box {
+  margin: 10px 0; padding: 12px 14px; border-radius: var(--radius-sm);
+  background: rgba(255,255,255,0.06); color: #dbe7e0;
+}
+.user-box-name { font-size: 13.5px; font-weight: 600; color: #fff; }
+.user-box-role { font-size: 11.5px; color: #9fb6ab; margin-top: 2px; }
+.user-box-links { display: flex; gap: 12px; margin-top: 8px; font-size: 12px; }
+.user-box-links a, .user-box-links button {
+  color: #b8ccc2; background: none; border: none; padding: 0; font: inherit; cursor: pointer; text-decoration: underline;
+}
+.user-box-links a:hover, .user-box-links button:hover { color: #fff; }
+
+.forbidden { max-width: 520px; }
+.forbidden h1 { margin: 0 0 8px; font-size: 20px; }
+.forbidden p { margin: 0 0 16px; color: var(--muted); font-size: 14px; }
+
+/* ── Users & roles ──────────────────────────────────────────────────────── */
+.user-create { margin-bottom: 16px; }
+.user-create h3 { margin: 0 0 12px; }
+.user-create-row { display: grid; grid-template-columns: 1.4fr 1fr 1fr auto; gap: 12px; align-items: end; }
+.user-create-row .field { margin-bottom: 0; }
+.user-create-row .btn { height: 42px; }
+@media (max-width: 900px) { .user-create-row { grid-template-columns: 1fr; } }
+.issued-card { margin-bottom: 16px; border-color: var(--brand); }
+.issued-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 10px 0 8px; }
+.issued-row code { font-size: 17px; letter-spacing: 1px; padding: 6px 12px; }
+.issued-card p { margin: 0; font-size: 12.5px; color: var(--muted); }
+.user-email { font-size: 12px; color: var(--muted); }
+.you-tag {
+  margin-left: 8px; font-size: 10.5px; font-weight: 600; padding: 1px 7px; border-radius: 999px;
+  background: var(--brand-tint); color: var(--brand);
+}
+.role-select {
+  padding: 7px 10px; border: 1px solid var(--border); border-radius: 8px; font: inherit; font-size: 13px;
+  background: var(--surface); color: var(--text);
+}
+.status-pill { font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 999px; }
+.status-pill.on { background: #e8f6ee; color: #15803d; }
+.status-pill.warn { background: #fdf3d7; color: #a16207; }
+.status-pill.off { background: #eef2f7; color: #64748b; }
+.row-muted td { opacity: 0.55; }
+.user-actions { white-space: nowrap; text-align: right; }
+.link-btn {
+  border: none; background: none; padding: 0 0 0 14px; font: inherit; font-size: 12.5px;
+  color: var(--brand); cursor: pointer; text-decoration: underline;
+}
+.link-btn:disabled { opacity: 0.5; cursor: default; }
+.users-foot { margin-top: 12px; font-size: 12px; color: var(--muted); }
+.audit-detail { font-size: 12.5px; color: var(--muted); max-width: 520px; }
+[data-theme="dark"] .status-pill.on { background: #173524; color: #6ee7a0; }
+[data-theme="dark"] .status-pill.warn { background: #3a2f12; color: #fcd34d; }
+[data-theme="dark"] .status-pill.off { background: #1f2a33; color: #94a3b8; }
+[data-theme="dark"] .role-select { background: #1b251f; }

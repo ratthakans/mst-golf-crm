@@ -32,6 +32,10 @@ const TENANT_MODELS = new Set<string>([
   "FieldDefinition",
   "LineChannel",
   "Consent",
+  "Segment",
+  "Automation",
+  "RfmSnapshot",
+  "AuditLog",
 ]);
 
 // Operations whose `where` clause should be constrained to the tenant.

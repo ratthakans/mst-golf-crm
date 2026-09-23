@@ -1,7 +1,12 @@
+import { allowPage } from "../../lib/auth";
 import { getCrmData } from "../../lib/data";
+import { Forbidden } from "../Forbidden";
 import { SEGMENT_ORDER, SEGMENT_COLOR, SEGMENT_HINT, SEGMENT_LABEL } from "../../lib/segments";
 
+export const dynamic = "force-dynamic";
+
 export default async function SegmentsPage() {
+  if (!(await allowPage("segments.view"))) return <Forbidden />;
   const { rfm } = await getCrmData();
 
   return (

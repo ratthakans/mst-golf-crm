@@ -1,10 +1,14 @@
 import { NextResponse } from "next/server";
 import { normalizeThaiMobile } from "@mstgolf/shared/phone";
+import { audit, getSessionUser, requireApi } from "../../../lib/auth";
+import { can } from "../../../lib/permissions";
 import { DuplicateMemberError, getRepo } from "../../../lib/repo";
 import type { CreateMemberInput } from "../../../lib/repo";
 
 // Compact search index for the ⌘K command palette (id + name + tier + points).
 export async function GET() {
+  const user = await requireApi("members.view");
+  if (user instanceof NextResponse) return user;
   const repo = await getRepo();
   const members = await repo.listMembers();
   const index = members.map((m) => ({
@@ -27,7 +31,10 @@ export async function POST(req: Request) {
   const displayName = (body.displayName ?? "").trim();
   const attributes = (body.attributes ?? {}) as Record<string, unknown>;
   const consent = body.consent === true;
-  const source = body.source === "admin" ? "admin" : "signup";
+  // Staff who may create members get admin semantics; anyone else — including
+  // a staff session without that right — is treated as the public sign-up form.
+  const staff = await getSessionUser();
+  const source = staff && can(staff.role, "members.create") && body.source === "admin" ? "admin" : "signup";
   const rawPhone = body.phone?.toString().trim() ?? "";
   const phone = rawPhone ? normalizeThaiMobile(rawPhone) : null;
 
@@ -92,6 +99,10 @@ export async function POST(req: Request) {
       );
     }
     throw e;
+  }
+
+  if (source === "admin") {
+    await audit(staff, { action: "member.create", entity: "member", entityId: result.member.id, after: { displayName, phone } });
   }
 
   return NextResponse.json(

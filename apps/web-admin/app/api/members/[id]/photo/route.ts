@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { audit, requireApi } from "../../../../../lib/auth";
 import { getRepo } from "../../../../../lib/repo";
 import {
   deleteMemberPhoto,
@@ -14,6 +15,8 @@ type Ctx = { params: { id: string } };
 // Serves the member's photo. Private storage is never exposed by URL, so every
 // image — uploaded or from LINE — goes through here.
 export async function GET(_req: Request, { params }: Ctx) {
+  const user = await requireApi("members.view");
+  if (user instanceof NextResponse) return user;
   const member = await (await getRepo()).getMember(params.id);
   if (!member) return new NextResponse(null, { status: 404 });
 
@@ -26,6 +29,8 @@ export async function GET(_req: Request, { params }: Ctx) {
 }
 
 export async function POST(req: Request, { params }: Ctx) {
+  const user = await requireApi("members.edit");
+  if (user instanceof NextResponse) return user;
   const repo = await getRepo();
   const member = await repo.getMember(params.id);
   if (!member) return NextResponse.json({ error: "ไม่พบสมาชิก" }, { status: 404 });
@@ -51,6 +56,7 @@ export async function POST(req: Request, { params }: Ctx) {
     const pictureUrl = await storeMemberPhoto(member.id, file, repo.source);
     await repo.setMemberPicture(member.id, pictureUrl);
     await deleteMemberPhoto(previous);
+    await audit(user, { action: "member.photo_set", entity: "member", entityId: member.id });
     return NextResponse.json({ ok: true, version: Date.now() });
   } catch (e) {
     if (e instanceof PhotoStorageNotConfigured) {
@@ -64,10 +70,13 @@ export async function POST(req: Request, { params }: Ctx) {
 }
 
 export async function DELETE(_req: Request, { params }: Ctx) {
+  const user = await requireApi("members.edit");
+  if (user instanceof NextResponse) return user;
   const repo = await getRepo();
   const member = await repo.getMember(params.id);
   if (!member) return NextResponse.json({ error: "ไม่พบสมาชิก" }, { status: 404 });
   await repo.setMemberPicture(member.id, null);
   await deleteMemberPhoto(member.pictureUrl);
+  await audit(user, { action: "member.photo_remove", entity: "member", entityId: member.id });
   return NextResponse.json({ ok: true });
 }

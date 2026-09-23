@@ -8,7 +8,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./tiers": "./src/tiers.ts",
-    "./phone": "./src/phone.ts"
+    "./phone": "./src/phone.ts",
+    "./password": "./src/password.ts"
   },
   "typesVersions": {
     "*": {
@@ -17,6 +18,9 @@
       ],
       "phone": [
         "src/phone.ts"
+      ],
+      "password": [
+        "src/password.ts"
       ]
     }
   },

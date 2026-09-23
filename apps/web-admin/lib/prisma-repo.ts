@@ -21,8 +21,13 @@ import {
   type FieldTypeName,
   type MemberLike,
 } from "@mstgolf/analytics";
-import { DuplicateMemberError } from "./repo";
+import { DuplicateMemberError, DuplicateUserError } from "./repo";
 import type {
+  AuditInput,
+  AuditRecord,
+  NewUserInput,
+  UserPatch,
+  UserRecord,
   CreateMemberInput,
   CreateMemberResult,
   CreatePurchaseInput,
@@ -41,6 +46,20 @@ type OrgClient = ReturnType<typeof import("@mstgolf/database").forOrg>;
 // Live Postgres implementation. Every tenant query goes through forOrg(orgId)
 // so it is automatically scoped to MST Golf. The runtime client is imported
 // lazily so sample-data mode never loads Prisma.
+function toUserRecord(u: {
+  id: string; email: string; name: string | null; role: string; passwordHash: string | null;
+  mustChangePassword: boolean; isActive: boolean; lastLoginAt: Date | null; createdAt: Date;
+}): UserRecord {
+  return {
+    id: u.id, email: u.email, name: u.name, role: u.role as UserRecord["role"],
+    passwordHash: u.passwordHash, mustChangePassword: u.mustChangePassword,
+    isActive: u.isActive, lastLoginAt: u.lastLoginAt, createdAt: u.createdAt,
+  };
+}
+
+const jsonOrNull = (v: unknown) =>
+  v === undefined || v === null ? undefined : (JSON.parse(JSON.stringify(v)) as Prisma.InputJsonValue);
+
 function toMemberLike(m: {
   id: string; displayName: string | null; tier: string | null; points: number;
   lastSeenAt: Date | null; createdAt: Date; phone: string | null; email: string | null;
@@ -385,5 +404,85 @@ export class PrismaRepository implements Repository {
     }
 
     return res;
+  }
+
+  async findUserByEmail(email: string): Promise<UserRecord | null> {
+    const orgId = await this.orgId();
+    const { forOrg } = await this.db();
+    const u = await forOrg(orgId).user.findFirst({ where: { email: email.trim().toLowerCase() } });
+    return u ? toUserRecord(u) : null;
+  }
+
+  async getUser(id: string): Promise<UserRecord | null> {
+    const orgId = await this.orgId();
+    const { forOrg } = await this.db();
+    const u = await forOrg(orgId).user.findFirst({ where: { id } });
+    return u ? toUserRecord(u) : null;
+  }
+
+  async listUsers(): Promise<UserRecord[]> {
+    const orgId = await this.orgId();
+    const { forOrg } = await this.db();
+    const rows = await forOrg(orgId).user.findMany({ orderBy: { createdAt: "asc" } });
+    return rows.map(toUserRecord);
+  }
+
+  async createUser(input: NewUserInput): Promise<UserRecord> {
+    const orgId = await this.orgId();
+    const { forOrg } = await this.db();
+    const client = forOrg(orgId);
+    const email = input.email.trim().toLowerCase();
+    if (await client.user.findFirst({ where: { email }, select: { id: true } })) throw new DuplicateUserError();
+    const u = await client.user.create({
+      data: {
+        orgId, email, name: input.name, role: input.role,
+        passwordHash: input.passwordHash, mustChangePassword: input.mustChangePassword,
+      },
+    });
+    return toUserRecord(u);
+  }
+
+  async updateUser(id: string, patch: UserPatch): Promise<UserRecord> {
+    const orgId = await this.orgId();
+    const { forOrg } = await this.db();
+    const client = forOrg(orgId);
+    // updateMany keeps the write inside this tenant (update-by-id is not scoped).
+    const res = await client.user.updateMany({ where: { id }, data: patch });
+    if (res.count === 0) throw new Error("User not found");
+    const u = await client.user.findFirst({ where: { id } });
+    return toUserRecord(u!);
+  }
+
+  async writeAudit(entry: AuditInput): Promise<void> {
+    const orgId = await this.orgId();
+    const { forOrg } = await this.db();
+    await forOrg(orgId).auditLog.create({
+      data: {
+        orgId,
+        userId: entry.userId,
+        action: entry.action,
+        entity: entry.entity,
+        entityId: entry.entityId ?? null,
+        before: jsonOrNull(entry.before),
+        after: jsonOrNull(entry.after),
+        reason: entry.reason ?? null,
+        ip: entry.ip ?? null,
+      },
+    });
+  }
+
+  async listAudit(limit: number): Promise<AuditRecord[]> {
+    const orgId = await this.orgId();
+    const { forOrg } = await this.db();
+    const rows = await forOrg(orgId).auditLog.findMany({
+      orderBy: { createdAt: "desc" },
+      take: limit,
+      include: { user: { select: { name: true, email: true } } },
+    });
+    return rows.map((r) => ({
+      id: r.id, userId: r.userId, action: r.action, entity: r.entity, entityId: r.entityId,
+      before: r.before, after: r.after, reason: r.reason, ip: r.ip, createdAt: r.createdAt,
+      userName: r.user?.name ?? r.user?.email ?? null,
+    }));
   }
 }

@@ -1,4 +1,8 @@
-// Customer-facing pages rendered without the back-office shell or ⌘K palette.
+// Pages rendered without the back-office shell or ⌘K palette, and reachable
+// without signing in.
+const PUBLIC_PAGES = ["/register", "/login"];
+
 export function isPublicPath(pathname: string | null): boolean {
-  return pathname === "/register" || (pathname?.startsWith("/register/") ?? false);
+  if (!pathname) return false;
+  return PUBLIC_PAGES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 }

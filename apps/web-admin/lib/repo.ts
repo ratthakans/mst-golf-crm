@@ -1,5 +1,7 @@
+import { hashPassword } from "@mstgolf/shared/password";
 import { normalizeThaiMobile } from "@mstgolf/shared/phone";
 import { applyTierRate, findTier, lowestTier, reviewTier, tierRank } from "@mstgolf/shared/tiers";
+import type { Role } from "./permissions";
 import {
   DEMO_FIELD_DEFINITIONS,
   DEMO_ORG,
@@ -75,6 +77,56 @@ export interface ImportResult {
 
 const normalizePhone = (p?: string | null) => (p ?? "").replace(/[\s-]/g, "");
 
+// ---------------------------------------------------------------------------
+// Back-office users and the audit trail
+// ---------------------------------------------------------------------------
+export interface UserRecord {
+  id: string;
+  email: string; // lower-case
+  name: string | null;
+  role: Role;
+  passwordHash: string | null;
+  mustChangePassword: boolean;
+  isActive: boolean;
+  lastLoginAt: Date | null;
+  createdAt: Date;
+}
+
+export type UserPatch = Partial<
+  Pick<UserRecord, "name" | "role" | "passwordHash" | "mustChangePassword" | "isActive" | "lastLoginAt">
+>;
+
+export interface NewUserInput {
+  email: string;
+  name: string | null;
+  role: Role;
+  passwordHash: string;
+  mustChangePassword: boolean;
+}
+
+export class DuplicateUserError extends Error {
+  constructor() {
+    super("A user with this email already exists");
+  }
+}
+
+export interface AuditInput {
+  userId: string | null;
+  action: string; // e.g. "member.create"
+  entity: string; // e.g. "member"
+  entityId?: string | null;
+  before?: unknown;
+  after?: unknown;
+  reason?: string | null;
+  ip?: string | null;
+}
+
+export interface AuditRecord extends AuditInput {
+  id: string;
+  userName: string | null;
+  createdAt: Date;
+}
+
 export interface Repository {
   readonly source: "sample" | "database";
   getOrg(): Promise<DemoOrg>;
@@ -86,6 +138,14 @@ export interface Repository {
   setMemberPicture(memberId: string, pictureUrl: string | null): Promise<void>;
   createPurchase(input: CreatePurchaseInput): Promise<CreatePurchaseResult>;
   importPurchases(rows: ImportRow[]): Promise<ImportResult>;
+
+  findUserByEmail(email: string): Promise<UserRecord | null>;
+  getUser(id: string): Promise<UserRecord | null>;
+  listUsers(): Promise<UserRecord[]>;
+  createUser(input: NewUserInput): Promise<UserRecord>;
+  updateUser(id: string, patch: UserPatch): Promise<UserRecord>;
+  writeAudit(entry: AuditInput): Promise<void>;
+  listAudit(limit: number): Promise<AuditRecord[]>;
 }
 
 // ---------------------------------------------------------------------------
@@ -95,6 +155,8 @@ export interface Repository {
 interface Store {
   members: MemberLike[];
   events: EventLike[];
+  users: UserRecord[] | null; // seeded lazily (hashing is async)
+  audit: AuditRecord[];
 }
 
 function getStore(): Store {
@@ -103,7 +165,7 @@ function getStore(): Store {
     // Full synthetic base (~1,240 members) so every page computes from one
     // consistent dataset at realistic scale.
     const seed = generateDataset(new Date());
-    g.__mstStore = { members: [...seed.members], events: [...seed.events] };
+    g.__mstStore = { members: [...seed.members], events: [...seed.events], users: null, audit: [] };
   }
   return g.__mstStore;
 }
@@ -125,6 +187,31 @@ function reviewAfterPurchase(store: Store, member: MemberLike, spend12m: number,
     store.events.push({ memberId: member.id, type: "TIER_UP", occurredAt: now, payload: { from: member.tier, to: next.name } });
   }
   member.tier = next.name;
+}
+
+/**
+ * Sample mode has one Super Admin: ADMIN_EMAIL / ADMIN_PASSWORD when set, or a
+ * fixed local account in development only. A deployed sample build without
+ * those env vars has no users, so nobody can sign in.
+ */
+export const DEV_ADMIN = { email: "admin@mstgolf.local", password: "mstgolf-dev-admin" };
+
+async function sampleUsers(store: Store): Promise<UserRecord[]> {
+  if (store.users) return store.users;
+  const email = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+  const password = process.env.ADMIN_PASSWORD;
+  const creds =
+    email && password ? { email, password }
+      : process.env.NODE_ENV !== "production" ? DEV_ADMIN
+        : null;
+  store.users = creds
+    ? [{
+        id: "user_admin", email: creds.email, name: "ผู้ดูแลระบบ", role: "SUPER_ADMIN",
+        passwordHash: await hashPassword(creds.password), mustChangePassword: false,
+        isActive: true, lastLoginAt: null, createdAt: new Date(),
+      }]
+    : [];
+  return store.users;
 }
 
 class MemoryRepository implements Repository {
@@ -287,6 +374,54 @@ class MemoryRepository implements Repository {
     }
 
     return res;
+  }
+
+  async findUserByEmail(email: string): Promise<UserRecord | null> {
+    const users = await sampleUsers(getStore());
+    return users.find((u) => u.email === email.trim().toLowerCase()) ?? null;
+  }
+
+  async getUser(id: string): Promise<UserRecord | null> {
+    return (await sampleUsers(getStore())).find((u) => u.id === id) ?? null;
+  }
+
+  async listUsers(): Promise<UserRecord[]> {
+    return [...(await sampleUsers(getStore()))];
+  }
+
+  async createUser(input: NewUserInput): Promise<UserRecord> {
+    const users = await sampleUsers(getStore());
+    const email = input.email.trim().toLowerCase();
+    if (users.some((u) => u.email === email)) throw new DuplicateUserError();
+    const user: UserRecord = {
+      id: `user_${users.length + 1}_${Date.now()}`, email, name: input.name, role: input.role,
+      passwordHash: input.passwordHash, mustChangePassword: input.mustChangePassword,
+      isActive: true, lastLoginAt: null, createdAt: new Date(),
+    };
+    users.push(user);
+    return user;
+  }
+
+  async updateUser(id: string, patch: UserPatch): Promise<UserRecord> {
+    const user = (await sampleUsers(getStore())).find((u) => u.id === id);
+    if (!user) throw new Error("User not found");
+    Object.assign(user, patch);
+    return user;
+  }
+
+  async writeAudit(entry: AuditInput): Promise<void> {
+    const store = getStore();
+    const users = await sampleUsers(store);
+    store.audit.unshift({
+      ...entry,
+      id: `audit_${store.audit.length + 1}`,
+      userName: users.find((u) => u.id === entry.userId)?.name ?? null,
+      createdAt: new Date(),
+    });
+  }
+
+  async listAudit(limit: number): Promise<AuditRecord[]> {
+    return getStore().audit.slice(0, limit);
   }
 }
 

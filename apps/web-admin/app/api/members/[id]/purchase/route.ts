@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { audit, requireApi } from "../../../../../lib/auth";
 import { getRepo } from "../../../../../lib/repo";
 import type { PurchaseItemLike } from "@mstgolf/analytics";
 
@@ -6,6 +7,8 @@ export async function POST(
   req: Request,
   { params }: { params: { id: string } },
 ) {
+  const user = await requireApi("sales.record");
+  if (user instanceof NextResponse) return user;
   let body: { amount?: number; channel?: string; items?: PurchaseItemLike[] };
   try {
     body = await req.json();
@@ -25,6 +28,10 @@ export async function POST(
       amount,
       channel: body.channel,
       items: body.items,
+    });
+    await audit(user, {
+      action: "sale.record", entity: "member", entityId: params.id,
+      after: { amount, pointsAwarded: result.pointsAwarded, tier: result.newTier },
     });
     return NextResponse.json(result, { status: 201 });
   } catch (e) {

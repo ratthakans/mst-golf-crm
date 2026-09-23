@@ -144,5 +144,5 @@ export interface OrgSettings {
 export interface TenantContext {
   orgId: string;
   userId?: string; // admin/staff acting
-  role?: "OWNER" | "ADMIN" | "STAFF";
+  role?: "SUPER_ADMIN" | "MARKETING" | "STORE_MANAGER" | "STORE_STAFF" | "CUSTOMER_SERVICE";
 }
