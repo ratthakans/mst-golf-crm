@@ -55,7 +55,8 @@ cp .env.example .env          # then set a real ENCRYPTION_KEY and JWT_SECRET
 pnpm infra:up                 # start Postgres + Redis
 pnpm db:generate              # generate Prisma client
 pnpm db:migrate               # first run: name it "init"
-pnpm db:seed                  # seed MST Golf (1 org, 1 admin, 7 fields, 5 members, events, ledger)
+pnpm db:seed                  # seed MST Golf (org, config, 7 fields) — SEED_DEMO=1 adds 5 demo members + history
+pnpm --filter @mstgolf/database admin:create you@example.com   # first Super Admin (prints a temporary password once)
 pnpm db:studio                # inspect the data
 ```
 

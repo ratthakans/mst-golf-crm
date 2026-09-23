@@ -9,6 +9,10 @@ const prisma = new PrismaClient();
 // Helper: a date N days ago (for realistic RFM recency spread).
 const daysAgo = (n: number) => new Date(Date.now() - n * 24 * 60 * 60 * 1000);
 
+// Demo members, their history and a placeholder LINE channel are for local
+// development only — a real database gets the org, config and admin alone.
+const DEMO = process.env.SEED_DEMO === "1";
+
 async function main() {
   // -------------------------------------------------------------------------
   // First customer: MST Golf (Bangkok, Thailand) — pro shop + academy + fitting + arena
@@ -91,7 +95,7 @@ async function main() {
   // -------------------------------------------------------------------------
   // LINE channel (per-org credentials — secrets encrypted at rest)
   // -------------------------------------------------------------------------
-  await prisma.lineChannel.upsert({
+  if (DEMO) await prisma.lineChannel.upsert({
     where: { orgId_channelId: { orgId: org.id, channelId: "0000000000" } },
     update: {},
     create: {
@@ -254,8 +258,9 @@ async function main() {
   }
 
   // -------------------------------------------------------------------------
-  // Members — 5 profiles covering different RFM segments
+  // Members — 5 profiles covering different RFM segments (demo only)
   // -------------------------------------------------------------------------
+  if (DEMO) {
   const memberSpecs = [
     {
       lineUserId: "U_champion_001",
@@ -436,6 +441,8 @@ async function main() {
       });
     }
   }
+
+  } // DEMO
 
   // -------------------------------------------------------------------------
   // Summary
