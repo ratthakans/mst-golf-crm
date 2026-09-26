@@ -37,3 +37,6 @@ coverage/
 # vercel
 .vercel
 .env*
+
+# agent worktrees
+.claude/worktrees/

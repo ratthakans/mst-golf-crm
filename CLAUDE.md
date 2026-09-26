@@ -13,7 +13,7 @@ It is **our platform** and MST Golf is tenant #1: built multi-tenant / config-dr
 
 ## Coding rules (enforced)
 - **TypeScript only, strict.** Avoid `any`.
-- **Tenant isolation:** use `forOrg(orgId)` from `@mstgolf/database` for all tenant-data access — it auto-injects `orgId` so you cannot forget it. The raw `prisma` client is only for org bootstrap (creating orgs, auth lookups by unique key) and migrations/seed. Postgres RLS is planned as a second layer in M4.
+- **Tenant isolation:** use `forOrg(orgId)` from `@mstgolf/database` for all tenant-data access — it auto-injects `orgId` so you cannot forget it. The raw `prisma` client is only for org bootstrap (creating orgs, auth lookups by unique key) and migrations/seed. Unique lookups (`findUnique`, `update` by id) are not scoped by the extension — look the row up with `findFirst` first.
 - **Field naming:** the DB column is `orgId` everywhere. Use `orgId` in code (not `organizationId`).
 - Any change to customer behavior → write an `Event`.
 - Points **only** via `PointTransaction` (ledger). `Member.points` is a cache, kept in sync when writing the ledger.
@@ -45,21 +45,24 @@ Three tiers — **Member / Silver / Gold** — ranked by **net spend over the tr
 
 ## Structure
 ```
-apps/web-admin  Next.js back office + admin API   apps/web  website + customer pages (LIFF in LINE, LINE Login on the web) (W6; replaces the empty apps/web-liff)
-packages/database  Prisma — the core             packages/shared types + crypto + tiers
-packages/analytics RFM/CLV/churn/cohort/affinity  packages/line   @line/bot-sdk wrapper
-workers/jobs    nightly analytics (moves to Vercel Cron routes)
+apps/web-admin     Next.js back office + admin API + /api/cron/*          (port 3100)
+apps/web           website + customer pages (LIFF in LINE, LINE Login on the web) (port 3200)
+packages/core      ALL business logic (members, points, tiers, POS import, booking, LINE outbox, dashboard, settings)
+packages/database  Prisma schema v2, migrations, seed, prisma wrapper script
+packages/shared    types + crypto + tiers + phone + password
+packages/analytics RFM/CLV/churn — only for the hidden intelligence pages
 ```
 
-There is no separate API service — admin endpoints live in web-admin, customer endpoints in apps/web (no LINE webhook). Background work goes through a Postgres `Job` table + Vercel Cron, not Redis/BullMQ.
+Route handlers only parse input, check permission (`requireApi`) and call `@mstgolf/core`; core throws `CoreError` (code + Thai message) which `lib/api.ts#fail` turns into JSON. There is no sample-data mode: local work uses the `dev` Postgres schema.
 
-`@mstgolf/analytics` is pure & framework-free (runs in the browser + on the server + in jobs) so the dashboard, the API, and the workers all share one set of tested statistical functions. The dashboard reads through a repository (`apps/web-admin/lib/repo.ts`) with a sample-data backend (no infra) and a live-Postgres backend (`DATA_SOURCE=database`).
+## Database environments
+One Neon database, one Postgres schema per environment: `public` = production, `preview`, `dev`, `test_core` (integration tests, reset every run). `DATABASE_SCHEMA` selects it (`databaseUrl()` in @mstgolf/database). Run Prisma only through `pnpm db:deploy` / `db:seed` / `db:status` — the wrapper refuses `public` unless `ALLOW_PRODUCTION=1`. New migrations: write the SQL with `prisma migrate diff --from-schema-datamodel <old> --to-schema-datamodel prisma/schema.prisma --script` (there is no shadow database), then add hand-written guards (partial unique indexes) at the end.
 
-## Data model
-Core: `Organization`, `User`, `Member`, `Event`, `PointTransaction`, `FieldDefinition`.
-Safety/PDPA: `LineChannel` (encrypted per-org secrets), `Consent` (versioned history).
-Data-driven CRM: `Segment` (rule-based audiences), `Automation` (trigger→action), `RfmSnapshot` (nightly per-member metrics for trend & segment-migration).
-`Event.payload` is typed per `EventType` in `@mstgolf/shared`/`@mstgolf/analytics` — `PURCHASE` carries `{ amount, currency, items?, channel? }` so RFM/CLV/affinity are computable.
+## Money and time
+Money is integer **satang** in columns ending `Satang`; convert only with `toSatang` / `formatBaht` from `@mstgolf/core/money`. Tier thresholds in settings are whole baht. Business time is Bangkok (UTC+7, no DST): use `@mstgolf/core/time` (`fromLocal`, `localDateKey`, `formatHm`…), never the server's local time. Client components import only the `/time` and `/money` subpaths (the root pulls in Prisma).
+
+## LINE
+One Rich Menu owned by the LINE agency; only buttons A+B (`liff.line.me/<liffId>/member`) and D (`…/booking`) link to us. No webhook. The customer's LINE UID comes from verifying a LIFF / LINE Login ID token; messages go out through the Notification outbox (`enqueue` inside the same transaction, `processOutbox` delivers with retry keys). Credentials live encrypted in `LineChannel`, entered at Settings › LINE.
 
 ## Roadmap (detail in MST-DEV-PLAN.md §11)
 Phase 1 is the contracted scope (quote QT-20260923-01): member system · database design · simulator booking · POS import + Summary Dashboard · website. Rewards, campaigns and the intelligence pages are out of contract — keep their code, hide them per tenant with `settings.features`.
@@ -72,4 +75,4 @@ Phase 1 is the contracted scope (quote QT-20260923-01): member system · databas
 LINE: one Rich Menu owned by the LINE team (only buttons A+B and D link to us), no webhook, UID from LINE Login in the OA's provider, push via the Messaging API token.
 
 ## Commands
-See `README.md`. TL;DR: `pnpm install` → `pnpm infra:up` → `pnpm db:generate` → `pnpm db:migrate` → `pnpm db:seed` → `pnpm dev`.
+See `README.md`. TL;DR: `pnpm install` → `pnpm db:generate` → `pnpm db:deploy` → `pnpm db:seed` → `pnpm demo` (optional) → `pnpm --filter @mstgolf/web-admin dev`. Tests: `pnpm --filter @mstgolf/core test` and `pnpm test:db`.
