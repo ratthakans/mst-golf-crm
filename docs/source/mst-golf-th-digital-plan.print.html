@@ -91,6 +91,15 @@
   .ph img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .ph span { position: absolute; left: 2.4mm; bottom: 2.4mm; font-size: 7.6pt; font-weight: 600; background: rgba(11,61,41,0.82); color: #fff; padding: 0.5mm 2.2mm; border-radius: 1.5mm; }
 
+  .track { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr auto 1fr; gap: 2mm; align-items: stretch; }
+  .stage { border: 1px solid var(--line); border-radius: 3mm; padding: 3mm 3.2mm; display: grid; gap: 1.2mm; align-content: start; }
+  .stage b { font-size: 10.3pt; }
+  .stage .pill { justify-self: start; }
+  .stage em { font-style: normal; font-size: 7.6pt; font-weight: 700; color: var(--brand); margin-top: 0.6mm; }
+  .stage.dk { background: var(--brand-deep); border-color: var(--brand-deep); color: #eaf4ee; }
+  .stage.dk b { color: #fff; }
+  .arrow { align-self: center; color: var(--faint); font-size: 12pt; }
+
   /* roadmap */
   .gantt { display: grid; grid-template-columns: 38mm repeat(24, 1fr); font-size: 7.4pt; row-gap: 1.6mm; align-items: center; }
   .gantt .lbl { font-weight: 600; font-size: 8pt; padding-right: 2mm; }
@@ -174,15 +183,15 @@
     <div class="card">
       <h3>แผนงานโดยสรุป</h3>
       <table class="t">
-        <thead><tr><th>เฟส</th><th>ได้อะไร</th><th>ระยะเวลา</th></tr></thead>
+        <thead><tr><th>เฟส</th><th>ได้อะไร</th><th>เริ่มเมื่อ</th></tr></thead>
         <tbody>
-          <tr><td>0 · Discovery</td><td>ตัดสินใจร่วมกับ MST TH และกลุ่ม · ตรวจสิทธิ์แบรนด์ · ราคาบาท · ช่องทางชำระเงิน</td><td>2 สัปดาห์</td></tr>
-          <tr><td>1 · Thai-ready</td><td>ราคาบาทถูกต้อง · ภาษาไทยทุกหน้าหลัก · หน้าบริการครบ · ต่อระบบสมาชิก/จอง · SEO</td><td>6 สัปดาห์</td></tr>
-          <tr class="hl"><td>2 · เปิดขาย</td><td>ชำระเงินไทย · จัดส่ง/รับที่ร้าน · ใบกำกับภาษี · แต้มจากคำสั่งซื้อ · ดีลสมาชิก</td><td>8 สัปดาห์</td></tr>
-          <tr><td>3 · Growth</td><td>Marketplace · แคมเปญจากข้อมูลสมาชิก · แลกแต้ม · รีวิว</td><td>ต่อเนื่อง</td></tr>
+          <tr><td>0 · Discovery</td><td>ตัดสินใจร่วมกับ MST TH และกลุ่ม · ตรวจสิทธิ์แบรนด์ · ราคาบาท · ช่องทางชำระเงิน</td><td>อนุมัติแผนนี้</td></tr>
+          <tr><td style="white-space:nowrap">1 · Thai-ready</td><td>ราคาบาทถูกต้อง · ภาษาไทยทุกหน้าหลัก · หน้าบริการครบ · ต่อระบบสมาชิก/จอง · SEO</td><td>ได้สิทธิ์ร้าน Shopify</td></tr>
+          <tr class="hl"><td>2 · เปิดขาย</td><td>ชำระเงินไทย · จัดส่ง/รับที่ร้าน · ใบกำกับภาษี · แต้มจากคำสั่งซื้อ · ดีลสมาชิก</td><td>ราคาผ่านการตรวจ · ชำระเงินอนุมัติ</td></tr>
+          <tr><td>3 · Growth</td><td>Marketplace · แคมเปญจากข้อมูลสมาชิก · แลกแต้ม · รีวิว</td><td>หลังเปิดขาย · ต่อเนื่อง</td></tr>
         </tbody>
       </table>
-      <p class="cap">นับจากวันที่ได้การตัดสินใจในหน้า 12 · เฟส 1 เปิดให้ลูกค้าเห็นได้ก่อนเฟส 2</p>
+      <p class="cap">แต่ละเฟสเริ่มเมื่อเงื่อนไขครบ · เฟส 1 เปิดให้ลูกค้าเห็นได้ก่อนเฟส 2</p>
     </div>
   </div>
   <div class="ft"><span>MST Golf Thailand · แผนเว็บไซต์และอีคอมเมิร์ซ</span><span>02</span></div>
@@ -446,7 +455,7 @@
             <tr><td>ปลายทาง</td><td>เฉพาะสินค้าราคาไม่เกินที่กำหนด</td></tr>
           </tbody>
         </table>
-        <p class="cap">Shopify Payments ไม่เปิดในไทย — เทียบผู้ให้บริการที่ต่อกับ Shopify ได้ เช่น 2C2P · Opn Payments · GB Prime Pay · อนุมัติร้านค้า 2–4 สัปดาห์</p>
+        <p class="cap">Shopify Payments ไม่เปิดในไทย — เทียบผู้ให้บริการที่ต่อกับ Shopify ได้ เช่น 2C2P · Opn Payments · GB Prime Pay · ยื่นขออนุมัติร้านค้าตั้งแต่เฟส 0</p>
       </div>
     </div>
     <div class="grid2">
@@ -525,21 +534,17 @@
   <div class="head">
     <div class="kicker">07 · แผนงาน</div>
     <h2>เปิดทีละเฟส ทุกเฟสใช้งานได้จริง</h2>
-    <p>นับสัปดาห์จากวันที่ได้การตัดสินใจในหน้า 12 · ยื่นขอผู้ให้บริการชำระเงินตั้งแต่สัปดาห์แรกเพื่อไม่ให้เฟส 2 ต้องรอ</p>
+    <p>แต่ละเฟสเริ่มเมื่อเงื่อนไขของเฟสนั้นครบ · ยื่นขอผู้ให้บริการชำระเงินตั้งแต่เฟส 0 เพื่อไม่ให้เฟส 2 ต้องรอ</p>
   </div>
   <div class="body">
-    <div class="card">
-      <div class="gantt">
-        <div></div>
-        <div class="wk">1</div><div class="wk">2</div><div class="wk">3</div><div class="wk">4</div><div class="wk">5</div><div class="wk">6</div><div class="wk">7</div><div class="wk">8</div><div class="wk">9</div><div class="wk">10</div><div class="wk">11</div><div class="wk">12</div><div class="wk">13</div><div class="wk">14</div><div class="wk">15</div><div class="wk">16</div><div class="wk">17</div><div class="wk">18</div><div class="wk">19</div><div class="wk">20</div><div class="wk">21</div><div class="wk">22</div><div class="wk">23</div><div class="wk">24</div>
-        <div class="lbl">0 · Discovery</div><div class="bar b0" style="grid-column: 2 / span 2">ตัดสินใจ</div><div style="grid-column: 4 / -1"></div>
-        <div class="lbl">1 · Thai-ready</div><div style="grid-column: 2 / span 2"></div><div class="bar b1" style="grid-column: 4 / span 6">ราคา · ภาษา · บริการ</div><div style="grid-column: 10 / -1"></div>
-        <div class="lbl">ขออนุมัติชำระเงิน</div><div style="grid-column: 2 / span 1"></div><div class="bar b0" style="grid-column: 3 / span 4">KYC</div><div style="grid-column: 7 / -1"></div>
-        <div class="lbl">2 · เปิดขาย</div><div style="grid-column: 2 / span 7"></div><div class="bar b2" style="grid-column: 9 / span 8">ชำระเงิน · จัดส่ง · แต้ม</div><div style="grid-column: 17 / -1"></div>
-        <div class="lbl">Soft launch</div><div style="grid-column: 2 / span 14"></div><div class="bar b1" style="grid-column: 16 / span 2">สมาชิก</div><div style="grid-column: 18 / -1"></div>
-        <div class="lbl">3 · Growth</div><div style="grid-column: 2 / span 16"></div><div class="bar b3" style="grid-column: 18 / span 7">Marketplace · แคมเปญ →</div>
-        <div></div><div style="grid-column: 2 / span 8"></div><div class="ms" style="grid-column: 10 / span 6">▲ เว็บไทยพร้อม (สัปดาห์ 9)</div><div style="grid-column: 16 / span 2"></div><div class="ms" style="grid-column: 18 / span 7">▲ เปิดขาย (สัปดาห์ 17)</div>
-      </div>
+    <div class="track">
+      <div class="stage"><span class="pill p-gray">เฟส 0</span><b>Discovery</b><span class="small muted">ตัดสินใจ 8 ข้อ · สิทธิ์ร้าน · ยื่นชำระเงิน</span></div>
+      <div class="arrow">→</div>
+      <div class="stage"><span class="pill p-green">เฟส 1</span><b>Thai-ready</b><span class="small muted">ราคา · ภาษา · บริการ · สมาชิก/จอง</span><em>▲ เว็บไทยพร้อม</em></div>
+      <div class="arrow">→</div>
+      <div class="stage"><span class="pill p-gold">เฟส 2</span><b>เปิดขาย</b><span class="small muted">ชำระเงิน · จัดส่ง · แต้ม · soft launch สมาชิก</span><em>▲ เปิดขายออนไลน์</em></div>
+      <div class="arrow">→</div>
+      <div class="stage dk"><span class="pill p-green" style="background:#fff">เฟส 3</span><b>Growth</b><span class="small">Marketplace · แคมเปญ · แลกแต้ม</span></div>
     </div>
 
     <div class="grid3">
@@ -573,7 +578,7 @@
           <li>ใบกำกับภาษี</li>
           <li>คำสั่งซื้อ → แต้ม · ดีลตามระดับ</li>
           <li>แจ้งสถานะทาง LINE</li>
-          <li>Soft launch สมาชิกก่อน 2 สัปดาห์</li>
+          <li>Soft launch กับสมาชิกก่อนเปิดทั่วไป</li>
         </ul>
       </div>
     </div>
@@ -699,7 +704,7 @@
           <tr><td>สิทธิ์ขายแบรนด์</td><td>บางแบรนด์มีผู้แทนในไทยที่กำหนดช่องทางและราคา → ยืนยันรายชื่อในเฟส 0</td></tr>
           <tr><td>สองโดเมน</td><td>ย้ายเนื้อหาเข้า mstgolf.co.th · redirect 301 · LINE และ Google ชี้โดเมนเดียว</td></tr>
           <tr><td>สมาชิกไม่ตรงกลุ่ม</td><td>ตกลงกับกลุ่มว่าไทยใช้ Platform · กติกาแลกแต้มปรับให้ใกล้กลุ่ม</td></tr>
-          <tr><td>ชำระเงินอนุมัติช้า</td><td>ยื่น KYC สัปดาห์แรก · เฟส 1 ไม่ต้องรอ</td></tr>
+          <tr><td>ชำระเงินอนุมัติช้า</td><td>ยื่น KYC ตั้งแต่เฟส 0 · เฟส 1 ไม่ต้องรอ</td></tr>
           <tr><td>หลังร้านไม่พอ</td><td>Soft launch กับสมาชิก · กำหนดเวลาตอบ LINE · คู่มือแพ็กของ</td></tr>
         </tbody>
       </table>
@@ -731,9 +736,9 @@
     </table>
 
     <div class="grid3">
-      <div class="card tint"><h3>สัปดาห์ที่ 1</h3><ul class="small"><li>Workshop 2 ชั่วโมง MST TH + ทีมกลุ่ม</li><li>ขอสิทธิ์ร้าน Shopify ไทย</li><li>ยื่นขอผู้ให้บริการชำระเงิน</li></ul></div>
-      <div class="card tint"><h3>สัปดาห์ที่ 2</h3><ul class="small"><li>สรุปการตัดสินใจ 8 ข้อ</li><li>แผนเนื้อหาและวันถ่ายภาพ</li><li>ขอบเขตและใบเสนอราคาเฟส 1–2</li></ul></div>
-      <div class="card tint"><h3>สัปดาห์ที่ 3</h3><ul class="small"><li>เริ่มเฟส 1: แก้ราคาและภาษาก่อน</li><li>เปิดส่วนใหม่ทีละหมวดให้ MST ตรวจ</li></ul></div>
+      <div class="card tint"><h3>ขั้นที่ 1</h3><ul class="small"><li>Workshop 2 ชั่วโมง MST TH + ทีมกลุ่ม</li><li>ขอสิทธิ์ร้าน Shopify ไทย</li><li>ยื่นขอผู้ให้บริการชำระเงิน</li></ul></div>
+      <div class="card tint"><h3>ขั้นที่ 2</h3><ul class="small"><li>สรุปการตัดสินใจ 8 ข้อ</li><li>แผนเนื้อหาและวันถ่ายภาพ</li><li>ขอบเขตและใบเสนอราคาเฟส 1–2</li></ul></div>
+      <div class="card tint"><h3>ขั้นที่ 3</h3><ul class="small"><li>เริ่มเฟส 1: แก้ราคาและภาษาก่อน</li><li>เปิดส่วนใหม่ทีละหมวดให้ MST ตรวจ</li></ul></div>
     </div>
 
     <div class="rec">
