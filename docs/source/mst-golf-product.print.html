@@ -1,0 +1,444 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>MST Golf Platform — ระบบทำอะไรบ้าง</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+  @page { size: A4 portrait; margin: 0; }
+  :root {
+    --ground: #ffffff; --soft: #f4f7f5; --soft-2: #eef3f0; --ink: #14201b; --muted: #5d6e66; --faint: #8a9a92; --line: #dde6e1;
+    --brand: #0a5c36; --brand-deep: #0b3d29; --action: #16a34a; --tint: #e5f2ea; --line-green: #06c755;
+    --gold-bg: #fdf3d7; --gold-ink: #8a5a06; --silver-bg: #eceff2; --silver-ink: #3b4652;
+    --sans: "Anuphan", "Noto Sans Thai", "Thonburi", sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  }
+  * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  html, body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--sans); font-size: 9.4pt; line-height: 1.5; }
+  h1, h2, h3, h4, p { margin: 0; }
+  ul { margin: 0; padding-left: 4.4mm; display: grid; gap: 1mm; }
+  .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+  b { font-weight: 700; }
+
+  .page { width: 210mm; height: 297mm; padding: 13mm 14mm 10mm; display: grid; grid-template-rows: auto 1fr auto; gap: 5mm; page-break-after: always; overflow: hidden; position: relative; }
+  .page:last-child { page-break-after: auto; }
+  .kicker { font-family: var(--mono); font-size: 7.8pt; letter-spacing: 1.2px; color: var(--brand); text-transform: uppercase; }
+  .head h2 { font-size: 20pt; line-height: 1.15; margin-top: 1mm; }
+  .head p { color: var(--muted); font-size: 10pt; margin-top: 1.5mm; max-width: 165mm; }
+  .body { display: grid; gap: 4.5mm; align-content: start; min-height: 0; }
+  .ft { display: flex; justify-content: space-between; font-size: 7.4pt; color: var(--faint); border-top: 1px solid var(--line); padding-top: 2.4mm; }
+
+  .card { border: 1px solid var(--line); border-radius: 3mm; padding: 3.6mm 4mm; }
+  .card h3 { font-size: 10.5pt; margin-bottom: 1.8mm; }
+  .card.soft { background: var(--soft); border-color: var(--soft); }
+  .card.tint { background: var(--tint); border-color: var(--tint); }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 4mm; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3.5mm; }
+  .muted { color: var(--muted); }
+  .small { font-size: 8.4pt; }
+  .cap { font-size: 7.4pt; color: var(--faint); margin-top: 1.4mm; }
+
+  .steps { display: grid; gap: 2.2mm; counter-reset: s; }
+  .step { display: grid; grid-template-columns: 7mm 1fr; gap: 2.5mm; align-items: start; }
+  .step::before { counter-increment: s; content: counter(s); width: 6.4mm; height: 6.4mm; border-radius: 50%; background: var(--brand); color: #fff; font-weight: 700; font-size: 8.4pt; display: grid; place-items: center; }
+  .step b { display: block; font-size: 9.6pt; }
+  .step span { color: var(--muted); font-size: 8.7pt; }
+
+  table.t { width: 100%; border-collapse: collapse; font-size: 8.8pt; }
+  .t th { text-align: left; font-size: 7.8pt; font-weight: 600; color: var(--muted); padding: 1.8mm 2.4mm; border-bottom: 1.3px solid var(--ink); }
+  .t td { padding: 2mm 2.4mm; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .t td:first-child { font-weight: 600; white-space: nowrap; }
+  .t .c { text-align: center; }
+  .yes { color: var(--brand); font-weight: 700; }
+  .no { color: var(--faint); }
+
+  .phone { border: 1px solid var(--line); border-radius: 5mm; overflow: hidden; box-shadow: 0 2mm 6mm rgba(10, 40, 26, 0.10); background: #fff; }
+  .phone img { display: block; width: 100%; }
+  .shot { border: 1px solid var(--line); border-radius: 2.5mm; overflow: hidden; box-shadow: 0 1.5mm 5mm rgba(10, 40, 26, 0.08); }
+  .shot img { display: block; width: 100%; }
+  .shot.crop { height: var(--h, 70mm); }
+  .shot.crop img { height: 100%; object-fit: cover; object-position: top left; }
+  .phone.crop { height: var(--h, 90mm); }
+  .phone.crop img { height: 100%; object-fit: cover; object-position: top; }
+
+  .pill { display: inline-block; padding: 0.3mm 2.2mm; border-radius: 99px; font-size: 7.8pt; font-weight: 700; }
+  .pill.member { background: var(--tint); color: var(--brand); }
+  .pill.silver { background: var(--silver-bg); color: var(--silver-ink); }
+  .pill.gold { background: var(--gold-bg); color: var(--gold-ink); }
+  .pill.line { background: #e6f9ee; color: #047a37; }
+  .pill.sys { background: var(--brand); color: #fff; }
+  .pill.staff { background: var(--soft-2); color: var(--muted); }
+
+  .formula { font-family: var(--mono); font-size: 8.8pt; background: var(--soft); border-radius: 2.5mm; padding: 3mm 4mm; line-height: 1.7; }
+  .note { font-size: 8.4pt; color: var(--muted); border-left: 2px solid var(--brand); padding-left: 3mm; }
+
+  /* cover */
+  .cover { background: var(--brand-deep); color: #eaf4ee; padding: 0; grid-template-rows: 1fr auto; gap: 0; }
+  .cover-top { padding: 18mm 16mm 0; display: grid; gap: 8mm; align-content: start; }
+  .cover .kicker { color: #9fd6b6; }
+  .cover h1 { font-size: 34pt; line-height: 1.05; color: #fff; margin-top: 2mm; }
+  .cover .lede { font-size: 12pt; color: #c7e2d2; max-width: 150mm; line-height: 1.55; }
+  .cover-hero { height: 88mm; margin: 0 16mm; border-radius: 4mm; overflow: hidden; position: relative; }
+  .cover-hero img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .cover-hero .tag { position: absolute; right: 3mm; bottom: 3mm; font-size: 6.8pt; background: rgba(0,0,0,0.45); color: #fff; padding: 0.6mm 2mm; border-radius: 1.5mm; }
+  .parts { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2.5mm; padding: 0 16mm; }
+  .part { background: rgba(255,255,255,0.07); border: 1px solid rgba(185,212,196,0.25); border-radius: 3mm; padding: 3mm; }
+  .part .n { font-family: var(--mono); font-size: 7.4pt; color: #9fd6b6; }
+  .part b { display: block; font-size: 10pt; color: #fff; margin: 0.6mm 0 0.8mm; line-height: 1.25; }
+  .part span { font-size: 7.8pt; color: #c7e2d2; line-height: 1.4; display: block; }
+  .cover-foot { padding: 6mm 16mm 10mm; display: flex; justify-content: space-between; align-items: end; font-size: 8pt; color: #9fd6b6; }
+  .who { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2.5mm; padding: 0 16mm; }
+  .who div { border-top: 1px solid rgba(185,212,196,0.35); padding-top: 2mm; font-size: 8.4pt; color: #c7e2d2; }
+  .who b { color: #fff; display: block; font-size: 9.4pt; }
+  .toc { font-size: 8.4pt; color: #c7e2d2; display: grid; grid-template-columns: repeat(3, auto); gap: 0.6mm 8mm; }
+  .toc span b { color: #fff; font-family: var(--mono); margin-right: 1.5mm; }
+</style>
+</head>
+<body>
+
+<!-- ═════════ 1 · COVER ═════════ -->
+<section class="page cover">
+  <div class="cover-top">
+    <div>
+      <div class="kicker">MST Golf Thailand · Phase 1</div>
+      <h1>MST Golf Platform<br>ระบบทำอะไรบ้าง</h1>
+    </div>
+    <p class="lede">ระบบสมาชิก แต้มสะสม และจองซิมกอล์ฟของ MST Golf ลูกค้าใช้ผ่าน LINE และเว็บไซต์ พนักงานดูแลจากหลังบ้านที่เดียว ลูกค้า 1 คนมีรหัสสมาชิกเดียว ไม่ว่าเข้ามาทางไหน</p>
+    <div class="cover-hero"><img src="img/hero.jpg" alt=""><span class="tag">ภาพประกอบ</span></div>
+    <div class="parts">
+      <div class="part"><span class="n">01</span><b>ระบบสมาชิก</b><span>สมัครผ่าน LINE · บัตร QR · แต้มและระดับ</span></div>
+      <div class="part"><span class="n">02</span><b>ฐานข้อมูลลูกค้า</b><span>รหัสเดียวผูก LINE และเบอร์ · PDPA · สำรองข้อมูล</span></div>
+      <div class="part"><span class="n">03</span><b>ระบบจอง Golf Simulator</b><span>จองจาก LINE เว็บ walk-in โทร ตารางเดียว</span></div>
+      <div class="part"><span class="n">04</span><b>ระบบนำยอดเข้า</b><span>บิล POS → แต้ม ระดับ ข้อความ · Summary Dashboard</span></div>
+      <div class="part"><span class="n">05</span><b>Website</b><span>ข้อมูลร้าน บทความ สมัคร จอง ดูแต้ม</span></div>
+    </div>
+    <div class="who">
+      <div><b>ลูกค้า</b>LINE OA และเว็บไซต์ — สมัคร ดูแต้ม จองซิม รับข้อความ</div>
+      <div><b>พนักงาน MST</b>หลังบ้าน 5 ตำแหน่ง — สมาชิก นำเข้า POS ตารางซิม ตั้งค่า</div>
+      <div><b>ทีม LINE Marketing</b>Rich Menu auto reply แชต บรอดแคสต์ — ทำงานเหมือนเดิม</div>
+    </div>
+  </div>
+  <div class="cover-foot">
+    <div class="toc">
+      <span><b>02</b>ระบบสมาชิก</span><span><b>03</b>แต้มและระดับ</span><span><b>04</b>ระบบจองซิม</span>
+      <span><b>05</b>นำยอดเข้า POS · Dashboard</span><span><b>06</b>หลังบ้านและสิทธิ์</span><span><b>07</b>เว็บไซต์ · LINE · ข้อมูล</span>
+    </div>
+    <div>จัดทำโดย ORIONS · กันยายน 2026</div>
+  </div>
+</section>
+
+<!-- ═════════ 2 · MEMBERS ═════════ -->
+<section class="page">
+  <div class="head">
+    <div class="kicker">01 · ระบบสมาชิก</div>
+    <h2>สมัครในไม่ถึงนาที บัตรสมาชิกอยู่ในมือถือ</h2>
+    <p>ลูกค้ากดปุ่ม "สมัครสมาชิก" ใน LINE หรือบนเว็บไซต์ ล็อกอินด้วย LINE ไม่ต้องตั้งรหัสผ่าน · สมาชิกกดปุ่มเดิมเปิดบัตรและแต้ม</p>
+  </div>
+  <div class="body">
+    <div style="display:grid; grid-template-columns: 52mm 52mm 1fr; gap: 5mm; align-items: start;">
+      <div><div class="phone"><img src="img/web-signup.jpg" alt=""></div><div class="cap">หน้าสมัครสมาชิก</div></div>
+      <div><div class="phone"><img src="img/web-card.jpg" alt=""></div><div class="cap">บัตรสมาชิก QR · แต้ม · ระยะถึงระดับถัดไป</div></div>
+      <div class="steps">
+        <div class="step"><div><b>ล็อกอินด้วย LINE</b><span>ใน LINE เข้าได้ทันที · บนเว็บกดล็อกอินครั้งเดียว บัญชีเดียวกัน</span></div></div>
+        <div class="step"><div><b>กรอกชื่อ เบอร์มือถือ ยอมรับข้อกำหนด</b><span>วันเกิด อีเมล ไม่บังคับ (มีวันเกิด ได้แต้ม ×2 ในเดือนเกิด) · เลือกรับข่าวสารได้</span></div></div>
+        <div class="step"><div><b>ได้ 1,600 แต้มต้อนรับทันที</b><span>พร้อมข้อความต้อนรับใน LINE และรหัสสมาชิก MST00000001</span></div></div>
+        <div class="step"><div><b>ใช้บัตรที่เคาน์เตอร์</b><span>แสดง QR หรือแจ้งเบอร์ตอนจ่ายเงิน · ปุ่มเพิ่มความสว่างสำหรับสแกน</span></div></div>
+        <div class="card soft" style="margin-top: 1mm;">
+          <h3>ในหน้าสมาชิกมี</h3>
+          <ul class="small">
+            <li><b>บัตร</b> ระดับ Member / Silver / Gold · แต้มคงเหลือ · "อีก ฿X ถึง Silver"</li>
+            <li><b>แต้ม</b> ประวัติทุกรายการพร้อมที่มา</li>
+            <li><b>โปรไฟล์</b> แก้ชื่อ อีเมล รับข่าวสาร · วันเกิดตั้งได้ครั้งเดียว</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <h3>ลูกค้าคนเดิม ไม่เกิดบัญชีซ้ำ</h3>
+        <ul class="small">
+          <li>เคยสมัครที่เคาน์เตอร์ หรือเคยให้เบอร์ในบิล POS → สมัครใน LINE ด้วยเบอร์เดิม <b>บัญชีผูกกันเอง</b> แต้มและประวัติเดิมอยู่ครบ</li>
+          <li>แต้มต้อนรับได้ <b>ครั้งเดียวต่อคน</b></li>
+          <li>เบอร์ที่ผูกกับ LINE คนอื่นแล้ว สมัครซ้ำไม่ได้ ระบบแจ้งให้ติดต่อร้าน และส่งเรื่องเข้าคิวให้พนักงานตรวจ</li>
+          <li>เบอร์ยืนยันเมื่อบิลแรกที่มีเบอร์นี้เข้าระบบ หรือพนักงานสร้างให้ที่เคาน์เตอร์ (ไม่ต้องใช้ OTP)</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>ข้อความใน LINE ถึงสมาชิก</h3>
+        <table class="t">
+          <tbody>
+            <tr><td>ต้อนรับ</td><td>รหัสสมาชิก + แต้มต้อนรับ</td></tr>
+            <tr><td>ได้รับแต้ม</td><td>ยอดซื้อ แต้มที่ได้ คงเหลือ อีกเท่าไรถึงระดับถัดไป — 1 ข้อความต่อวันรวมทุกบิล</td></tr>
+            <tr><td>เลื่อนระดับ</td><td>ระดับใหม่และสิทธิ์ที่ได้</td></tr>
+            <tr><td>การจองซิม</td><td>ยืนยัน · เตือนก่อนเวลา · ยกเลิก · ย้ายเวลา (หน้า 04)</td></tr>
+          </tbody>
+        </table>
+        <p class="cap">ทุกข้อความเปิด/ปิดได้ใน ตั้งค่า · นับรวมในโควตาข้อความของ LINE OA</p>
+      </div>
+    </div>
+    <p class="cap">หน้าจอจริงจากระบบ · ชื่อและตัวเลขเป็นข้อมูลทดสอบ</p>
+  </div>
+  <div class="ft"><span>MST Golf Platform · ระบบทำอะไรบ้าง</span><span>02</span></div>
+</section>
+
+<!-- ═════════ 3 · POINTS & TIERS ═════════ -->
+<section class="page">
+  <div class="head">
+    <div class="kicker">01 · ระบบสมาชิก — แต้มและระดับ</div>
+    <h2>3 ระดับ ตามยอดซื้อ 12 เดือน</h2>
+    <p>ระดับคิดจากยอดซื้อสุทธิย้อนหลัง 12 เดือน ไม่ใช่แต้มคงเหลือ · ทุกค่าในหน้านี้ปรับได้ในหลังบ้านโดยไม่ต้องแก้โปรแกรม</p>
+  </div>
+  <div class="body">
+    <table class="t">
+      <thead><tr><th>ระดับ</th><th>ยอดซื้อ 12 เดือน</th><th>แต้มต่อ 1 บาท</th><th>ส่วนลดร้าน</th><th>ส่วนลดซิม</th><th>จองซิมล่วงหน้า</th><th>เดือนเกิด</th></tr></thead>
+      <tbody>
+        <tr><td><span class="pill member">Member</span></td><td>สมัครแล้วเริ่มที่นี่</td><td class="mono">1</td><td>—</td><td>—</td><td>14 วัน</td><td>แต้ม ×2</td></tr>
+        <tr><td><span class="pill silver">Silver</span></td><td class="mono">฿100,000 ขึ้นไป</td><td class="mono">1.25</td><td>5%</td><td>10%</td><td>14 วัน</td><td>แต้ม ×2</td></tr>
+        <tr><td><span class="pill gold">Gold</span></td><td class="mono">฿1,000,000 ขึ้นไป</td><td class="mono">1.5</td><td>10%</td><td>20%</td><td>21 วัน</td><td>แต้ม ×2</td></tr>
+      </tbody>
+    </table>
+
+    <div class="grid2">
+      <div class="card">
+        <h3>คิดแต้มยังไง</h3>
+        <div class="formula">แต้ม = ยอดซื้อสุทธิ × แต้มต่อ 1 บาทของระดับ<br>เดือนเกิด = แต้มคูณ 2</div>
+        <ul class="small" style="margin-top: 3mm;">
+          <li>Member ซื้อ ฿12,900 → <b>12,900 แต้ม</b></li>
+          <li>Silver ซื้อ ฿10,000 → <b>12,500 แต้ม</b></li>
+          <li>Silver ซื้อ ฿10,000 ในเดือนเกิด → <b>25,000 แต้ม</b></li>
+          <li>สินค้าที่ตั้งเป็น "ไม่ได้แต้ม" (เช่น บัตรของขวัญ) ไม่นำมาคิด</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>ขึ้น–ลงระดับ</h3>
+        <div class="steps">
+          <div class="step"><div><b>ขึ้นทันที</b><span>บิลที่ทำให้ยอด 12 เดือนถึงเกณฑ์ → ขึ้นระดับทันทีพร้อมข้อความ LINE · บิลนั้นคิดแต้มตามระดับเดิม บิลถัดไปได้อัตราใหม่</span></div></div>
+          <div class="step"><div><b>ลงเดือนละครั้ง</b><span>ถ้ายอด 12 เดือนลดลง ระดับปรับวันที่ 1 ของเดือน ไม่ลดกลางเดือน</span></div></div>
+          <div class="step"><div><b>แลกแต้มแล้วระดับไม่ตก</b><span>เพราะระดับไม่ได้ดูแต้มคงเหลือ</span></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid3">
+      <div class="card tint"><h3>ส่วนลดร้านและซิม</h3><p class="small">พนักงานให้ส่วนลดที่ POS / ตอนเช็กอิน โดยดูระดับจากบัตรสมาชิก · ราคาซิมหลังส่วนลดแสดงให้ลูกค้าเห็นก่อนยืนยันการจอง</p></div>
+      <div class="card tint"><h3>คืนสินค้า</h3><p class="small">บิลคืนหักแต้มตามสัดส่วนที่คืน · ยกเลิกทั้งบิลหักทั้งหมด · ยอด 12 เดือนลดตาม</p></div>
+      <div class="card tint"><h3>ปรับแต้มด้วยมือ</h3><p class="small">ต้องใส่เหตุผลทุกครั้ง ลูกค้าเห็นในประวัติ · ผู้จัดการสาขา/บริการลูกค้าครั้งละไม่เกิน ±1,000 แต้ม</p></div>
+    </div>
+    <p class="note">Phase 1 เป็นการ <b>สะสมแต้ม</b> — การแลกรางวัลและแต้มหมดอายุอยู่ใน Phase 2 · เกณฑ์ อัตรา และสิทธิประโยชน์เป็นค่าเริ่มต้นที่เสนอ MST ปรับได้ก่อนเปิดใช้</p>
+  </div>
+  <div class="ft"><span>MST Golf Platform · ระบบทำอะไรบ้าง</span><span>03</span></div>
+</section>
+
+<!-- ═════════ 4 · BOOKING ═════════ -->
+<section class="page">
+  <div class="head">
+    <div class="kicker">03 · ระบบจอง Golf Simulator</div>
+    <h2>จองได้ 4 ทาง ลงตารางเดียว ไม่มีจองซ้อน</h2>
+    <p>ลูกค้าจองจากปุ่ม "Booking Golf Sim" ใน LINE หรือบนเว็บไซต์ · พนักงานรับ walk-in และโทรจองในหลังบ้าน · ทุกช่องทางเห็นช่องว่างตรงกัน</p>
+  </div>
+  <div class="body">
+    <div style="display:grid; grid-template-columns: 52mm 1fr; gap: 5mm; align-items: start;">
+      <div><div class="phone"><img src="img/web-book.jpg" alt=""></div><div class="cap">หน้าจองของลูกค้า — ว่าง / เต็ม</div></div>
+      <div style="display:grid; gap: 4mm;">
+        <div class="steps">
+          <div class="step"><div><b>เลือกวันและช่องเวลา</b><span>เห็นตาราง 3 lane รายชั่วโมง ว่าง · เต็ม · ปิด (ไม่แสดงว่าใครจอง) · ยังไม่เป็นสมาชิก ระบบพาไปสมัครก่อนแล้วกลับมาหน้าเดิม</span></div></div>
+          <div class="step"><div><b>เลือกจำนวนคน เห็นราคาหลังส่วนลด</b><span>ระบบถือช่องไว้ให้ 5 นาทีระหว่างกดยืนยัน คนอื่นจองช่องนี้ไม่ได้</span></div></div>
+          <div class="step"><div><b>ยืนยัน → ข้อความ LINE</b><span>ข้อความยืนยันทันที และเตือนก่อนเวลา 2 ชั่วโมง</span></div></div>
+          <div class="step"><div><b>มาถึงร้าน → เช็กอิน ชำระที่ร้าน</b><span>"การจองของฉัน" อยู่หน้าเดียวกัน ยกเลิกเองได้ก่อนเวลา 2 ชั่วโมง</span></div></div>
+        </div>
+        <table class="t">
+          <thead><tr><th>กติกา</th><th>ค่าเริ่มต้น (ปรับได้)</th></tr></thead>
+          <tbody>
+            <tr><td>Lane / ราคา</td><td>3 lane · สูงสุด 3 คนต่อ lane · ฿1,000 ต่อชั่วโมง</td></tr>
+            <tr><td>ช่องเวลา</td><td>ครั้งละ 1 ชั่วโมง ตรงชั่วโมง ตามเวลาเปิดร้าน (ตั้งแยกแต่ละวัน)</td></tr>
+            <tr><td>จองล่วงหน้า</td><td>14 วัน · Gold 21 วัน</td></tr>
+            <tr><td>จำกัดต่อคน</td><td>2 ช่องต่อวัน · การจองที่ยังไม่ถึงเวลาสูงสุด 4 รายการ</td></tr>
+            <tr><td>ไม่มาตามนัด</td><td>เกิน 15 นาทีไม่เช็กอิน พนักงานบันทึก no-show</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div>
+      <div class="shot crop" style="--h: 66mm"><img src="img/admin-cal.jpg" alt=""></div>
+      <div class="cap">ตารางซิมในหลังบ้าน — ป้ายบอกที่มา LINE · เว็บไซต์ · Walk-in · โทรจอง</div>
+    </div>
+    <div class="grid3">
+      <div class="card"><h3>พนักงานทำได้</h3><p class="small">จองให้ลูกค้า (ค้นสมาชิกหรือใส่ชื่อ+เบอร์) · เช็กอินพร้อมบันทึกยอดที่รับ · ไม่มาตามนัด · ยกเลิกพร้อมเหตุผล</p></div>
+      <div class="card"><h3>ย้ายเวลาง่าย</h3><p class="small">ลากการ์ดไปช่องใหม่ · ช่องที่มีคนจองแล้วย้ายไปไม่ได้ · ลูกค้าได้ข้อความแจ้งเวลาใหม่</p></div>
+      <div class="card"><h3>ปิด lane</h3><p class="small">ปิดซ่อม ปิดส่วนตัว อีเวนต์ · ช่วงที่ปิดลูกค้าจองไม่ได้ · ตารางอัปเดตเองทุก 15 วินาที</p></div>
+    </div>
+  </div>
+  <div class="ft"><span>MST Golf Platform · ระบบทำอะไรบ้าง</span><span>04</span></div>
+</section>
+
+<!-- ═════════ 5 · POS IMPORT + DASHBOARD ═════════ -->
+<section class="page">
+  <div class="head">
+    <div class="kicker">04 · ระบบนำยอดเข้า + Summary Dashboard</div>
+    <h2>บิลจากหน้าร้าน กลายเป็นแต้มของลูกค้า</h2>
+    <p>ไม่ต้องเปลี่ยน POS · พนักงานใส่เบอร์สมาชิกในหมายเหตุบิลตอนขาย แล้วนำไฟล์เข้าระบบวันละครั้ง</p>
+  </div>
+  <div class="body">
+    <div class="grid2">
+      <div class="card">
+        <h3>ขั้นตอนหน้าร้าน</h3>
+        <div class="steps">
+          <div class="step"><div><b>ตอนขาย</b><span>พิมพ์ในหมายเหตุบิล <span class="mono">MSTMEMBER:0891112233</span> หรือรหัส <span class="mono">MSTMEMBER:MST00000001</span></span></div></div>
+          <div class="step"><div><b>สิ้นวัน</b><span>export ไฟล์ CSV จาก POS → หลังบ้าน "นำเข้า POS" → วางไฟล์</span></div></div>
+          <div class="step"><div><b>ตรวจแล้วกดยืนยัน</b><span>ระบบให้แต้ม ปรับระดับ และส่งข้อความหาลูกค้าเอง</span></div></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>ระบบตรวจให้ก่อนนำเข้า</h3>
+        <ul class="small">
+          <li>อ่านไฟล์ภาษาไทยได้ทุกแบบ · เดาคอลัมน์ให้ ตั้งครั้งแรกแล้วจำไว้</li>
+          <li>แสดงจำนวนบิล จับคู่สมาชิกได้ ไม่มีเจ้าของ ผิดรูปแบบ ซ้ำ ยอดขาย แต้มที่จะให้</li>
+          <li><b>นำเข้าไฟล์เดิมซ้ำ แต้มไม่เบิ้ล</b> · บิลที่เคยนำเข้าแล้วข้ามให้เอง</li>
+          <li>เบอร์ที่ยังไม่เป็นสมาชิก → สร้างสมาชิกจากบิลให้ สมัคร LINE ทีหลังแต้มตามมาครบ</li>
+          <li>คืนสินค้า / ยกเลิกบิล หักแต้มให้ถูกต้อง</li>
+          <li>นำเข้าผิดไฟล์ ยกเลิกทั้งรอบได้ภายใน 7 วัน แต้มกลับครบ</li>
+        </ul>
+      </div>
+    </div>
+    <div class="grid2" style="align-items: start;">
+      <div><div class="shot"><img src="img/admin-import.jpg" alt=""></div><div class="cap">หน้านำเข้า POS · คุณภาพข้อมูลรายวัน · ประวัติการนำเข้า</div></div>
+      <div><div class="shot"><img src="img/admin-dash.jpg" alt=""></div><div class="cap">Summary Dashboard</div></div>
+    </div>
+    <div class="card">
+      <h3>Summary Dashboard — ภาพรวมสำหรับผู้บริหาร</h3>
+      <table class="t">
+        <tbody>
+          <tr><td>สมาชิกใหม่</td><td>จำนวนที่สมัครในช่วงที่เลือก แยกช่องทาง LINE · เว็บไซต์ · เคาน์เตอร์ · POS</td></tr>
+          <tr><td>ยอดซื้อของสมาชิก</td><td>ยอดสุทธิของบิลที่มีเลขสมาชิก · กราฟรายสัปดาห์</td></tr>
+          <tr><td>ยอดขายที่ระบุตัวสมาชิกได้</td><td>% ของยอดขายที่นำเข้าทั้งหมด — ยิ่งสูง แปลว่าพนักงานใส่เบอร์สมาชิกในบิลครบ</td></tr>
+          <tr><td>ใช้ lane ซิม</td><td>ชั่วโมงที่ถูกจอง ÷ ชั่วโมงที่เปิดขายได้ · ช่วงเวลาที่จองบ่อย · no-show</td></tr>
+          <tr><td>สมาชิกแต่ละระดับ</td><td>Member · Silver · Gold</td></tr>
+        </tbody>
+      </table>
+      <p class="cap">เลือกช่วง: วันนี้ · 7 วัน · 30 วัน · เดือนนี้ · 90 วัน · กำหนดเอง — เทียบกับช่วงก่อนหน้าทุกตัวเลข</p>
+    </div>
+  </div>
+  <div class="ft"><span>MST Golf Platform · ระบบทำอะไรบ้าง</span><span>05</span></div>
+</section>
+
+<!-- ═════════ 6 · BACK OFFICE ═════════ -->
+<section class="page">
+  <div class="head">
+    <div class="kicker">หลังบ้านพนักงาน</div>
+    <h2>ข้อมูลลูกค้าในหน้าเดียว แต่ละตำแหน่งเห็นเท่าที่ต้องใช้</h2>
+    <p>พนักงานมีบัญชีของตัวเอง ทุกการแก้แต้ม สมาชิก การจอง และการตั้งค่า บันทึกว่าใครทำ เมื่อไร</p>
+  </div>
+  <div class="body">
+    <div><div class="shot crop" style="--h: 62mm"><img src="img/admin-member.jpg" alt=""></div><div class="cap">ข้อมูลลูกค้า — ระดับ แต้ม ยอด 12 เดือน สิทธิ์ · ไทม์ไลน์ บิล แต้ม การจอง ความยินยอม PDPA</div></div>
+    <div class="card">
+      <h3>สิทธิ์ 5 ตำแหน่ง</h3>
+      <table class="t">
+        <thead><tr><th></th><th class="c">ผู้ดูแลระบบ</th><th class="c">การตลาด</th><th class="c">ผู้จัดการสาขา</th><th class="c">พนักงานหน้าร้าน</th><th class="c">บริการลูกค้า</th></tr></thead>
+        <tbody>
+          <tr><td>ภาพรวม</td><td class="c yes">✔</td><td class="c yes">✔</td><td class="c yes">✔</td><td class="c">ไม่เห็นยอดเงิน</td><td class="c yes">✔</td></tr>
+          <tr><td>ค้นหา/ดูสมาชิก</td><td class="c yes">✔</td><td class="c yes">✔</td><td class="c yes">✔</td><td class="c yes">✔</td><td class="c yes">✔</td></tr>
+          <tr><td>เพิ่ม/แก้สมาชิก</td><td class="c yes">✔</td><td class="c no">–</td><td class="c yes">✔</td><td class="c yes">✔</td><td class="c yes">✔</td></tr>
+          <tr><td>ปรับแต้ม</td><td class="c yes">✔</td><td class="c no">–</td><td class="c">±1,000</td><td class="c no">–</td><td class="c">±1,000</td></tr>
+          <tr><td>รวมบัญชีซ้ำ · ลบข้อมูล PDPA</td><td class="c yes">✔</td><td class="c no">–</td><td class="c">ส่งคำขอ</td><td class="c no">–</td><td class="c">ส่งคำขอ</td></tr>
+          <tr><td>นำเข้า POS</td><td class="c yes">✔</td><td class="c no">–</td><td class="c yes">✔</td><td class="c no">–</td><td class="c no">–</td></tr>
+          <tr><td>ซิม: จอง เช็กอิน ย้าย</td><td class="c yes">✔</td><td class="c">ดูอย่างเดียว</td><td class="c yes">✔</td><td class="c yes">✔</td><td class="c yes">✔</td></tr>
+          <tr><td>ปิด lane</td><td class="c yes">✔</td><td class="c no">–</td><td class="c yes">✔</td><td class="c no">–</td><td class="c no">–</td></tr>
+          <tr><td>บทความเว็บไซต์</td><td class="c yes">✔</td><td class="c yes">✔</td><td class="c no">–</td><td class="c no">–</td><td class="c no">–</td></tr>
+          <tr><td>ตั้งค่า · ผู้ใช้ · บันทึกการใช้งาน</td><td class="c yes">✔</td><td class="c no">–</td><td class="c no">–</td><td class="c no">–</td><td class="c no">–</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <h3>MST ปรับเองได้ในหลังบ้าน</h3>
+        <ul class="small">
+          <li>ระดับสมาชิก: ชื่อ เกณฑ์ยอด อัตราแต้ม ส่วนลด จองล่วงหน้า</li>
+          <li>แต้มต้อนรับ · แต้มต่อบาท · สินค้าที่ไม่ได้แต้ม</li>
+          <li>เวลาเปิดร้าน · lane · ราคา · กติกาการจอง</li>
+          <li>เปิด/ปิดข้อความ LINE แต่ละแบบ · ข้อความ PDPA (มีเวอร์ชัน)</li>
+          <li>ข้อมูลเว็บไซต์ · บัญชีพนักงานและสิทธิ์</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>งานประจำของพนักงาน</h3>
+        <ul class="small">
+          <li><b>เคาน์เตอร์</b> สมัครให้ลูกค้าหรือให้สแกน QR สมัครเอง · ใส่เบอร์ในบิล</li>
+          <li><b>สิ้นวัน</b> นำเข้าไฟล์ POS</li>
+          <li><b>ซิม</b> ดูรายการวันนี้ เช็กอิน รับ walk-in / โทรจอง</li>
+          <li><b>คิวตรวจสอบ</b> เบอร์ชนกัน คำขอรวมบัญชี คำขอลบข้อมูล</li>
+          <li>ค้นหาทุกอย่างได้ด้วย ⌘K · ใช้บนแท็บเล็ตได้</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="ft"><span>MST Golf Platform · ระบบทำอะไรบ้าง</span><span>06</span></div>
+</section>
+
+<!-- ═════════ 7 · WEBSITE · LINE · DATA ═════════ -->
+<section class="page">
+  <div class="head">
+    <div class="kicker">05 · Website · LINE · ข้อมูลลูกค้า</div>
+    <h2>เว็บไซต์ต่อกับระบบเดียวกัน</h2>
+    <p>เว็บไซต์ทำได้ 3 อย่างที่เชื่อมกับระบบ: สมัครสมาชิก · จองซิม · ดูแต้มและการจองของตัวเอง ส่วนที่เหลือเป็นข้อมูลร้านและบทความ</p>
+  </div>
+  <div class="body">
+    <div style="display:grid; grid-template-columns: 1fr 44mm; gap: 5mm; align-items: start;">
+      <div class="card">
+        <h3>หน้าเว็บ</h3>
+        <table class="t">
+          <tbody>
+            <tr><td>หน้าแรก</td><td>บริการ · Golf Simulator และราคา · ระดับสมาชิก · บทความล่าสุด · ที่ตั้ง เวลาเปิด แผนที่ LINE OA</td></tr>
+            <tr><td>บริการ</td><td>Pro shop · Club fitting · Academy · Golf Simulator</td></tr>
+            <tr><td>Golf Simulator</td><td>lane ราคา ราคาหลังส่วนลดแต่ละระดับ กติกาการจอง — ดึงจากระบบ แก้ที่หลังบ้านเว็บเปลี่ยนตาม</td></tr>
+            <tr><td>บทความ</td><td>MST เขียนและเผยแพร่เองจากหลังบ้าน · หมวด บทความ / บริการ / ข่าวสาร</td></tr>
+            <tr><td>สมาชิก · จองซิม</td><td>หน้าเดียวกับใน LINE · ล็อกอินด้วย LINE ไม่ต้องตั้งรหัสผ่าน · มีหน้าข้อกำหนดและนโยบาย PDPA</td></tr>
+          </tbody>
+        </table>
+        <p class="cap">รองรับมือถือ · SEO ทุกหน้า · ข้อความ รูป และโดเมน MST จัดเตรียม</p>
+      </div>
+      <div><div class="phone crop" style="--h: 74mm"><img src="img/m-home.jpg" alt=""></div><div class="cap">หน้าแรกบนมือถือ (ภาพประกอบชั่วคราว)</div></div>
+    </div>
+
+    <div class="card">
+      <h3>ทำงานร่วมกับทีม LINE Marketing — Rich Menu ชุดเดียว ไม่ต้องเปลี่ยนรายคน</h3>
+      <table class="t">
+        <thead><tr><th>ปุ่ม</th><th>ไปที่</th><th>ใครดูแล</th></tr></thead>
+        <tbody>
+          <tr><td>A+B สมัครสมาชิก</td><td>หน้าสมาชิก — ยังไม่เป็นสมาชิกเห็นหน้าสมัคร สมาชิกเห็นบัตรและแต้ม</td><td><span class="pill sys">ระบบ</span></td></tr>
+          <tr><td>C โปรโมชั่น</td><td>auto reply</td><td><span class="pill line">ทีม LINE</span></td></tr>
+          <tr><td>D Booking Golf Sim</td><td>หน้าจองซิม + การจองของฉัน</td><td><span class="pill sys">ระบบ</span></td></tr>
+          <tr><td>E Location</td><td>auto reply แผนที่ Google Maps</td><td><span class="pill line">ทีม LINE</span></td></tr>
+          <tr><td>F ติดต่อ</td><td>แชตกับพนักงาน</td><td><span class="pill staff">พนักงาน MST</span></td></tr>
+        </tbody>
+      </table>
+      <p class="cap">ระบบไม่ใช้ webhook — auto reply และแชตทำงานตามเดิม · ต้องได้จากทีม LINE: Messaging API และ LINE Login (Provider เดียวกับ LINE OA) · ลิงก์ปุ่ม A+B และ D ระบบส่งให้ก่อนเปิดใช้</p>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <h3>ข้อมูลลูกค้าและ PDPA</h3>
+        <ul class="small">
+          <li>ลูกค้า 1 คน = รหัสสมาชิกเดียว ผูก LINE และเบอร์ · 1 เบอร์ผูกได้คนเดียว</li>
+          <li>เก็บความยินยอมพร้อมเวอร์ชันข้อความที่ลูกค้าเห็นจริง · ลูกค้าเปลี่ยนการรับข่าวสารเองได้</li>
+          <li>ลบข้อมูลตามคำขอ: ลบชื่อ เบอร์ LINE วันเกิด อีเมล รูป — บิลเก็บไว้ทางบัญชีแต่ไม่ผูกตัวบุคคล</li>
+          <li>รวมบัญชีซ้ำได้ ประวัติและแต้มย้ายมาครบ</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>ความปลอดภัยและการสำรองข้อมูล</h3>
+        <ul class="small">
+          <li>ฐานข้อมูลและ server ที่ Singapore · เชื่อมต่อแบบเข้ารหัส</li>
+          <li>ข้อมูล LINE เก็บแบบเข้ารหัส · รูปสมาชิกเก็บแบบส่วนตัว</li>
+          <li>ลูกค้าเห็นได้เฉพาะข้อมูลตัวเอง · พนักงานเห็นตามสิทธิ์</li>
+          <li>สำรองข้อมูลทุกคืน เก็บ 30 วัน · ดูแลระบบฟรีตลอดสัญญา</li>
+        </ul>
+      </div>
+    </div>
+    <p class="note">ไม่อยู่ใน Phase 1: ออกแบบ Rich Menu · auto reply · แชต · ค่า LINE OA และข้อความ · ค่าโดเมน · เชื่อม POS แบบอัตโนมัติ · แลกรางวัลและแคมเปญ (Phase 2)</p>
+  </div>
+  <div class="ft"><span>MST Golf Platform · ระบบทำอะไรบ้าง</span><span>07</span></div>
+</section>
+
+</body>
+</html>
