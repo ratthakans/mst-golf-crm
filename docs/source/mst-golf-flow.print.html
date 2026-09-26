@@ -1,0 +1,931 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>MST Golf Platform Flow</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+  @page { size: A4 landscape; margin: 0; }
+  :root {
+    --ground: #f4f7f5; --surface: #ffffff; --surface-2: #eef3f0; --ink: #14201b; --muted: #5d6e66; --faint: #8a9a92; --line: #dde6e1;
+    --brand: #0a5c36; --brand-deep: #0b3d29; --action: #16a34a; --tint: #e5f2ea;
+    --gold-bg: #fdf3d7; --gold-ink: #8a5a06; --gold-line: #efdca4;
+    --blue: #1d4f91; --blue-bg: #e8f0fa; --blue-line: #c8d9f0;
+    --grey: #56655e;
+    --device: #1a2521; --chat: #d9e5df; --bubble: #ffffff;
+    --sans: "Anuphan", "Noto Sans Thai", "Thonburi", sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  }
+  * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  html, body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--sans); }
+  .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+  h1, h2, h3, p { margin: 0; }
+
+  /* ── Page frame ───────────────────────────── */
+  .page {
+    width: 297mm; height: 210mm; padding: 12mm 14mm 9mm; background: var(--ground);
+    display: grid; grid-template-rows: auto 1fr auto; gap: 6mm; page-break-after: always; overflow: hidden; position: relative;
+  }
+  .page:last-child { page-break-after: auto; }
+  .hd { display: flex; justify-content: space-between; align-items: flex-end; gap: 10mm; }
+  .hd-l { display: grid; gap: 1.6mm; }
+  .sec { display: inline-flex; align-items: center; gap: 2mm; font-size: 8.5pt; font-weight: 700; letter-spacing: 0.4px; }
+  .sec i { width: 2.6mm; height: 2.6mm; border-radius: 50%; display: inline-block; }
+  .sec.cust { color: var(--brand); } .sec.cust i { background: var(--action); }
+  .sec.store { color: var(--ink); } .sec.store i { background: var(--ink); }
+  .sec.sys { color: var(--brand); } .sec.sys i { background: var(--brand); }
+  .sec.linet { color: var(--blue); } .sec.linet i { background: var(--blue); }
+  .hd h1 { font-size: 24pt; line-height: 1.12; letter-spacing: -0.3px; }
+  .hd p { font-size: 10.5pt; color: var(--muted); max-width: 170mm; }
+  .legend { display: flex; gap: 2mm; align-items: center; flex-wrap: wrap; justify-content: flex-end; font-size: 8pt; color: var(--muted); }
+  .ft { display: flex; justify-content: space-between; align-items: center; font-size: 7.5pt; color: var(--faint); border-top: 1px solid var(--line); padding-top: 2.5mm; }
+  .ft b { color: var(--muted); font-weight: 600; }
+
+  .tag {
+    display: inline-flex; align-items: center; gap: 1.4mm; font-size: 7.8pt; font-weight: 600; line-height: 1.1;
+    padding: 1.2mm 2.4mm; border-radius: 99px; border: 1px solid; white-space: nowrap;
+  }
+  .tag::before { content: ""; width: 1.5mm; height: 1.5mm; border-radius: 50%; background: currentColor; flex: none; }
+  .tag.quote { background: var(--gold-bg); color: var(--gold-ink); border-color: var(--gold-line); }
+  .tag.linet { background: var(--blue-bg); color: var(--blue); border-color: var(--blue-line); }
+
+  /* ── Cover ────────────────────────────────── */
+  .cover { background: var(--brand-deep); color: #fff; grid-template-rows: 1fr auto; padding: 16mm 18mm 12mm; }
+  .cover::after {
+    content: ""; position: absolute; right: -40mm; top: 22mm; width: 150mm; height: 150mm; border-radius: 50%;
+    background:
+      radial-gradient(circle at 50% 50%, rgba(255,255,255,0.10) 1.3mm, transparent 1.5mm) 0 0 / 9mm 9mm,
+      radial-gradient(circle at 50% 50%, rgba(255,255,255,0.10) 1.3mm, transparent 1.5mm) 4.5mm 4.5mm / 9mm 9mm;
+    box-shadow: inset 0 0 0 0.6mm rgba(255,255,255,0.18);
+  }
+  .cover-main { display: grid; grid-template-columns: 1.25fr 1fr; gap: 18mm; align-items: center; position: relative; z-index: 1; }
+  .cover .kick { font-family: var(--mono); font-size: 9pt; letter-spacing: 1.4px; color: #9fd9b8; }
+  .cover h1 { font-size: 44pt; line-height: 1.02; letter-spacing: -1px; margin-top: 4mm; }
+  .cover .lede { font-size: 13pt; line-height: 1.5; color: #d3e7dc; margin-top: 5mm; max-width: 130mm; }
+  .chans { display: flex; gap: 2.5mm; margin-top: 8mm; flex-wrap: wrap; }
+  .chans span { border: 1px solid rgba(255,255,255,0.25); border-radius: 99px; padding: 1.6mm 3.6mm; font-size: 9.5pt; }
+  .toc { background: rgba(0,0,0,0.18); border: 1px solid rgba(255,255,255,0.12); border-radius: 5mm; padding: 6mm 7mm; display: grid; gap: 2.4mm; }
+  .toc h2 { font-size: 10pt; color: #9fd9b8; font-weight: 600; margin-bottom: 1mm; }
+  .toc div { display: grid; grid-template-columns: 8mm 1fr; font-size: 10.5pt; align-items: baseline; }
+  .toc span { font-family: var(--mono); font-size: 9pt; color: #9fd9b8; }
+  .cover .ft { border-top-color: rgba(255,255,255,0.15); color: #a9c4b6; position: relative; z-index: 1; }
+  .cover .ft b { color: #fff; }
+
+  /* ── Overview hub ─────────────────────────── */
+  .hub-wrap { display: grid; grid-template-columns: 1fr 78mm 1fr; grid-template-rows: 1fr 1fr; gap: 6mm 14mm; align-items: center; }
+  .chan { background: var(--surface); border: 1px solid var(--line); border-radius: 4mm; padding: 4mm 4.6mm; display: grid; gap: 2mm; position: relative; }
+  .chan h3 { font-size: 13pt; display: flex; align-items: center; gap: 2.5mm; }
+  .chan h3 .ic { width: 7mm; height: 7mm; border-radius: 2mm; background: var(--tint); display: grid; place-items: center; }
+  .chan h3 .ic svg { width: 4.4mm; height: 4.4mm; }
+  .chan .io { display: grid; grid-template-columns: 12mm 1fr; gap: 1mm 2mm; font-size: 9pt; line-height: 1.4; }
+  .chan .io b { font-size: 7.5pt; color: var(--faint); font-weight: 600; letter-spacing: 0.3px; padding-top: 0.4mm; }
+  .chan.l::after, .chan.r::before { content: ""; position: absolute; top: 50%; width: 14mm; border-top: 2px dashed var(--brand); }
+  .chan.l::after { right: -14mm; } .chan.r::before { left: -14mm; }
+  .hub {
+    grid-column: 2; grid-row: 1 / span 2; background: var(--brand); color: #fff; border-radius: 6mm; padding: 7mm 6mm;
+    display: grid; gap: 3mm; align-content: center; text-align: center; height: 100%;
+  }
+  .hub h2 { font-size: 17pt; }
+  .hub .id { background: rgba(255,255,255,0.13); border-radius: 3mm; padding: 3mm; font-size: 10pt; line-height: 1.45; }
+  .hub .id b { font-family: var(--mono); font-size: 11pt; display: block; margin-top: 1mm; }
+  .hub ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 1.6mm; font-size: 9.5pt; text-align: left; }
+  .hub li { background: rgba(255,255,255,0.09); border-radius: 2mm; padding: 1.8mm 3mm; }
+  .hub .where { font-size: 8pt; color: #cfe5d8; }
+  .mods { display: grid; grid-template-columns: repeat(6, 1fr); gap: 3mm; }
+  .mod { background: var(--surface); border: 1px solid var(--line); border-radius: 3mm; padding: 2.6mm 3mm; font-size: 9pt; line-height: 1.35; display: grid; gap: 1.6mm; align-content: start; }
+  .mod b { font-size: 9.8pt; }
+  .mod .tag { justify-self: start; }
+  .row-h { font-size: 9pt; font-weight: 700; color: var(--muted); margin-bottom: 2mm; letter-spacing: 0.3px; }
+
+  /* ── Step strips (customer in LINE) ───────── */
+  .strip5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4mm; }
+  .step { background: var(--surface); border: 1px solid var(--line); border-radius: 4mm; padding: 4mm 3.6mm; display: grid; grid-template-rows: auto 1fr; gap: 3mm; }
+  .step .shot { display: flex; justify-content: center; }
+  .step .tx { display: grid; gap: 1.4mm; align-content: start; }
+  .no { font-family: var(--mono); font-size: 8.5pt; font-weight: 600; color: var(--brand); }
+  .tx h3 { font-size: 11.5pt; line-height: 1.25; }
+  .tx p { font-size: 8.8pt; line-height: 1.45; color: var(--muted); }
+  .tx .tag { justify-self: start; white-space: normal; }
+  .z52 { zoom: 0.52; } .z56 { zoom: 0.56; } .z80 { zoom: 0.8; }
+
+  /* ── Phone mock ───────────────────────────── */
+  .phone { width: 250px; border-radius: 30px; border: 8px solid var(--device); background: var(--chat); overflow: hidden; position: relative; }
+  .phone::before { content: ""; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 70px; height: 14px; background: var(--device); border-radius: 0 0 10px 10px; z-index: 2; }
+  .p-bar { display: flex; justify-content: space-between; align-items: center; padding: 18px 13px 8px; background: #fff; border-bottom: 1px solid var(--line); font-size: 13px; font-weight: 700; }
+  .p-bar small { font-family: var(--mono); font-size: 10px; color: var(--faint); font-weight: 500; }
+  .p-body { padding: 11px; display: flex; flex-direction: column; gap: 8px; font-size: 12.5px; line-height: 1.45; height: 330px; }
+  .bubble { background: var(--bubble); border-radius: 14px 14px 14px 4px; padding: 9px 11px; max-width: 90%; }
+  .msg { background: var(--bubble); border-radius: 14px; overflow: hidden; }
+  .msg-h { background: var(--brand); color: #fff; padding: 8px 11px; font-weight: 700; }
+  .msg-b { padding: 8px 11px; display: grid; gap: 3px; }
+  .kv { display: flex; justify-content: space-between; gap: 8px; }
+  .kv > span:first-child { color: var(--muted); }
+  .rich { margin-top: auto; background: var(--device); padding: 4px; border-radius: 10px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+  .rich span { text-align: center; padding: 13px 3px; border-radius: 7px; font-size: 11.5px; font-weight: 600; line-height: 1.25; color: #fff; }
+  .rich .sys { background: var(--action); }
+  .rich .auto { background: #3f5f86; }
+  .rich .chat { background: #4a5a53; }
+  .rich .wide, .bigmenu .wide { grid-column: span 2; }
+  .rich span, .bigmenu span { position: relative; }
+  .rich em, .bigmenu em { position: absolute; top: 3px; left: 5px; font-style: normal; font-size: 8.5px; opacity: 0.75; font-family: var(--mono); }
+  .bigmenu em { top: 1mm; left: 1.6mm; font-size: 6.5pt; }
+  .form { background: #fff; border-radius: 12px; padding: 12px; display: grid; gap: 8px; }
+  .fld { display: grid; gap: 3px; }
+  .fld label { font-size: 11px; color: var(--muted); }
+  .fld div { border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; }
+  .chk { font-size: 11px; color: var(--muted); background: var(--tint); padding: 7px; border-radius: 8px; }
+  .cta { background: var(--action); color: #fff; text-align: center; border-radius: 9px; padding: 9px; font-weight: 700; }
+  .note { font-size: 10.5px; color: var(--muted); text-align: center; }
+  .card { background: linear-gradient(145deg, #0b3d29, #0a5c36 60%, #12704a); color: #fff; border-radius: 14px; padding: 14px; display: grid; gap: 12px; }
+  .card-top { display: flex; justify-content: space-between; align-items: center; }
+  .wm { font-weight: 700; letter-spacing: 1.5px; }
+  .pill { background: #eef2f7; color: #334155; border-radius: 99px; padding: 2px 9px; font-size: 11px; font-weight: 700; }
+  .card-mid { display: flex; justify-content: space-between; align-items: flex-end; }
+  .qr { width: 72px; height: 72px; background: #fff; border-radius: 6px; padding: 4px; }
+  .qr svg { width: 100%; height: 100%; display: block; }
+  .card-pts { display: flex; justify-content: space-between; }
+  .card-pts b { font-family: var(--mono); font-size: 17px; }
+  .prog { height: 5px; border-radius: 9px; background: rgba(255,255,255,0.22); overflow: hidden; }
+  .prog i { display: block; height: 100%; background: #fdf3d7; }
+  .book { background: #fff; border-radius: 12px; padding: 10px; display: grid; gap: 8px; }
+  .days { display: flex; gap: 5px; }
+  .days span { flex: 1; text-align: center; border: 1px solid var(--line); border-radius: 8px; padding: 4px 0; font-size: 10.5px; line-height: 1.3; }
+  .days .on { background: var(--brand); border-color: var(--brand); color: #fff; }
+  .slots { display: grid; grid-template-columns: 40px repeat(3, 1fr); gap: 4px; font-size: 11px; align-items: center; }
+  .slots .h { text-align: center; color: var(--muted); font-weight: 600; }
+  .slots .t { font-family: var(--mono); font-size: 10.5px; color: var(--muted); }
+  .slot { text-align: center; border-radius: 7px; padding: 5px 0; font-weight: 600; }
+  .free { background: var(--tint); color: var(--brand); } .busy { background: #e7ebe9; color: var(--faint); font-weight: 500; } .pick { background: var(--action); color: #fff; }
+
+  /* ── Menu explainer ───────────────────────── */
+  .menu-row { display: grid; grid-template-columns: 70mm 1fr; gap: 6mm; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 4mm; padding: 4mm 5mm; }
+  .bigmenu { background: var(--device); border-radius: 3mm; padding: 1.4mm; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.4mm; }
+  .bigmenu span { border-radius: 1.8mm; color: #fff; font-size: 8.5pt; font-weight: 600; text-align: center; padding: 3.6mm 1mm; line-height: 1.25; }
+  .bigmenu .sys { background: var(--action); } .bigmenu .auto { background: #3f5f86; } .bigmenu .chat { background: #4a5a53; }
+  .btnmap { width: 100%; border-collapse: collapse; font-size: 8.6pt; }
+  .btnmap td { padding: 1.5mm 1.6mm; border-bottom: 1px solid var(--line); vertical-align: top; line-height: 1.35; }
+  .btnmap tr:last-child td { border-bottom: 0; }
+  .btnmap td:first-child { font-family: var(--mono); color: var(--faint); width: 8mm; }
+  .btnmap td:last-child { text-align: right; white-space: nowrap; font-weight: 600; }
+  .btnmap .o-sys { color: var(--brand); } .btnmap .o-line { color: var(--blue); } .btnmap .o-mst { color: var(--grey); }
+  .btnmap code { font-family: var(--mono); font-size: 7.4pt; color: var(--brand); }
+  .who3 { display: grid; grid-template-columns: 1fr 1fr 0.8fr; gap: 3.4mm; }
+  .wbox.mst { background: var(--surface-2); border: 1px solid var(--line); }
+  .wbox.mst h3 { color: var(--grey); }
+  .menu-tx { display: grid; gap: 2mm; }
+  .menu-tx h3 { font-size: 12.5pt; }
+  .menu-tx p { font-size: 9.3pt; color: var(--muted); line-height: 1.5; }
+  .keys { display: flex; gap: 4mm; font-size: 8.5pt; color: var(--muted); flex-wrap: wrap; }
+  .keys i { width: 3mm; height: 3mm; border-radius: 0.8mm; display: inline-block; margin-right: 1.4mm; vertical-align: -0.4mm; }
+
+  /* ── Browser mock (website) ───────────────── */
+  .web-page { display: grid; grid-template-columns: 1.35fr 1fr; gap: 7mm; align-items: start; }
+  .browser { background: #fff; border: 1px solid var(--line); border-radius: 3.5mm; overflow: hidden; box-shadow: 0 1mm 4mm rgba(16,40,28,0.08); }
+  .b-bar { display: flex; align-items: center; gap: 2mm; padding: 2.2mm 3mm; background: var(--surface-2); border-bottom: 1px solid var(--line); }
+  .b-bar i { width: 2.2mm; height: 2.2mm; border-radius: 50%; background: #cdd6d1; display: inline-block; }
+  .b-url { flex: 1; margin-left: 2mm; background: #fff; border-radius: 99px; padding: 0.8mm 3mm; font-size: 7.5pt; color: var(--faint); font-family: var(--mono); }
+  .b-nav { display: flex; align-items: center; gap: 4mm; padding: 3mm 5mm; border-bottom: 1px solid var(--line); font-size: 8.5pt; }
+  .b-nav .logo { font-weight: 700; letter-spacing: 1px; color: var(--brand); margin-right: auto; }
+  .b-nav .login { background: #06c755; color: #fff; border-radius: 99px; padding: 1mm 3mm; font-weight: 600; }
+  .b-body { padding: 5mm; display: grid; gap: 4mm; }
+  .b-hero { display: grid; grid-template-columns: 1.2fr 1fr; gap: 4mm; align-items: stretch; }
+  .b-hero .hero { background: linear-gradient(135deg, #0b3d29, #12704a); color: #fff; border-radius: 3mm; padding: 5mm; display: grid; gap: 2mm; align-content: center; }
+  .b-hero .hero b { font-size: 14pt; line-height: 1.2; }
+  .b-hero .hero span { font-size: 8.5pt; color: #cfe5d8; }
+  .b-hero .hero .btns { display: flex; gap: 2mm; margin-top: 1.5mm; }
+  .b-hero .hero .btns em { font-style: normal; background: #fff; color: var(--brand); border-radius: 99px; padding: 1mm 3mm; font-size: 8pt; font-weight: 700; }
+  .b-hero .hero .btns em.alt { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.5); }
+  .mine { border: 1.5px solid var(--action); border-radius: 3mm; padding: 3.4mm; display: grid; gap: 1.6mm; font-size: 8.5pt; }
+  .mine .t { font-size: 7.5pt; color: var(--faint); font-weight: 600; }
+  .mine .big { font-family: var(--mono); font-size: 15pt; font-weight: 600; }
+  .mine .kv span { font-size: 8pt; }
+  .b-blog { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3mm; }
+  .b-blog div { background: var(--surface-2); border-radius: 2.5mm; padding: 2.4mm; font-size: 8pt; display: grid; gap: 1.2mm; }
+  .b-blog div i { display: block; height: 11mm; border-radius: 1.8mm; background: repeating-linear-gradient(135deg, #e3eae6 0 3mm, #dbe3de 3mm 6mm); }
+  .b-blog b { font-size: 8.3pt; }
+  .b-blog span { color: var(--faint); font-size: 7.3pt; }
+  .webside { display: grid; gap: 3mm; }
+  .fn { background: var(--surface); border: 1px solid var(--line); border-radius: 3.5mm; padding: 3.4mm 4mm; display: grid; grid-template-columns: 9mm 1fr; gap: 1mm 3mm; align-items: start; }
+  .fn .n { width: 7mm; height: 7mm; border-radius: 50%; background: var(--action); color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 9pt; grid-row: span 2; }
+  .fn b { font-size: 11pt; }
+  .fn p { font-size: 9pt; color: var(--muted); line-height: 1.45; }
+  .fn.info { background: var(--surface-2); border-style: dashed; }
+  .fn.info .n { background: #b6c3bc; }
+  .login-note { background: var(--tint); border-radius: 3.5mm; padding: 3.4mm 4mm; font-size: 9pt; line-height: 1.5; }
+  .login-note b { color: var(--brand); }
+
+  /* ── Store grid ───────────────────────────── */
+  .grid6 { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: 1fr 1fr; gap: 4.5mm; min-height: 0; }
+  .sc { background: var(--surface); border: 1px solid var(--line); border-radius: 4mm; padding: 4mm; display: grid; grid-template-rows: 1fr auto; gap: 2.6mm; min-height: 0; overflow: hidden; }
+  .sc .shot { display: flex; justify-content: center; align-items: center; min-height: 0; }
+  .sc .tx h3 { font-size: 11.5pt; }
+  .panel { width: 330px; background: #fff; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+  .pn-bar { display: flex; justify-content: space-between; padding: 9px 13px; background: var(--brand); color: #fff; font-size: 13px; font-weight: 600; }
+  .pn-bar small { font-family: var(--mono); font-weight: 500; opacity: 0.8; font-size: 10.5px; }
+  .pn-body { padding: 12px 13px; display: grid; gap: 9px; font-size: 13px; }
+  .roles { display: flex; flex-wrap: wrap; gap: 5px; }
+  .roles span { font-size: 11px; border: 1px solid var(--line); border-radius: 99px; padding: 3px 8px; }
+  .roles .me { background: var(--tint); border-color: var(--brand); color: var(--brand); font-weight: 600; }
+  .p360 { display: flex; gap: 10px; align-items: center; }
+  .av { width: 42px; height: 42px; flex: none; border-radius: 50%; background: var(--tint); color: var(--brand); display: grid; place-items: center; font-weight: 700; font-size: 12px; }
+  .bill { font-family: var(--mono); font-size: 11px; background: var(--surface-2); border-radius: 8px; padding: 9px; line-height: 1.55; border: 1px dashed var(--line); }
+  .bill mark { background: var(--gold-bg); color: var(--gold-ink); padding: 0 3px; border-radius: 3px; }
+  .counts { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .counts div { background: var(--surface-2); border-radius: 8px; padding: 7px 9px; display: grid; }
+  .counts b { font-family: var(--mono); font-size: 16px; } .counts span { font-size: 10.5px; color: var(--muted); }
+  .cal { display: grid; grid-template-columns: 38px repeat(3, 1fr); grid-template-rows: 20px repeat(5, 31px); gap: 3px; font-size: 10.5px; }
+  .cal .h { text-align: center; color: var(--muted); font-weight: 600; align-self: center; }
+  .cal .t { font-family: var(--mono); color: var(--muted); font-size: 10px; }
+  .bk { border-radius: 6px; padding: 3px 6px; line-height: 1.25; border-left: 3px solid; background: var(--surface-2); overflow: hidden; }
+  .bk b { display: block; }
+  .bk.ln { border-color: #16a34a; } .bk.wb { border-color: #7c3aed; } .bk.wk { border-color: #0e7fb8; } .bk.tel { border-color: #a16207; }
+  .bk.in { background: var(--tint); }
+  .bk.block { border-color: #cfd8d3; color: var(--muted); background: repeating-linear-gradient(135deg, var(--surface-2) 0 6px, #cfd8d3 6px 7px); }
+  .srcs { display: flex; gap: 12px; font-size: 10.5px; color: var(--muted); flex-wrap: wrap; }
+  .srcs i { width: 8px; height: 8px; border-radius: 2px; display: inline-block; margin-right: 4px; }
+  .tl { display: grid; gap: 5px; border-left: 2px solid var(--line); padding-left: 10px; }
+  .tl div { display: flex; justify-content: space-between; gap: 8px; }
+  .tl span:last-child { font-family: var(--mono); color: var(--muted); font-size: 10.5px; }
+  .kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .kpis div { background: var(--surface-2); border-radius: 8px; padding: 8px 9px; display: grid; }
+  .kpis span { font-size: 10.5px; color: var(--muted); } .kpis b { font-family: var(--mono); font-size: 17px; }
+  .bars { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; align-items: end; height: 60px; }
+  .bars i { display: block; background: var(--brand); border-radius: 4px 4px 0 0; } .bars i:last-child { background: var(--action); }
+
+  /* ── Booking page ─────────────────────────── */
+  .book-page { display: grid; grid-template-columns: 116mm 1fr; gap: 7mm; align-items: start; }
+  .book-left { display: grid; gap: 4mm; }
+  .panel-lg { background: var(--surface); border: 1px solid var(--line); border-radius: 4mm; padding: 4mm; display: flex; justify-content: center; }
+  .merge { background: var(--surface); border: 1px solid var(--line); border-radius: 4mm; padding: 3.6mm 4mm; display: grid; gap: 2.4mm; }
+  .merge-row { display: flex; align-items: center; gap: 2mm; flex-wrap: wrap; font-size: 8.8pt; }
+  .merge-row span { border-radius: 99px; padding: 0.9mm 2.6mm; border: 1px solid var(--line); background: var(--surface-2); }
+  .merge-row b { color: var(--brand); }
+  .rules { width: 100%; border-collapse: collapse; background: var(--surface); border-radius: 4mm; overflow: hidden; font-size: 10pt; }
+  .rules td { padding: 2.8mm 3.6mm; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .rules tr:last-child td { border-bottom: 0; }
+  .rules td:first-child { color: var(--muted); width: 38mm; }
+  .rules td b { font-weight: 600; }
+  .life { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0; margin-top: 4mm; }
+  .life div { position: relative; background: var(--tint); padding: 2.6mm 3mm 2.6mm 5mm; font-size: 8.6pt; line-height: 1.35; clip-path: polygon(0 0, calc(100% - 3mm) 0, 100% 50%, calc(100% - 3mm) 100%, 0 100%, 3mm 50%); }
+  .life div:first-child { clip-path: polygon(0 0, calc(100% - 3mm) 0, 100% 50%, calc(100% - 3mm) 100%, 0 100%); padding-left: 3.4mm; }
+  .life div:nth-child(even) { background: #d4ebdd; }
+  .life b { display: block; font-size: 9pt; }
+  .small-note { font-size: 8pt; color: var(--faint); margin-top: 2mm; }
+
+  /* ── Tiers page ───────────────────────────── */
+  .tiers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5mm; }
+  .tier { background: var(--surface); border: 1px solid var(--line); border-radius: 5mm; overflow: hidden; display: grid; grid-template-rows: auto 1fr; }
+  .tier-h { padding: 5mm; color: #fff; display: grid; gap: 1mm; }
+  .tier.m .tier-h { background: linear-gradient(135deg, #3f5249, #5c6f66); }
+  .tier.s .tier-h { background: linear-gradient(135deg, #6b7a86, #9aa8b3); }
+  .tier.g .tier-h { background: linear-gradient(135deg, #8a6a12, #c69b2b); }
+  .tier-h b { font-size: 18pt; letter-spacing: 0.3px; }
+  .tier-h span { font-size: 9pt; opacity: 0.9; }
+  .tier-h .th { font-family: var(--mono); font-size: 12pt; font-weight: 600; margin-top: 1mm; }
+  .tier ul { list-style: none; margin: 0; padding: 4mm 5mm; display: grid; gap: 2.2mm; font-size: 9.5pt; align-content: start; }
+  .tier li { display: flex; justify-content: space-between; gap: 3mm; border-bottom: 1px dashed var(--line); padding-bottom: 1.8mm; }
+  .tier li:last-child { border-bottom: 0; }
+  .tier li span:first-child { color: var(--muted); }
+  .tier li b { font-weight: 600; text-align: right; }
+  .howpts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4mm; margin-top: 5mm; }
+  .howpts div { background: var(--surface); border: 1px solid var(--line); border-radius: 3.5mm; padding: 3.4mm 4mm; font-size: 9pt; line-height: 1.45; color: var(--muted); }
+  .howpts b { display: block; color: var(--ink); font-size: 10pt; margin-bottom: 0.8mm; }
+  .howpts .mono { color: var(--ink); }
+
+  /* ── LINE team page ───────────────────────── */
+  .lt { display: grid; grid-template-columns: 96mm 1fr; gap: 7mm; align-items: start; }
+  .lt-menu { background: var(--surface); border: 1px solid var(--line); border-radius: 4mm; padding: 4.5mm; display: grid; gap: 3mm; }
+  .lt-menu h3 { font-size: 12pt; }
+  .links { display: grid; gap: 1.6mm; font-size: 8.6pt; }
+  .links div { display: grid; grid-template-columns: 26mm 1fr; gap: 2mm; align-items: center; }
+  .links code { font-family: var(--mono); font-size: 7.6pt; background: var(--surface-2); border-radius: 1.4mm; padding: 0.8mm 1.8mm; color: var(--brand); }
+  .lt-right { display: grid; gap: 4mm; }
+  .who2 { display: grid; grid-template-columns: 1fr 1fr; gap: 4mm; }
+  .wbox { border-radius: 4mm; padding: 4mm; display: grid; gap: 2mm; align-content: start; }
+  .wbox.mkt { background: var(--blue-bg); border: 1px solid var(--blue-line); }
+  .wbox.crm { background: var(--tint); border: 1px solid #c6e2d2; }
+  .wbox h3 { font-size: 11pt; }
+  .wbox.mkt h3 { color: var(--blue); } .wbox.crm h3 { color: var(--brand); }
+  .wbox ul { margin: 0; padding-left: 4.4mm; display: grid; gap: 1.4mm; font-size: 9.2pt; line-height: 1.4; }
+  .uidflow { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; }
+  .uidflow div { background: var(--surface); border: 1px solid var(--line); padding: 2.8mm 3mm; font-size: 8.8pt; line-height: 1.4; margin-right: 5mm; border-radius: 3mm; position: relative; }
+  .uidflow div:last-child { margin-right: 0; }
+  .uidflow div::after { content: "→"; position: absolute; right: -4.4mm; top: 50%; transform: translateY(-50%); color: var(--faint); font-weight: 700; }
+  .uidflow div:last-child::after { content: none; }
+  .uidflow b { display: block; font-size: 7.5pt; letter-spacing: 0.3px; margin-bottom: 0.8mm; }
+  .uidflow .l b { color: var(--grey); } .uidflow .c b { color: var(--brand); }
+  .asks { display: grid; grid-template-columns: 1.2fr 1fr; gap: 4mm; }
+  .ask { background: var(--surface); border: 1px solid var(--line); border-radius: 4mm; padding: 3.6mm 4mm; font-size: 9pt; line-height: 1.45; }
+  .ask h3 { font-size: 10.5pt; margin-bottom: 1.6mm; }
+  .ask ol, .ask ul { margin: 0; padding-left: 4.4mm; display: grid; gap: 1.2mm; }
+  .ask span { color: var(--muted); }
+  .ask.skip { background: var(--surface-2); }
+  .ask.skip li::marker { content: "✕  "; color: var(--faint); }
+
+  /* ── Database page ────────────────────────── */
+  .srcrow { display: flex; gap: 2mm; align-items: center; flex-wrap: wrap; font-size: 8.5pt; color: var(--muted); }
+  .chip { background: var(--surface); border: 1px solid var(--line); border-radius: 99px; padding: 0.8mm 2.6mm; color: var(--ink); font-size: 8.5pt; }
+  .db { display: grid; grid-template-columns: 1fr 74mm 1fr; gap: 0 12mm; align-items: center; }
+  .dbcol { display: grid; gap: 5mm; }
+  .tbl { background: var(--surface); border: 1px solid var(--line); border-radius: 3mm; position: relative; }
+  .tbl-h { display: flex; justify-content: space-between; align-items: baseline; padding: 2mm 3mm; background: var(--surface-2); border-bottom: 1px solid var(--line); border-radius: 3mm 3mm 0 0; }
+  .tbl-h b { font-size: 10.5pt; } .tbl-h code { font-family: var(--mono); font-size: 7.5pt; color: var(--faint); }
+  .rows { padding: 2mm 3mm; display: grid; gap: 1mm; font-size: 8.6pt; }
+  .rows div { display: flex; justify-content: space-between; gap: 3mm; }
+  .rows span:first-child { color: var(--muted); } .rows span:last-child { font-family: var(--mono); font-size: 8.2pt; }
+  .from { padding: 1.6mm 3mm 2.2mm; font-size: 8pt; color: var(--muted); border-top: 1px dashed var(--line); }
+  .from b { color: var(--ink); font-weight: 600; }
+  .dbcol.left .tbl::after, .dbcol.right .tbl::before { content: ""; position: absolute; top: 50%; width: 12mm; border-top: 2px solid var(--brand); }
+  .dbcol.left .tbl::after { right: -12mm; } .dbcol.right .tbl::before { left: -12mm; }
+  .core { background: var(--brand); color: #fff; border-radius: 5mm; padding: 5mm; display: grid; gap: 2.4mm; }
+  .core .tbl-h { background: rgba(255,255,255,0.12); border: 0; border-radius: 2mm; }
+  .core .tbl-h code { color: rgba(255,255,255,0.7); }
+  .core .rows { font-size: 9.5pt; } .core .rows span:first-child { color: rgba(255,255,255,0.75); } .core .rows span:last-child { font-size: 9.3pt; }
+  .core p { font-size: 8.6pt; color: #d3e7dc; line-height: 1.45; }
+  .facts { margin-top: 5mm; display: grid; grid-template-columns: repeat(3, 1fr); gap: 4mm; }
+  .facts div { background: var(--surface-2); border-radius: 3mm; padding: 2.8mm 3.6mm; font-size: 8.8pt; line-height: 1.45; color: var(--muted); }
+  .facts b { display: block; color: var(--ink); font-size: 9.6pt; }
+
+  .mid { align-self: center; }
+  .z62 { zoom: 0.62; } .z92 { zoom: 0.92; }
+  @media screen {
+    body.one .page { display: none; }
+    body.one .page.show { display: grid; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ════════ 1 · COVER ════════ -->
+<section class="page cover">
+  <div class="cover-main">
+    <div>
+      <div class="kick">PHASE 1 · ภาพรวมการทำงาน</div>
+      <h1>MST Golf<br>Platform</h1>
+      <p class="lede">ระบบสมาชิก แต้มสะสม และจองซิมกอล์ฟของ MST Golf Thailand ลูกค้าใช้ผ่าน LINE และเว็บไซต์ พนักงานดูแลจากหลังบ้านที่เดียว</p>
+      <div class="chans"><span>LINE</span><span>เว็บไซต์</span><span>หน้าร้าน · POS</span><span>หลังบ้านพนักงาน</span></div>
+    </div>
+    <div class="toc">
+      <h2>ในเอกสารนี้</h2>
+      <div><span>02</span>ภาพรวม · ระบบเดียว 4 ช่องทาง</div>
+      <div><span>03</span>ลูกค้าใน LINE</div>
+      <div><span>04</span>ลูกค้าบนเว็บไซต์</div>
+      <div><span>05</span>พนักงานหลังบ้าน</div>
+      <div><span>06</span>ระบบจองซิมกอล์ฟ</div>
+      <div><span>07</span>ระดับสมาชิกและแต้ม</div>
+      <div><span>08</span>ทำงานร่วมกับทีม LINE Marketing</div>
+      <div><span>09</span>ข้อมูลลงฐานข้อมูลยังไง</div>
+    </div>
+  </div>
+  <div class="ft"><span><b>MST Golf Thailand</b> · ชาญอิสสระ ทาวเวอร์ 1</span><span>จัดทำโดย ORIONS · กันยายน 2026</span></div>
+</section>
+
+<!-- ════════ 2 · OVERVIEW ════════ -->
+<section class="page">
+  <div class="hd">
+    <div class="hd-l">
+      <span class="sec sys"><i></i>ภาพรวม</span>
+      <h1>ระบบเดียว เชื่อม 4 ช่องทาง</h1>
+      <p>ลูกค้าเข้ามาทางไหนก็เป็นคนเดิม ข้อมูลทั้งหมดเก็บที่เดียว ตัวเลขทุกหน้าจอจึงตรงกัน</p>
+    </div>
+  </div>
+  <div style="display:grid; grid-template-rows: 1fr auto; gap: 5mm; min-height: 0;">
+    <div class="hub-wrap">
+      <div class="chan l">
+        <h3><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="#0a5c36" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5c0 4.1-4 7.5-9 7.5-1 0-2-.1-2.9-.4L4 20l1.3-3.5C3.9 15.1 3 13.4 3 11.5 3 7.4 7 4 12 4s9 3.4 9 7.5z"/></svg></span>LINE</h3>
+        <div class="io"><b>เข้า</b><span>สมัครสมาชิก · จองซิม · ยินยอม PDPA</span><b>ออก</b><span>บัตรสมาชิก · แต้ม · แจ้งเตือนแต้มและการจอง</span></div>
+      </div>
+      <div class="hub">
+        <h2>MST Golf Platform</h2>
+        <div class="id">ลูกค้า 1 คน = รหัสสมาชิกเดียว<b>MST00003821</b></div>
+        <ul>
+          <li>โปรไฟล์ + ความยินยอม PDPA</li>
+          <li>ประวัติการซื้อ</li>
+          <li>แต้มและระดับสมาชิก</li>
+          <li>การจองซิม 3 lane</li>
+        </ul>
+        <div class="where">เก็บในฐานข้อมูลที่ Singapore</div>
+      </div>
+      <div class="chan r">
+        <h3><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="#0a5c36" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1.5-5h15L21 9"/><path d="M4 9v11h16V9"/><path d="M3 9h18"/><path d="M9 20v-6h6v6"/></svg></span>หน้าร้าน · POS</h3>
+        <div class="io"><b>เข้า</b><span>บิลขายพร้อมเบอร์หรือรหัสสมาชิก (นำเข้าวันละครั้ง)</span><b>ออก</b><span>แต้มเข้าบัญชีลูกค้า · ระดับสมาชิกอัปเดตเอง</span></div>
+      </div>
+      <div class="chan l">
+        <h3><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="#0a5c36" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.5 2.7 3.7 5.7 3.7 9s-1.2 6.3-3.7 9c-2.5-2.7-3.7-5.7-3.7-9S9.5 5.7 12 3z"/></svg></span>เว็บไซต์</h3>
+        <div class="io"><b>เข้า</b><span>สมัครสมาชิก · จองซิม (ล็อกอินด้วย LINE)</span><b>ออก</b><span>แต้มของฉัน · การจองของฉัน</span></div>
+      </div>
+      <div class="chan r">
+        <h3><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="#0a5c36" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8"/><path d="M12 16v4"/></svg></span>หลังบ้านพนักงาน</h3>
+        <div class="io"><b>เข้า</b><span>เพิ่มสมาชิก · รับ walk-in และโทรจอง · เช็กอิน</span><b>ออก</b><span>ข้อมูลลูกค้า · ตารางซิม · Summary Dashboard</span></div>
+      </div>
+    </div>
+    <div>
+      <div class="row-h">PHASE 1 มีอะไรบ้าง</div>
+      <div class="mods">
+        <div class="mod"><b>สมัครสมาชิก</b>บัตรสมาชิกดิจิทัลใน LINE และเว็บไซต์</div>
+        <div class="mod"><b>แต้มและระดับ</b>Member · Silver · Gold คำนวณให้อัตโนมัติ</div>
+        <div class="mod"><b>นำเข้า POS</b>บิลจากหน้าร้านเข้าระบบวันละครั้ง</div>
+        <div class="mod"><b>ระบบจองซิม</b>3 lane จองได้จาก LINE เว็บ และหน้าร้าน<span class="tag quote">ใบเสนอราคา</span></div>
+        <div class="mod"><b>หลังบ้าน</b>สิทธิ์ตามตำแหน่ง บันทึกการใช้งาน</div>
+        <div class="mod"><b>Summary Dashboard</b>ภาพรวมสำหรับผู้บริหาร<span class="tag quote">ใบเสนอราคา</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="ft"><span>MST Golf Platform · Phase 1</span><span>02</span></div>
+</section>
+
+<!-- ════════ 3 · CUSTOMER IN LINE ════════ -->
+<section class="page">
+  <div class="hd">
+    <div class="hd-l">
+      <span class="sec cust"><i></i>มุมลูกค้า</span>
+      <h1>ลูกค้าใน LINE</h1>
+      <p>ไม่ต้องโหลดแอป ไม่ต้องจำรหัสผ่าน ใช้ทุกอย่างจากเมนูของ LINE OA</p>
+    </div>
+    <div class="legend"><span class="tag quote">ระบบจอง Golf Simulator</span><span class="tag linet">เกี่ยวกับทีม LINE</span></div>
+  </div>
+  <div style="display:grid; grid-template-rows: 1fr auto; gap: 4mm; min-height: 0;">
+    <div class="strip5">
+      <div class="step">
+        <div class="shot"><div class="z52"><div class="phone">
+          <div class="p-bar">MST Golf <small>LINE</small></div>
+          <div class="p-body">
+            <div class="bubble">ยินดีต้อนรับสู่ <b>MST Golf</b> ⛳ สมัครสมาชิกรับ <b>1,600 แต้ม</b> จองซิมกอล์ฟผ่าน LINE ได้เลย</div>
+            <div class="rich">
+              <span class="sys wide"><em>A+B</em>สมัครสมาชิก</span><span class="auto"><em>C</em>โปร<br>โมชั่น</span>
+              <span class="sys"><em>D</em>Booking<br>Golf Sim</span><span class="auto"><em>E</em>Location</span><span class="chat"><em>F</em>ติดต่อ</span>
+            </div>
+          </div>
+        </div></div></div>
+        <div class="tx"><span class="no">01</span><h3>เพิ่มเพื่อน LINE OA</h3><p>ทุกคนเห็นเมนู 5 ปุ่มเดียวกัน ไม่ต้องเปลี่ยนเมนูตามสถานะ</p><span class="tag linet">Rich Menu</span></div>
+      </div>
+      <div class="step">
+        <div class="shot"><div class="z52"><div class="phone">
+          <div class="p-bar">สมัครสมาชิก <small>LINE</small></div>
+          <div class="p-body">
+            <div class="form">
+              <div class="fld"><label>ชื่อ-นามสกุล</label><div>นภัส ศรีวงศ์</div></div>
+              <div class="fld"><label>เบอร์มือถือ</label><div class="mono">089-111-2233</div></div>
+              <div class="chk">✓ ยินยอมตามนโยบาย PDPA</div>
+              <div class="cta">สมัครเลย รับ 1,600 แต้ม</div>
+            </div>
+            <div class="note">เป็นสมาชิกแล้ว? ปุ่มเดียวกันเปิดบัตรสมาชิกแทน</div>
+          </div>
+        </div></div></div>
+        <div class="tx"><span class="no">02</span><h3>กด "สมัครสมาชิก"</h3><p>ล็อกอินด้วย LINE ให้เอง กรอกชื่อ เบอร์ กดยินยอม ได้ 1,600 แต้มทันที</p><span class="tag linet">LINE UID</span></div>
+      </div>
+      <div class="step">
+        <div class="shot"><div class="z52"><div class="phone">
+          <div class="p-bar">บัตรสมาชิก <small>LINE</small></div>
+          <div class="p-body">
+            <div class="card">
+              <div class="card-top"><span class="wm">MST GOLF</span><span class="pill">Member</span></div>
+              <div class="card-mid">
+                <div><div style="font-weight:700;font-size:15px">นภัส ศรีวงศ์</div><div class="mono" style="font-size:11px;opacity:.85">MST00003821</div></div>
+                <div class="qr"><svg viewBox="0 0 21 21" shape-rendering="crispEdges"><rect width="21" height="21" fill="#fff"/><g fill="#0b3d29"><path d="M0 0h7v7H0zM1 1v5h5V1zM2 2h3v3H2z" fill-rule="evenodd"/><path d="M14 0h7v7h-7zM15 1v5h5V1zM16 2h3v3h-3z" fill-rule="evenodd"/><path d="M0 14h7v7H0zM1 15v5h5v-5zM2 16h3v3H2z" fill-rule="evenodd"/><path d="M8 1h1v1H8zM10 0h2v1h-2zM9 3h2v1H9zM8 5h1v2H8zM11 5h2v1h-2zM12 2h1v2h-1zM8 8h2v1H8zM11 8h1v2h-1zM13 9h2v1h-2zM16 8h1v1h-1zM18 8h3v1h-3zM0 9h2v1H0zM3 8h1v2H3zM5 10h2v1H5zM9 10h1v2H9zM15 11h2v1h-2zM19 10h1v2h-1zM1 12h2v1H1zM6 12h1v1H6zM10 13h3v1h-3zM14 13h1v2h-1zM17 13h2v1h-2zM8 15h1v2H8zM11 15h2v1h-2zM16 15h1v1h-1zM18 16h3v1h-3zM9 18h2v1H9zM13 17h2v1h-2zM12 19h1v2h-1zM15 19h2v1h-2zM19 19h2v2h-2z"/></g></svg></div>
+              </div>
+              <div class="card-pts"><span>แต้มคงเหลือ</span><b>1,600</b></div>
+              <div class="prog"><i style="width:2%"></i></div>
+            </div>
+            <div class="note">อีก ฿100,000 ถึง Silver</div>
+          </div>
+        </div></div></div>
+        <div class="tx"><span class="no">03</span><h3>บัตรสมาชิกในมือถือ</h3><p>สมาชิกกดปุ่มเดิมเปิดบัตร QR แต้ม และระดับ ใช้โชว์ที่เคาน์เตอร์</p></div>
+      </div>
+      <div class="step">
+        <div class="shot"><div class="z52"><div class="phone">
+          <div class="p-bar">MST Golf <small>LINE</small></div>
+          <div class="p-body">
+            <div class="msg">
+              <div class="msg-h">ได้รับแต้มแล้ว</div>
+              <div class="msg-b">
+                <div class="kv"><span>ร้าน</span><span>MST Golf ชาญอิสสระ</span></div>
+                <div class="kv"><span>ยอดซื้อ</span><span class="mono">฿12,900</span></div>
+                <div class="kv"><span>แต้มที่ได้</span><b class="mono">+12,900</b></div>
+                <div class="kv"><span>แต้มคงเหลือ</span><span class="mono">14,500</span></div>
+              </div>
+            </div>
+            <div class="bubble">ยอดซื้อ 12 เดือนอีก <b>฿87,100</b> ขึ้นเป็น Silver</div>
+          </div>
+        </div></div></div>
+        <div class="tx"><span class="no">04</span><h3>ซื้อที่ร้าน แต้มเข้าเอง</h3><p>แจ้งเบอร์หรือสแกน QR ตอนจ่ายเงิน แล้วได้ข้อความแจ้งแต้มใน LINE</p></div>
+      </div>
+      <div class="step">
+        <div class="shot"><div class="z52"><div class="phone">
+          <div class="p-bar">จองซิมกอล์ฟ <small>LINE</small></div>
+          <div class="p-body">
+            <div class="book">
+              <div class="days"><span>พ.<br>30</span><span class="on">พฤ.<br>1 ต.ค.</span><span>ศ.<br>2</span><span>ส.<br>3</span></div>
+              <div class="slots">
+                <span></span><span class="h">L1</span><span class="h">L2</span><span class="h">L3</span>
+                <span class="t">17:00</span><span class="slot busy">เต็ม</span><span class="slot free">ว่าง</span><span class="slot busy">เต็ม</span>
+                <span class="t">18:00</span><span class="slot busy">เต็ม</span><span class="slot pick">✓</span><span class="slot busy">เต็ม</span>
+                <span class="t">19:00</span><span class="slot busy">เต็ม</span><span class="slot busy">เต็ม</span><span class="slot free">ว่าง</span>
+                <span class="t">20:00</span><span class="slot free">ว่าง</span><span class="slot free">ว่าง</span><span class="slot busy">ปิด</span>
+              </div>
+              <div class="cta">ยืนยัน 18:00 · Lane 2 · 3 คน</div>
+            </div>
+            <div class="note">ได้ข้อความยืนยัน และเตือนก่อนเวลา 2 ชม.</div>
+          </div>
+        </div></div></div>
+        <div class="tx"><span class="no">05</span><h3>กด "Booking Golf Sim"</h3><p>เลือกวัน เวลา lane และจำนวนคน ได้ข้อความยืนยันและเตือนก่อนเวลา ดูการจองของฉันได้ในหน้าเดียวกัน</p><span class="tag quote">ระบบจองซิม</span></div>
+      </div>
+    </div>
+    <div class="menu-row">
+      <div class="bigmenu">
+        <span class="sys wide"><em>A+B</em>สมัครสมาชิก</span><span class="auto"><em>C</em>โปรโมชั่น</span>
+        <span class="sys"><em>D</em>Booking Golf Sim</span><span class="auto"><em>E</em>Location</span><span class="chat"><em>F</em>ติดต่อ</span>
+      </div>
+      <div class="menu-tx">
+        <h3>Rich Menu ชุดเดียวสำหรับทุกคน</h3>
+        <p>ปุ่มสีเขียว 2 ปุ่มลิงก์เข้าระบบ: <b>สมัครสมาชิก</b> (เป็นสมาชิกแล้วกดเปิดบัตรและแต้ม) และ <b>Booking Golf Sim</b> (มีรายการจองของฉันในหน้าเดียวกัน) ปุ่มโปรโมชั่นและ Location เป็น auto reply ของทีม LINE ส่วนปุ่มติดต่อคุยกับพนักงาน MST</p>
+        <div class="keys"><span><i style="background:var(--action)"></i>ลิงก์เข้าระบบ</span><span><i style="background:#3f5f86"></i>auto reply ของทีม LINE</span><span><i style="background:#4a5a53"></i>แชตกับพนักงาน MST</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="ft"><span>หน้าจอเป็นตัวอย่าง ชื่อและตัวเลขสมมติ</span><span>03</span></div>
+</section>
+
+<!-- ════════ 4 · CUSTOMER ON WEBSITE ════════ -->
+<section class="page">
+  <div class="hd">
+    <div class="hd-l">
+      <span class="sec cust"><i></i>มุมลูกค้า</span>
+      <h1>ลูกค้าบนเว็บไซต์</h1>
+      <p>เว็บไซต์ทำได้ 3 อย่างที่เชื่อมกับระบบ ส่วนที่เหลือเป็นข้อมูลทั่วไปและบทความ</p>
+    </div>
+    <div class="legend"><span class="tag quote">ระบบจอง Golf Simulator</span></div>
+  </div>
+  <div class="web-page mid">
+    <div class="browser">
+      <div class="b-bar"><i></i><i></i><i></i><span class="b-url">เว็บไซต์ MST Golf Thailand</span></div>
+      <div class="b-nav"><span class="logo">MST GOLF</span><span>หน้าแรก</span><span>บริการ</span><span>Golf Simulator</span><span>บทความ</span><span class="login">ล็อกอินด้วย LINE</span></div>
+      <div class="b-body">
+        <div class="b-hero">
+          <div class="hero">
+            <b>ซิมกอล์ฟ 3 lane<br>จองออนไลน์ได้แล้ว</b>
+            <span>MST Golf ชาญอิสสระ ทาวเวอร์ 1</span>
+            <div class="btns"><em>จองซิม</em><em class="alt">สมัครสมาชิก</em></div>
+          </div>
+          <div class="mine">
+            <span class="t">แต้มของฉัน · นภัส ศรีวงศ์</span>
+            <span class="big">14,500</span>
+            <div class="kv"><span>ระดับ</span><span>Member</span></div>
+            <div class="kv"><span>การจองถัดไป</span><span>1 ต.ค. 18:00 · L2</span></div>
+          </div>
+        </div>
+        <div class="b-blog">
+          <div><i></i><b>วิธีเลือกไดรเวอร์ให้เหมาะกับวงสวิง</b><span>บทความ</span></div>
+          <div><i></i><b>Club Fitting ที่ MST ทำอะไรบ้าง</b><span>บริการ</span></div>
+          <div><i></i><b>ตารางคลาสอคาเดมี ต.ค.</b><span>ข่าวสาร</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="webside">
+      <div class="fn"><span class="n">1</span><b>สมัครสมาชิก</b><p>หน้าสมัครเดียวกับใน LINE ได้บัญชีเดียวกัน แต้มต้อนรับ 1,600 แต้ม</p></div>
+      <div class="fn"><span class="n">2</span><b>จองซิมกอล์ฟ</b><p>ตารางจองเดียวกับใน LINE ช่องว่างตรงกันทุกช่องทาง ไม่มีจองซ้อน</p></div>
+      <div class="fn"><span class="n">3</span><b>ดูแต้มของตัวเอง</b><p>แต้ม ระดับ และการจองของฉัน ตัวเลขเดียวกับบัตรสมาชิกใน LINE</p></div>
+      <div class="fn info"><span class="n">·</span><b>ข้อมูลทั่วไป · บทความ</b><p>หน้าร้าน บริการ และ blog เป็นเนื้อหาอย่างเดียว ไม่ต้องเชื่อมกับระบบ</p></div>
+      <div class="login-note"><b>ล็อกอินด้วย LINE</b> — ลูกค้าไม่ต้องตั้งรหัสผ่านใหม่ ระบบรู้ทันทีว่าเป็นสมาชิกคนไหน ระหว่างล็อกอินมีตัวเลือกให้เพิ่มเพื่อน LINE OA เพื่อรับข้อความยืนยันการจองและแจ้งแต้ม</div>
+    </div>
+  </div>
+  <div class="ft"><span>หน้าจอเป็นตัวอย่าง ข้อมูลสมมติ</span><span>04</span></div>
+</section>
+
+<!-- ════════ 5 · STORE ════════ -->
+<section class="page">
+  <div class="hd">
+    <div class="hd-l">
+      <span class="sec store"><i></i>มุมร้าน</span>
+      <h1>พนักงานหลังบ้าน</h1>
+      <p>ทุกอย่างที่ลูกค้าทำใน LINE และเว็บไซต์ เข้ามาที่นี่ทันที แต่ละตำแหน่งเห็นเฉพาะส่วนที่ต้องใช้</p>
+    </div>
+    <div class="legend"><span class="tag quote">ระบบจอง Golf Simulator</span><span class="tag quote">Summary Dashboard</span></div>
+  </div>
+  <div class="grid6">
+    <div class="sc">
+      <div class="shot"><div class="z62"><div class="panel">
+        <div class="pn-bar">MST Golf Platform <small>เข้าสู่ระบบ</small></div>
+        <div class="pn-body">
+          <div class="kv"><span>ผู้ใช้</span><span>กมล · หน้าร้าน</span></div>
+          <div class="roles"><span>ผู้ดูแลระบบ</span><span>การตลาด</span><span>ผู้จัดการสาขา</span><span class="me">พนักงานหน้าร้าน</span><span>บริการลูกค้า</span></div>
+          <div class="kv"><span>เมนูที่เห็น</span><span>สมาชิก · ซิมกอล์ฟ</span></div>
+        </div>
+      </div></div></div>
+      <div class="tx"><span class="no">01</span><h3>เข้าสู่ระบบตามตำแหน่ง</h3><p>แต่ละคนมีบัญชีของตัวเอง ทุกการแก้ไขมีบันทึกว่าใครทำ</p></div>
+    </div>
+    <div class="sc">
+      <div class="shot"><div class="z62"><div class="panel">
+        <div class="pn-bar">เพิ่มสมาชิก <small>หลังบ้าน</small></div>
+        <div class="pn-body">
+          <div class="p360"><div class="av">+ รูป</div><div><b>ธนา รุ่งเรือง</b><div class="mono" style="font-size:11px;color:var(--muted)">086-555-4433</div></div></div>
+          <div class="kv"><span>PDPA</span><span>ลูกค้ายินยอมแล้ว ✓</span></div>
+          <div class="cta">สร้างสมาชิก</div>
+        </div>
+      </div></div></div>
+      <div class="tx"><span class="no">02</span><h3>สมัครให้ลูกค้าที่เคาน์เตอร์</h3><p>หรือให้ลูกค้าสแกน QR สมัครเอง ระบบเช็กเบอร์ซ้ำให้</p></div>
+    </div>
+    <div class="sc">
+      <div class="shot"><div class="z62"><div class="panel">
+        <div class="pn-bar">นำเข้า POS <small>1 ต.ค.</small></div>
+        <div class="pn-body">
+          <div class="bill">Qi35 Driver ×1 ..... 12,900<br>หมายเหตุ: <mark>MSTMEMBER:0891112233</mark></div>
+          <div class="counts"><div><b>86</b><span>บิลทั้งหมด</span></div><div><b>79</b><span>จับคู่สมาชิกได้</span></div></div>
+          <div class="cta">นำเข้า · ให้แต้ม · แจ้งลูกค้า</div>
+        </div>
+      </div></div></div>
+      <div class="tx"><span class="no">03</span><h3>นำเข้าบิล POS วันละครั้ง</h3><p>ใส่เบอร์สมาชิกในหมายเหตุบิลตอนขาย สิ้นวันนำเข้าไฟล์ ระบบให้แต้มเอง</p></div>
+    </div>
+    <div class="sc">
+      <div class="shot"><div class="z62"><div class="panel">
+        <div class="pn-bar">ซิมกอล์ฟ · พฤ. 1 ต.ค. <small>วันนี้</small></div>
+        <div class="pn-body">
+          <div class="cal">
+            <span></span><span class="h">Lane 1</span><span class="h">Lane 2</span><span class="h">Lane 3</span>
+            <span class="t">16:00</span><span></span><div class="bk wk"><b>Walk-in</b>2 คน</div><span></span>
+            <span class="t">17:00</span><div class="bk ln in"><b>สมชาย</b>เช็กอินแล้ว</div><span></span><div class="bk tel"><b>อรทัย</b>โทรจอง</div>
+            <span class="t">18:00</span><div class="bk wb"><b>ณัฐ</b>เว็บไซต์</div><div class="bk ln"><b>นภัส</b>LINE · 3 คน</div><div class="bk wk"><b>Walk-in</b>1 คน</div>
+            <span class="t">19:00</span><div class="bk ln"><b>กันต์</b>LINE</div><div class="bk tel"><b>ศิริพร</b>โทรจอง</div><span></span>
+            <span class="t">20:00</span><span></span><span></span><div class="bk block"><b>ปิดซ่อม</b></div>
+          </div>
+          <div class="srcs"><span><i style="background:#16a34a"></i>LINE</span><span><i style="background:#7c3aed"></i>เว็บไซต์</span><span><i style="background:#0e7fb8"></i>Walk-in</span><span><i style="background:#a16207"></i>โทรจอง</span></div>
+        </div>
+      </div></div></div>
+      <div class="tx"><span class="no">04</span><h3>ตารางซิม 3 lane</h3><p>จองจากทุกช่องทางอยู่ในตารางเดียว เช็กอินได้ ปิด lane ซ่อมได้</p><span class="tag quote">ระบบจองซิม</span></div>
+    </div>
+    <div class="sc">
+      <div class="shot"><div class="z62"><div class="panel">
+        <div class="pn-bar">นภัส ศรีวงศ์ <small>MST00003821</small></div>
+        <div class="pn-body">
+          <div class="p360"><div class="av">น</div><div><b>นภัส ศรีวงศ์</b> <span class="pill">Member</span><div style="font-size:11px;color:var(--muted)">ยอด 12 เดือน ฿12,900</div></div></div>
+          <div class="tl">
+            <div><span>จองซิม Lane 2 · 18:00</span><span>1 ต.ค.</span></div>
+            <div><span>ซื้อ Qi35 Driver ฿12,900</span><span>1 ต.ค.</span></div>
+            <div><span>สมัครผ่าน LINE</span><span>28 ก.ย.</span></div>
+          </div>
+        </div>
+      </div></div></div>
+      <div class="tx"><span class="no">05</span><h3>ข้อมูลลูกค้าในหน้าเดียว</h3><p>ระดับ ยอดซื้อ แต้ม การจอง และประวัติทั้งหมดของลูกค้าแต่ละคน</p></div>
+    </div>
+    <div class="sc">
+      <div class="shot"><div class="z62"><div class="panel">
+        <div class="pn-bar">ภาพรวม · 7 วัน <small>ตัวอย่าง</small></div>
+        <div class="pn-body">
+          <div class="kpis"><div><span>สมาชิกทั้งหมด</span><b>1,284</b></div><div><span>สมาชิกใหม่</span><b>+46</b></div><div><span>ยอดซื้อสมาชิก</span><b>฿1.42M</b></div><div><span>ใช้ lane ซิม</span><b>71%</b></div></div>
+          <div class="bars"><i style="height:48%"></i><i style="height:62%"></i><i style="height:55%"></i><i style="height:70%"></i><i style="height:66%"></i><i style="height:92%"></i><i style="height:84%"></i></div>
+        </div>
+      </div></div></div>
+      <div class="tx"><span class="no">06</span><h3>Summary Dashboard</h3><p>ตัวเลขภาพรวมสำหรับผู้บริหาร: สมาชิกใหม่ ยอดซื้อ และการใช้ซิม</p><span class="tag quote">Summary Dashboard</span></div>
+    </div>
+  </div>
+  <div class="ft"><span>หน้าจอเป็นตัวอย่าง ชื่อและตัวเลขสมมติ</span><span>05</span></div>
+</section>
+
+<!-- ════════ 6 · BOOKING ════════ -->
+<section class="page">
+  <div class="hd">
+    <div class="hd-l">
+      <span class="sec sys"><i></i>ระบบจองซิมกอล์ฟ</span>
+      <h1>จองได้ 4 ทาง ลงตารางเดียว</h1>
+      <p>ลูกค้าจองจาก LINE หรือเว็บไซต์ พนักงานรับ walk-in และโทรจอง ทุกการจองเห็นตรงกัน ไม่มีจองซ้อน</p>
+    </div>
+    <div class="legend"><span class="tag quote">ระบบจอง Golf Simulator</span></div>
+  </div>
+  <div class="book-page mid">
+    <div class="book-left">
+      <div class="panel-lg"><div class="z92"><div class="panel" style="width:400px">
+        <div class="pn-bar">ซิมกอล์ฟ · พฤ. 1 ต.ค. <small>หลังบ้าน</small></div>
+        <div class="pn-body">
+          <div class="cal">
+            <span></span><span class="h">Lane 1</span><span class="h">Lane 2</span><span class="h">Lane 3</span>
+            <span class="t">16:00</span><span></span><div class="bk wk"><b>Walk-in</b>2 คน</div><span></span>
+            <span class="t">17:00</span><div class="bk ln in"><b>สมชาย</b>เช็กอินแล้ว</div><span></span><div class="bk tel"><b>อรทัย</b>โทรจอง</div>
+            <span class="t">18:00</span><div class="bk wb"><b>ณัฐ</b>เว็บไซต์</div><div class="bk ln"><b>นภัส</b>LINE · 3 คน</div><div class="bk wk"><b>Walk-in</b>1 คน</div>
+            <span class="t">19:00</span><div class="bk ln"><b>กันต์</b>LINE</div><div class="bk tel"><b>ศิริพร</b>โทรจอง</div><span></span>
+            <span class="t">20:00</span><span></span><span></span><div class="bk block"><b>ปิดซ่อม</b></div>
+          </div>
+          <div class="srcs"><span><i style="background:#16a34a"></i>LINE</span><span><i style="background:#7c3aed"></i>เว็บไซต์</span><span><i style="background:#0e7fb8"></i>Walk-in</span><span><i style="background:#a16207"></i>โทรจอง</span></div>
+        </div>
+      </div></div></div>
+      <div class="merge">
+        <div class="merge-row"><span>LINE</span><span>เว็บไซต์</span><span>Walk-in</span><span>โทรจอง</span><b>→ ตารางเดียว 3 lane</b></div>
+        <div class="merge-row" style="color:var(--muted)">พนักงานลากย้ายเวลาได้ · ย้ายไปช่องที่มีคนจองแล้วไม่ได้</div>
+      </div>
+    </div>
+    <div>
+      <table class="rules">
+        <tr><td>Lane</td><td><b>3 lane</b> · สูงสุด 3 คนต่อ lane</td></tr>
+        <tr><td>ช่องเวลา</td><td><b>ครั้งละ 1 ชั่วโมง</b> ตามเวลาเปิดร้าน</td></tr>
+        <tr><td>ราคา</td><td><b>฿1,000 ต่อชั่วโมง</b> · ส่วนลดตามระดับสมาชิก</td></tr>
+        <tr><td>ชำระเงิน</td><td>ที่ร้านตอนเช็กอิน</td></tr>
+        <tr><td>จองล่วงหน้าได้</td><td>14 วัน · Gold 21 วัน</td></tr>
+        <tr><td>กันจองซ้อน</td><td>ระหว่างกดยืนยัน ระบบถือช่องไว้ให้ 5 นาที</td></tr>
+        <tr><td>ยกเลิกเอง</td><td>ก่อนเวลาจอง 2 ชั่วโมง ช่องว่างกลับมาให้คนอื่นทันที</td></tr>
+        <tr><td>ไม่มาตามนัด</td><td>เกิน 15 นาที พนักงานบันทึก no-show</td></tr>
+      </table>
+      <div class="life">
+        <div><b>ถือช่อง</b>5 นาที</div>
+        <div><b>ยืนยัน</b>ข้อความใน LINE</div>
+        <div><b>เตือน</b>ก่อน 2 ชม.</div>
+        <div><b>เช็กอิน</b>ที่เคาน์เตอร์</div>
+        <div><b>เสร็จ</b>หรือ no-show</div>
+      </div>
+      <p class="small-note">ตัวเลขเป็นค่าตั้งต้นที่เสนอ ปรับได้ในระบบ</p>
+    </div>
+  </div>
+  <div class="ft"><span>หน้าจอเป็นตัวอย่าง ชื่อสมมติ</span><span>06</span></div>
+</section>
+
+<!-- ════════ 7 · TIERS ════════ -->
+<section class="page">
+  <div class="hd">
+    <div class="hd-l">
+      <span class="sec sys"><i></i>ระดับสมาชิกและแต้ม</span>
+      <h1>3 ระดับ ตามยอดซื้อ 12 เดือน</h1>
+      <p>ระดับขึ้นกับยอดซื้อจริงย้อนหลัง 12 เดือน ไม่ใช่แต้มคงเหลือ ลูกค้าแลกแต้มแล้วระดับไม่ตก</p>
+    </div>
+  </div>
+  <div class="mid">
+    <div class="tiers">
+      <div class="tier m">
+        <div class="tier-h"><b>Member</b><span>สมัครแล้วเริ่มที่ระดับนี้</span><span class="th">฿0</span></div>
+        <ul>
+          <li><span>แต้มต่อ 1 บาท</span><b>1 แต้ม</b></li>
+          <li><span>ส่วนลดร้าน</span><b>—</b></li>
+          <li><span>ส่วนลดซิม</span><b>—</b></li>
+          <li><span>จองซิมล่วงหน้า</span><b>14 วัน</b></li>
+          <li><span>เดือนเกิด</span><b>แต้ม ×2</b></li>
+        </ul>
+      </div>
+      <div class="tier s">
+        <div class="tier-h"><b>Silver</b><span>ยอดซื้อ 12 เดือนตั้งแต่</span><span class="th">฿100,000</span></div>
+        <ul>
+          <li><span>แต้มต่อ 1 บาท</span><b>1.25 แต้ม</b></li>
+          <li><span>ส่วนลดร้าน</span><b>5%</b></li>
+          <li><span>ส่วนลดซิม</span><b>10%</b></li>
+          <li><span>จองซิมล่วงหน้า</span><b>14 วัน</b></li>
+          <li><span>เดือนเกิด</span><b>แต้ม ×2</b></li>
+        </ul>
+      </div>
+      <div class="tier g">
+        <div class="tier-h"><b>Gold</b><span>ยอดซื้อ 12 เดือนตั้งแต่</span><span class="th">฿1,000,000</span></div>
+        <ul>
+          <li><span>แต้มต่อ 1 บาท</span><b>1.5 แต้ม</b></li>
+          <li><span>ส่วนลดร้าน</span><b>10%</b></li>
+          <li><span>ส่วนลดซิม</span><b>20%</b></li>
+          <li><span>จองซิมล่วงหน้า</span><b>21 วัน</b></li>
+          <li><span>เดือนเกิด · แคมเปญ</span><b>แต้ม ×2 · เฉพาะ Gold</b></li>
+        </ul>
+      </div>
+    </div>
+    <div class="howpts">
+      <div><b>สมัครสมาชิก</b>ได้แต้มต้อนรับ <span class="mono">1,600</span> แต้มทันที</div>
+      <div><b>ได้แต้มจากการซื้อ</b>ยอดซื้อ × อัตราของระดับ เช่น Silver ซื้อ ฿10,000 ได้ <span class="mono">12,500</span> แต้ม</div>
+      <div><b>เลื่อนระดับทันที</b>ยอดถึงเกณฑ์เมื่อไร ขึ้นระดับทันทีพร้อมข้อความแจ้ง</div>
+      <div><b>ทบทวนเดือนละครั้ง</b>ถ้ายอด 12 เดือนลดลง ระดับปรับวันที่ 1 ของเดือน ไม่ลดกลางเดือน</div>
+    </div>
+    <p class="small-note">เกณฑ์ อัตราแต้ม และสิทธิประโยชน์เป็นข้อเสนอเริ่มต้น ปรับได้ในระบบโดยไม่ต้องแก้โปรแกรม</p>
+  </div>
+  <div class="ft"><span>MST Golf Platform · Phase 1</span><span>07</span></div>
+</section>
+
+<!-- ════════ 8 · LINE TEAM ════════ -->
+<section class="page">
+  <div class="hd">
+    <div class="hd-l">
+      <span class="sec linet"><i></i>ทำงานร่วมกับทีม LINE Marketing</span>
+      <h1>ทีม LINE ทำงานเหมือนเดิม แค่ใส่ลิงก์ 2 ปุ่ม</h1>
+      <p>ไม่ต้องเปลี่ยนเมนูรายคน ไม่ต้องตั้ง webhook auto reply และแชตกับพนักงานใช้ได้ตามปกติ</p>
+    </div>
+  </div>
+  <div class="lt mid">
+    <div class="lt-menu">
+      <h3>Rich Menu ที่ทีม LINE ทำใน LINE OA</h3>
+      <div class="bigmenu">
+        <span class="sys wide"><em>A+B</em>สมัครสมาชิก</span><span class="auto"><em>C</em>โปรโมชั่น</span>
+        <span class="sys"><em>D</em>Booking Golf Sim</span><span class="auto"><em>E</em>Location</span><span class="chat"><em>F</em>ติดต่อ</span>
+      </div>
+      <div class="keys"><span><i style="background:var(--action)"></i>ลิงก์เข้าระบบ</span><span><i style="background:#3f5f86"></i>auto reply ของทีม LINE</span><span><i style="background:#4a5a53"></i>แชตกับพนักงาน MST</span></div>
+      <table class="btnmap">
+        <tr><td>A+B</td><td>สมัครสมาชิก → ระบบสมาชิก<br><code>liff.line.me/…/member</code></td><td class="o-sys">ระบบ</td></tr>
+        <tr><td>C</td><td>โปรโมชั่น → auto reply</td><td class="o-line">ทีม LINE</td></tr>
+        <tr><td>D</td><td>Booking Golf Sim → ระบบจอง<br><code>liff.line.me/…/booking</code></td><td class="o-sys">ระบบ</td></tr>
+        <tr><td>E</td><td>Location → auto reply แผนที่ Google Maps</td><td class="o-line">ทีม LINE</td></tr>
+        <tr><td>F</td><td>ติดต่อ → แชตกับพนักงาน</td><td class="o-mst">พนักงาน MST</td></tr>
+      </table>
+      <p style="font-size:8.3pt;color:var(--muted);line-height:1.45">ลิงก์จริงระบบส่งให้ก่อนเปิดใช้ คนที่ยังไม่เป็นสมาชิกกด Booking Golf Sim ระบบพาไปสมัครก่อนเอง</p>
+    </div>
+    <div class="lt-right">
+      <div class="who3">
+        <div class="wbox mkt"><h3>ทีม LINE Marketing</h3><ul>
+          <li>ออกแบบและตั้ง Rich Menu ใน LINE OA</li>
+          <li>ใส่ลิงก์ปุ่ม A+B และ D ที่ระบบให้</li>
+          <li>ตั้ง auto reply ปุ่มโปรโมชั่นและ Location</li>
+          <li>บรอดแคสต์และคอนเทนต์เหมือนเดิม</li>
+        </ul></div>
+        <div class="wbox crm"><h3>MST Golf Platform</h3><ul>
+          <li>ระบบสมาชิกและระบบจองที่ลิงก์ไปถึง</li>
+          <li>รับ LINE UID อัตโนมัติตอนลูกค้าล็อกอิน</li>
+          <li>ส่งข้อความแจ้งแต้มและการจองรายคน</li>
+        </ul></div>
+        <div class="wbox mst"><h3>พนักงาน MST</h3><ul>
+          <li>ตอบแชตจากปุ่มติดต่อ</li>
+        </ul></div>
+      </div>
+      <div>
+        <div class="row-h">LINE UID วิ่งยังไง</div>
+        <div class="uidflow">
+          <div class="l"><b>ลูกค้า</b>กดสมัครสมาชิกหรือ Booking ในเมนู หรือล็อกอินบนเว็บไซต์</div>
+          <div class="l"><b>LINE</b>ยืนยันตัวตน แล้วส่ง UID ของลูกค้าให้ระบบ</div>
+          <div class="c"><b>MST GOLF PLATFORM</b>ผูก UID กับรหัสสมาชิก MST00003821</div>
+          <div class="c"><b>MST GOLF PLATFORM</b>ใช้ UID ส่งข้อความหาลูกค้าคนนั้น</div>
+        </div>
+      </div>
+      <div class="asks">
+        <div class="ask"><h3>ขอจากทีม LINE 2 อย่าง</h3><ol>
+          <li>เปิด Messaging API ของ LINE OA และให้สิทธิ์ระบบส่งข้อความ <span>— ใช้ส่งแจ้งแต้มและยืนยันการจอง</span></li>
+          <li>ให้ระบบสร้าง LINE Login ไว้ใน Provider เดียวกับ LINE OA <span>— ลูกค้าคนเดียวจึงมี UID เดียว</span></li>
+        </ol></div>
+        <div class="ask skip"><h3>ทีม LINE ไม่ต้องทำ</h3><ul>
+          <li>เปลี่ยน Rich Menu ให้ลูกค้ารายคน</li>
+          <li>ตั้ง webhook ให้ระบบ</li>
+          <li>แก้แชตบอตหรือเครื่องมือเดิม</li>
+        </ul></div>
+      </div>
+      <p class="small-note">ระบบไม่ใช้ webhook auto reply และโหมดแชตของ LINE OA จึงทำงานได้ตามปกติ · ข้อความแจ้งเตือนจากระบบนับรวมในโควตาข้อความของ LINE OA</p>
+    </div>
+  </div>
+  <div class="ft"><span>MST Golf Platform · Phase 1</span><span>08</span></div>
+</section>
+
+<!-- ════════ 9 · DATABASE ════════ -->
+<section class="page">
+  <div class="hd">
+    <div class="hd-l">
+      <span class="sec sys"><i></i>ฐานข้อมูล</span>
+      <h1>ข้อมูลลงฐานข้อมูลยังไง</h1>
+      <p>ลูกค้า 1 คนมีรหัสสมาชิกเดียวเป็นแกนกลาง ข้อมูลทุกอย่างผูกกับรหัสนี้</p>
+    </div>
+    <div class="srcrow"><span>ข้อมูลมาจาก</span><span class="chip">LINE</span><span class="chip">เว็บไซต์</span><span class="chip">POS หน้าร้าน</span><span class="chip">หลังบ้าน</span></div>
+  </div>
+  <div class="mid">
+    <div class="db">
+      <div class="dbcol left">
+        <div class="tbl">
+          <div class="tbl-h"><b>ตัวตนที่ผูกไว้</b><code>MemberIdentity</code></div>
+          <div class="rows"><div><span>LINE UID</span><span>U4af4980629…3f2</span></div><div><span>เบอร์มือถือ</span><span>0891112233</span></div></div>
+          <div class="from">มาจาก <b>LINE</b> และ <b>เว็บไซต์</b> (ล็อกอินด้วย LINE) · <b>POS</b> (เบอร์ในบิล)</div>
+        </div>
+        <div class="tbl">
+          <div class="tbl-h"><b>ความยินยอม PDPA</b><code>Consent</code></div>
+          <div class="rows"><div><span>ข้อกำหนด v1</span><span>✓ 28 ก.ย. 10:14</span></div><div><span>รับข่าวสาร</span><span>✓ 28 ก.ย. 10:14</span></div></div>
+          <div class="from">มาจาก <b>หน้าสมัคร</b> (LINE · เว็บไซต์ · หลังบ้าน)</div>
+        </div>
+      </div>
+      <div class="core">
+        <div class="tbl-h"><b>สมาชิก</b><code>Member</code></div>
+        <div class="rows">
+          <div><span>รหัส</span><span>MST00003821</span></div>
+          <div><span>ชื่อ</span><span>นภัส ศรีวงศ์</span></div>
+          <div><span>ระดับ</span><span>Member</span></div>
+          <div><span>แต้มคงเหลือ</span><span>14,500</span></div>
+          <div><span>ยอด 12 เดือน</span><span>฿12,900</span></div>
+        </div>
+        <p>รหัสนี้คือตัวตนหลักของลูกค้า เปลี่ยนเบอร์หรือเข้ามาจากช่องทางไหน ก็ยังเป็นคนเดิม</p>
+      </div>
+      <div class="dbcol right">
+        <div class="tbl">
+          <div class="tbl-h"><b>การซื้อ + แต้ม</b><code>Sale · PointTransaction</code></div>
+          <div class="rows"><div><span>บิล 0457</span><span>฿12,900</span></div><div><span>แต้มจากบิลนี้</span><span>+12,900</span></div><div><span>แต้มต้อนรับ</span><span>+1,600</span></div></div>
+          <div class="from">มาจาก <b>POS</b> (นำเข้าวันละครั้ง) · <b>หน้าสมัคร</b></div>
+        </div>
+        <div class="tbl">
+          <div class="tbl-h"><b>การจองซิม</b><code>Booking</code></div>
+          <div class="rows"><div><span>1 ต.ค. 18:00</span><span>Lane 2 · 3 คน</span></div><div><span>สถานะ</span><span>ยืนยันแล้ว</span></div></div>
+          <div class="from">มาจาก <b>LINE</b> · <b>เว็บไซต์</b> · <b>หลังบ้าน</b> (walk-in · โทรจอง)</div>
+        </div>
+      </div>
+    </div>
+    <div class="facts">
+      <div><b>LINE UID คืออะไร</b>รหัสที่ LINE ออกให้ลูกค้าแต่ละคน ใช้ส่งข้อความหาคนนั้นได้ ลูกค้าไม่เห็นและไม่ต้องจำ</div>
+      <div><b>ระบบไม่เก็บ</b>รหัสผ่าน LINE และรายชื่อเพื่อนของลูกค้า ระบบไม่ได้รับข้อมูลเหล่านี้</div>
+      <div><b>เก็บที่ไหน ใครเห็น</b>ฐานข้อมูลที่ Singapore พนักงานเห็นได้ตามสิทธิ์ของตำแหน่งเท่านั้น</div>
+    </div>
+  </div>
+  <div class="ft"><span>ชื่อและตัวเลขสมมติ</span><span>09</span></div>
+</section>
+
+<script>
+  // Screen-only preview helper: #p3 shows just page 3. Printing ignores it.
+  (function () {
+    var m = /^#p(\d+)$/.exec(location.hash);
+    if (!m) return;
+    var pages = document.querySelectorAll(".page");
+    var i = Number(m[1]) - 1;
+    if (!pages[i]) return;
+    document.body.classList.add("one");
+    pages[i].classList.add("show");
+  })();
+</script>
+</body>
+</html>

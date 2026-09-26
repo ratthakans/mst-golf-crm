@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>ใบเสนอราคา MST Golf Platform</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+  @page { size: A4 portrait; margin: 0; }
+  :root {
+    --ground: #ffffff; --soft: #f4f7f5; --soft-2: #eef3f0; --ink: #14201b; --muted: #5d6e66; --faint: #8a9a92; --line: #dde6e1;
+    --brand: #0a5c36; --brand-deep: #0b3d29; --action: #16a34a; --tint: #e5f2ea;
+    --gold-bg: #fdf3d7; --gold-ink: #8a5a06;
+    --sans: "Anuphan", "Noto Sans Thai", "Thonburi", sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  }
+  * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  html, body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--sans); font-size: 9.6pt; line-height: 1.5; }
+  h1, h2, h3, p { margin: 0; }
+  .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+  .ph { background: var(--gold-bg); color: var(--gold-ink); border-radius: 1mm; padding: 0 1.2mm; }
+
+  .page { width: 210mm; height: 297mm; padding: 14mm 15mm 11mm; display: grid; grid-template-rows: auto 1fr auto; gap: 6mm; page-break-after: always; overflow: hidden; }
+  .page:last-child { page-break-after: auto; }
+
+  /* header band */
+  .band { display: flex; justify-content: space-between; align-items: flex-start; gap: 8mm; }
+  .brandline { font-family: var(--mono); font-size: 8pt; letter-spacing: 1.2px; color: var(--brand); }
+  .band h1 { font-size: 24pt; line-height: 1.1; margin-top: 1.5mm; }
+  .band .sub { color: var(--muted); font-size: 10pt; margin-top: 1mm; }
+  .meta { background: var(--soft); border-radius: 3mm; padding: 3.4mm 4mm; display: grid; grid-template-columns: auto auto; gap: 1.2mm 5mm; font-size: 8.8pt; min-width: 66mm; }
+  .meta span:nth-child(odd) { color: var(--muted); }
+  .meta span:nth-child(even) { font-family: var(--mono); text-align: right; }
+
+  .parties { display: grid; grid-template-columns: 1fr 1fr; gap: 5mm; }
+  .party { border: 1px solid var(--line); border-radius: 3mm; padding: 3.4mm 4mm; display: grid; gap: 0.8mm; font-size: 9pt; }
+  .party .lbl { font-size: 7.8pt; font-weight: 700; letter-spacing: 0.4px; color: var(--brand); }
+  .party b { font-size: 10.5pt; }
+  .party span { color: var(--muted); }
+
+  /* items */
+  table.items { width: 100%; border-collapse: collapse; }
+  .items th { text-align: left; font-size: 8pt; font-weight: 600; color: var(--muted); padding: 2.2mm 3mm; border-bottom: 1.5px solid var(--ink); }
+  .items th:last-child, .items td:last-child { text-align: right; }
+  .items td { padding: 3.2mm 3mm; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .items td.n { font-family: var(--mono); color: var(--faint); width: 8mm; }
+  .items td.t b { display: block; font-size: 10.5pt; }
+  .items td.t span { color: var(--muted); font-size: 8.8pt; line-height: 1.45; display: block; margin-top: 0.6mm; }
+  .items td.p { font-family: var(--mono); font-size: 10.5pt; white-space: nowrap; width: 30mm; }
+  .items tr.free td { background: var(--tint); }
+  .items tr.free td.p { color: var(--brand); font-family: var(--sans); font-weight: 700; }
+
+  .sum { display: grid; grid-template-columns: 1fr 80mm; gap: 8mm; margin-top: 5mm; align-items: start; }
+  .words { background: var(--soft); border-radius: 3mm; padding: 3.4mm 4mm; font-size: 9pt; color: var(--muted); }
+  .words b { color: var(--ink); display: block; font-size: 10pt; margin-top: 0.6mm; }
+  .totals { display: grid; gap: 1.6mm; font-size: 10pt; }
+  .totals div { display: flex; justify-content: space-between; }
+  .totals div span:first-child { color: var(--muted); }
+  .totals div span:last-child { font-family: var(--mono); }
+  .totals .grand { border-top: 1.5px solid var(--ink); padding-top: 2mm; margin-top: 1mm; font-weight: 700; font-size: 12.5pt; }
+  .totals .grand span:first-child { color: var(--ink); }
+
+  .terms { display: grid; grid-template-columns: 1fr; gap: 5mm; margin-top: 6mm; }
+  .box { border: 1px solid var(--line); border-radius: 3mm; padding: 3.4mm 4mm; }
+  .box h3 { font-size: 10pt; margin-bottom: 1.6mm; }
+  .box ul { margin: 0; padding-left: 4.4mm; display: grid; gap: 1mm; font-size: 8.8pt; }
+  .timeline { display: grid; gap: 1.2mm; font-size: 8.8pt; }
+  .timeline div { display: flex; justify-content: space-between; gap: 3mm; border-bottom: 1px dashed var(--line); padding-bottom: 1mm; }
+  .timeline div:last-child { border-bottom: 0; }
+  .timeline span:last-child { font-family: var(--mono); white-space: nowrap; }
+
+  .ft { display: flex; justify-content: space-between; font-size: 7.5pt; color: var(--faint); border-top: 1px solid var(--line); padding-top: 2.5mm; }
+
+  /* page 2 scope */
+  .scope { display: grid; gap: 3.4mm; align-content: start; }
+  .sc { border: 1px solid var(--line); border-radius: 3mm; display: grid; grid-template-columns: 44mm 1fr; overflow: hidden; }
+  .sc-h { background: var(--soft); padding: 3.4mm 4mm; display: grid; gap: 0.6mm; align-content: start; }
+  .sc-h .n { font-family: var(--mono); font-size: 8pt; color: var(--brand); font-weight: 600; }
+  .sc-h b { font-size: 10.5pt; line-height: 1.3; }
+  .sc-h .p { font-family: var(--mono); font-size: 9.5pt; margin-top: 1mm; }
+  .sc-h .ref { font-size: 7.8pt; color: var(--faint); margin-top: 1mm; }
+  .sc ul { margin: 0; padding: 3.2mm 4mm 3.2mm 8mm; display: grid; gap: 0.9mm; font-size: 8.8pt; line-height: 1.45; }
+  .excl { display: grid; grid-template-columns: 1fr 1fr; gap: 4mm; }
+  .excl .box.out ul li::marker { content: "✕  "; color: var(--faint); }
+  .sign { display: grid; grid-template-columns: 1fr 1fr; gap: 10mm; margin-top: 2mm; }
+  .sign div { display: grid; gap: 1.4mm; font-size: 8.8pt; color: var(--muted); }
+  .sign .line { border-bottom: 1px solid var(--ink); height: 12mm; }
+  .sign b { color: var(--ink); font-size: 9.5pt; }
+</style>
+</head>
+<body>
+
+<!-- ════════ PAGE 1 · QUOTE ════════ -->
+<section class="page">
+  <div style="display:grid; gap: 6mm;">
+    <div class="band">
+      <div>
+        <div class="brandline">ORIONS · MST GOLF PLATFORM</div>
+        <h1>ใบเสนอราคา</h1>
+        <p class="sub">ระบบสมาชิก ระบบจองซิมกอล์ฟ และเว็บไซต์ · Phase 1</p>
+      </div>
+      <div class="meta">
+        <span>เลขที่</span><span>QT-20260923-01</span>
+        <span>วันที่</span><span>23 ก.ย. 2026</span>
+        <span>ยืนราคาถึง</span><span>23 ต.ค. 2026</span>
+        <span>สกุลเงิน</span><span>THB</span>
+      </div>
+    </div>
+
+    <div class="parties">
+      <div class="party">
+        <span class="lbl">ผู้เสนอราคา</span>
+        <b>ORIONS</b>
+        <span><span class="ph">[ที่อยู่]</span></span>
+        <span>เลขผู้เสียภาษี <span class="ph">[13 หลัก]</span></span>
+        <span>ติดต่อ <span class="ph">[ชื่อ · โทร · อีเมล]</span></span>
+      </div>
+      <div class="party">
+        <span class="lbl">เสนอต่อ</span>
+        <b>MST Golf Thailand</b>
+        <span><span class="ph">[ชื่อนิติบุคคล]</span></span>
+        <span>ชาญอิสสระ ทาวเวอร์ 1 กรุงเทพฯ</span>
+        <span>ผู้ติดต่อ <span class="ph">[ชื่อ · ตำแหน่ง]</span></span>
+      </div>
+    </div>
+
+    <table class="items">
+      <thead><tr><th>#</th><th>รายการ</th><th>ราคา (บาท)</th></tr></thead>
+      <tbody>
+        <tr><td class="n">1</td><td class="t"><b>ระบบสมาชิก</b><span>สมัครสมาชิกผ่าน LINE · บัตรสมาชิก QR · แต้มและระดับ Member / Silver / Gold · ข้อความแจ้งแต้ม · หลังบ้านพนักงานพร้อมสิทธิ์ 5 ตำแหน่ง</span></td><td class="p">15,000.00</td></tr>
+        <tr><td class="n">2</td><td class="t"><b>Database design</b><span>ออกแบบฐานข้อมูลลูกค้า · รหัสสมาชิกเดียวผูก LINE UID และเบอร์โทร · บันทึกความยินยอม PDPA · สิทธิ์การเข้าถึงข้อมูล · สำรองข้อมูล</span></td><td class="p">8,000.00</td></tr>
+        <tr><td class="n">3</td><td class="t"><b>ระบบจอง Golf Simulator</b><span>จองผ่าน LINE และเว็บไซต์ · ตารางหลังบ้าน 3 lane · walk-in และโทรจอง · กันจองซ้อน · ยืนยันและเตือนก่อนเวลา · เช็กอินและ no-show</span></td><td class="p">15,000.00</td></tr>
+        <tr><td class="n">4</td><td class="t"><b>ระบบนำยอดเข้า</b><span>นำเข้ายอดขายจาก POS วันละครั้ง · จับคู่สมาชิกจากเบอร์ในบิล · คำนวณแต้มและเลื่อนระดับอัตโนมัติ · Summary Dashboard</span></td><td class="p">5,000.00</td></tr>
+        <tr><td class="n">5</td><td class="t"><b>Website</b><span>หน้าแรก · บริการ · Golf Simulator · บทความ (blog) · สมัครสมาชิก จองซิม และดูแต้มด้วยการล็อกอิน LINE</span></td><td class="p">15,000.00</td></tr>
+        <tr class="free"><td class="n"></td><td class="t"><b>ดูแลระบบตลอดระยะสัญญา</b><span>แก้ปัญหาการใช้งาน · ดูแล server ให้ทำงานปกติ · ปรับค่าตั้งค่าเล็กน้อย</span></td><td class="p">ไม่มีค่าใช้จ่าย</td></tr>
+      </tbody>
+    </table>
+
+    <div class="sum">
+      <div class="words">จำนวนเงินรวมทั้งสิ้น (ตัวอักษร)<b>หกหมื่นสองพันหกสิบบาทถ้วน</b></div>
+      <div class="totals">
+        <div><span>รวมเป็นเงิน</span><span>58,000.00</span></div>
+        <div><span>ภาษีมูลค่าเพิ่ม 7%</span><span>4,060.00</span></div>
+        <div class="grand"><span>รวมทั้งสิ้น</span><span>62,060.00</span></div>
+      </div>
+    </div>
+
+    <div class="terms">
+      <div class="box">
+        <h3>การชำระเงิน</h3>
+        <div class="timeline">
+          <div><span>งวดที่ 1 · มัดจำ 50% เมื่อเซ็นใบเสนอราคา</span><span>31,030.00</span></div>
+          <div><span>งวดที่ 2 · 50% เมื่อเปิดใช้งาน</span><span>31,030.00</span></div>
+        </div>
+        <p style="font-size:8pt;color:var(--faint);margin-top:1.4mm">ยอดแต่ละงวดรวม VAT แล้ว</p>
+      </div>
+    </div>
+  </div>
+  <div></div>
+  <div class="ft"><span>รายละเอียดขอบเขตงานอยู่หน้า 2 · อ้างอิงเอกสาร MST Golf Platform Flow</span><span>1 / 2</span></div>
+</section>
+
+<!-- ════════ PAGE 2 · SCOPE ════════ -->
+<section class="page">
+  <div style="display:grid; gap: 5mm; align-content: start;">
+    <div class="band">
+      <div>
+        <div class="brandline">ใบเสนอราคา QT-20260923-01</div>
+        <h1 style="font-size:18pt">ขอบเขตงาน</h1>
+      </div>
+    </div>
+
+    <div class="scope">
+      <div class="sc">
+        <div class="sc-h"><span class="n">01</span><b>ระบบสมาชิก</b><span class="p">15,000</span><span class="ref">Flow หน้า 03 · 05 · 07</span></div>
+        <ul>
+          <li>หน้าสมัครสมาชิกใน LINE ล็อกอินด้วย LINE กรอกชื่อ เบอร์ และยินยอม PDPA รับแต้มต้อนรับทันที</li>
+          <li>ปุ่ม "สมัครสมาชิก" ใน Rich Menu: คนที่ยังไม่เป็นสมาชิกไปหน้าสมัคร สมาชิกเปิดบัตรสมาชิกและแต้ม</li>
+          <li>บัตรสมาชิก QR · แต้มคงเหลือ · ระดับ Member / Silver / Gold ตามยอดซื้อ 12 เดือน</li>
+          <li>ข้อความแจ้งแต้มและการเลื่อนระดับผ่าน LINE</li>
+          <li>หลังบ้าน: ข้อมูลลูกค้าในหน้าเดียว · เพิ่มสมาชิกที่เคาน์เตอร์ · สิทธิ์ 5 ตำแหน่ง · บันทึกการใช้งาน</li>
+        </ul>
+      </div>
+      <div class="sc">
+        <div class="sc-h"><span class="n">02</span><b>Database design</b><span class="p">8,000</span><span class="ref">Flow หน้า 02 · 09</span></div>
+        <ul>
+          <li>ออกแบบโครงสร้างข้อมูล: สมาชิก · ตัวตนที่ผูกไว้ · ความยินยอม · การซื้อและแต้ม · การจอง</li>
+          <li>ลูกค้า 1 คน = รหัสสมาชิกเดียว ผูก LINE UID เบอร์โทร และบิลไว้ด้วยกัน ไม่เกิดข้อมูลซ้ำ</li>
+          <li>แต้มทุกรายการตรวจย้อนได้ว่ามาจากบิลไหน</li>
+          <li>ฐานข้อมูลที่ Singapore · พนักงานเข้าถึงตามสิทธิ์ · สำรองข้อมูลอัตโนมัติ</li>
+        </ul>
+      </div>
+      <div class="sc">
+        <div class="sc-h"><span class="n">03</span><b>ระบบจอง Golf Simulator</b><span class="p">15,000</span><span class="ref">Flow หน้า 03 · 05 · 06</span></div>
+        <ul>
+          <li>ลูกค้าจองจากปุ่ม "Booking Golf Sim" ใน LINE หรือบนเว็บไซต์: เลือกวัน เวลา lane และจำนวนคน</li>
+          <li>3 lane · ครั้งละ 1 ชั่วโมง · สูงสุด 3 คนต่อ lane · ราคาและส่วนลดตามระดับสมาชิก · ชำระที่ร้าน</li>
+          <li>กันจองซ้อน ถือช่องไว้ 5 นาทีระหว่างยืนยัน · ข้อความยืนยันและเตือนก่อนเวลา · ดูและยกเลิกการจองของฉัน</li>
+          <li>หลังบ้าน: ตาราง 3 lane รวมทุกช่องทาง · walk-in และโทรจอง · ย้ายเวลา · เช็กอิน · no-show · ปิด lane ซ่อม</li>
+        </ul>
+      </div>
+      <div class="sc">
+        <div class="sc-h"><span class="n">04</span><b>ระบบนำยอดเข้า</b><span class="p">5,000</span><span class="ref">Flow หน้า 05 · 07</span></div>
+        <ul>
+          <li>นำเข้าไฟล์ยอดขายจาก POS วันละครั้ง ตรวจสอบก่อนนำเข้า นำเข้าไฟล์ซ้ำแล้วแต้มไม่ซ้ำ</li>
+          <li>จับคู่สมาชิกจากเบอร์หรือรหัสสมาชิกในหมายเหตุบิล</li>
+          <li>คำนวณแต้มตามอัตราของระดับ · เลื่อนระดับอัตโนมัติ · แจ้งลูกค้าผ่าน LINE</li>
+          <li>Summary Dashboard: สมาชิกใหม่ · ยอดซื้อของสมาชิก · การใช้ lane ซิม</li>
+        </ul>
+      </div>
+      <div class="sc">
+        <div class="sc-h"><span class="n">05</span><b>Website</b><span class="p">15,000</span><span class="ref">Flow หน้า 04</span></div>
+        <ul>
+          <li>หน้าแรก · บริการ · Golf Simulator · บทความ (blog) — เนื้อหาและรูปภาพ MST จัดเตรียม</li>
+          <li>ล็อกอินด้วย LINE: สมัครสมาชิก · จองซิม · ดูแต้มและการจองของตัวเอง ใช้บัญชีเดียวกับใน LINE</li>
+          <li>รองรับการใช้งานบนมือถือ</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="excl">
+      <div class="box out">
+        <h3>ไม่รวมในราคานี้</h3>
+        <ul>
+          <li>ออกแบบ Rich Menu · auto reply · แชต (ทีม LINE Marketing และ MST ดูแล)</li>
+          <li>ค่า LINE OA และค่าข้อความ</li>
+          <li>ค่าโดเมนเว็บไซต์</li>
+          <li>เชื่อม POS อัตโนมัติผ่าน API</li>
+          <li>ระบบแลกรางวัลและแคมเปญ (Phase 2)</li>
+        </ul>
+      </div>
+      <div class="box">
+        <h3>เงื่อนไข</h3>
+        <ul style="padding-left:4.4mm">
+          <li>ดูแลระบบฟรีตลอดระยะสัญญา</li>
+          <li>งานนอกขอบเขตและฟีเจอร์ใหม่ เสนอราคาแยก</li>
+          <li>ลิขสิทธิ์ระบบเป็นของ ORIONS · MST ได้สิทธิ์ใช้งาน</li>
+          <li>ข้อมูลลูกค้าเป็นของ MST · ORIONS เป็นผู้ประมวลผลข้อมูลตาม PDPA</li>
+          <li>ราคายังไม่รวม VAT 7%</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="sign">
+      <div><b>ผู้เสนอราคา · ORIONS</b><span class="line"></span><span>(<span class="ph">[ชื่อ]</span>) · วันที่ ____________</span></div>
+      <div><b>ผู้อนุมัติ · MST Golf Thailand</b><span class="line"></span><span>(<span class="ph">[ชื่อ]</span>) · วันที่ ____________</span></div>
+    </div>
+  </div>
+  <div></div>
+  <div class="ft"><span>ORIONS · MST Golf Platform</span><span>2 / 2</span></div>
+</section>
+
+</body>
+</html>

@@ -45,13 +45,13 @@ Three tiers — **Member / Silver / Gold** — ranked by **net spend over the tr
 
 ## Structure
 ```
-apps/web-admin  Next.js back office + admin API   apps/web-liff   LIFF customer app + LINE webhook (phase 1, W8)
+apps/web-admin  Next.js back office + admin API   apps/web  website + customer pages (LIFF in LINE, LINE Login on the web) (W6; replaces the empty apps/web-liff)
 packages/database  Prisma — the core             packages/shared types + crypto + tiers
 packages/analytics RFM/CLV/churn/cohort/affinity  packages/line   @line/bot-sdk wrapper
 workers/jobs    nightly analytics (moves to Vercel Cron routes)
 ```
 
-There is no separate API service — admin endpoints live in web-admin, customer endpoints and the webhook in web-liff. Background work goes through a Postgres `Job` table + Vercel Cron, not Redis/BullMQ.
+There is no separate API service — admin endpoints live in web-admin, customer endpoints in apps/web (no LINE webhook). Background work goes through a Postgres `Job` table + Vercel Cron, not Redis/BullMQ.
 
 `@mstgolf/analytics` is pure & framework-free (runs in the browser + on the server + in jobs) so the dashboard, the API, and the workers all share one set of tested statistical functions. The dashboard reads through a repository (`apps/web-admin/lib/repo.ts`) with a sample-data backend (no infra) and a live-Postgres backend (`DATA_SOURCE=database`).
 
@@ -62,11 +62,14 @@ Data-driven CRM: `Segment` (rule-based audiences), `Automation` (trigger→actio
 `Event.payload` is typed per `EventType` in `@mstgolf/shared`/`@mstgolf/analytics` — `PURCHASE` carries `{ amount, currency, items?, channel? }` so RFM/CLV/affinity are computable.
 
 ## Roadmap (detail in MST-DEV-PLAN.md §11)
-- **Sprint 0** (W1) cleanup · rules · three tiers · config-driven names
-- **Phase 1 Foundation** (→ 11 Dec 2026) login + roles + audit · schema v2 · POS import v2 · point engine · tiers/privileges · merge · LINE + LIFF
-- **Phase 2 Engagement** (→ 26 Feb 2027) rewards · simulator booking + PMS · notifications · campaigns + offers
-- **Phase 3 Intelligence** (→ 9 Apr 2027) analytics on SKU data · opportunities · measurement + holdout · A/B
-- **Phase 4** conditional: POS API · automation UI · tenant onboarding + billing
+Phase 1 is the contracted scope (quote QT-20260923-01): member system · database design · simulator booking · POS import + Summary Dashboard · website. Rewards, campaigns and the intelligence pages are out of contract — keep their code, hide them per tenant with `settings.features`.
+- **W1** kickoff · split Neon branches · feature flags · `packages/core`
+- **W2–W3** schema v2 + core (identity · points · tiers · merge)
+- **W4–W5** POS import v2 · **W6–W7** `apps/web` LINE Login/LIFF + member pages + push · **W8** back office on real data + Summary Dashboard · **W9–W10** website + blog
+- **R1 go-live 11 Dec 2026** (members · import · dashboard · website)
+- **W13–W18** booking engine · customer booking pages · simulator calendar → **R2 go-live 5 Feb 2027**
+
+LINE: one Rich Menu owned by the LINE team (only buttons A+B and D link to us), no webhook, UID from LINE Login in the OA's provider, push via the Messaging API token.
 
 ## Commands
 See `README.md`. TL;DR: `pnpm install` → `pnpm infra:up` → `pnpm db:generate` → `pnpm db:migrate` → `pnpm db:seed` → `pnpm dev`.
