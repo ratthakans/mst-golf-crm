@@ -1,0 +1,748 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>mstgolf.co.th Thai Plan</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+  @page { size: A4 portrait; margin: 0; }
+  :root {
+    --ground: #ffffff; --soft: #f4f7f5; --soft-2: #eef3f0; --ink: #14201b; --muted: #5d6e66; --faint: #8a9a92; --line: #dde6e1;
+    --brand: #0a5c36; --brand-deep: #0b3d29; --action: #16a34a; --tint: #e5f2ea;
+    --gold-bg: #fdf3d7; --gold-ink: #8a5a06; --red-bg: #fbe9e7; --red-ink: #9a2b1f; --blue-bg: #e7f0fb; --blue-ink: #1d4f91;
+    --sans: "Anuphan", "Noto Sans Thai", "Thonburi", sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  }
+  * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  html, body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--sans); font-size: 9.2pt; line-height: 1.5; }
+  h1, h2, h3, h4, p { margin: 0; }
+  ul, ol { margin: 0; padding-left: 4.4mm; display: grid; gap: 0.9mm; }
+  .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+  .page { width: 210mm; height: 297mm; padding: 13mm 14mm 10mm; display: grid; grid-template-rows: auto 1fr auto; gap: 5mm; page-break-after: always; overflow: hidden; }
+  .page:last-child { page-break-after: auto; }
+  .kicker { font-family: var(--sans); font-size: 8pt; font-weight: 600; letter-spacing: 0.3px; color: var(--brand); }
+  .head h2 { font-size: 19pt; line-height: 1.18; margin-top: 1mm; }
+  .head p { color: var(--muted); font-size: 9.8pt; margin-top: 1.5mm; max-width: 170mm; }
+  .body { display: grid; gap: 4.2mm; align-content: start; min-height: 0; }
+  .ft { display: flex; justify-content: space-between; font-size: 7.3pt; color: var(--faint); border-top: 1px solid var(--line); padding-top: 2.4mm; }
+
+  .card { border: 1px solid var(--line); border-radius: 3mm; padding: 3.4mm 4mm; }
+  .card h3 { font-size: 10.3pt; margin-bottom: 1.6mm; }
+  .card.soft { background: var(--soft); border-color: var(--soft); }
+  .card.tint { background: var(--tint); border-color: var(--tint); }
+  .card.dark { background: var(--brand-deep); border-color: var(--brand-deep); color: #eaf4ee; }
+  .card.dark h3 { color: #fff; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 3.6mm; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3.2mm; }
+  .grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3mm; }
+  .muted { color: var(--muted); }
+  .small { font-size: 8.3pt; }
+  .cap { font-size: 7.3pt; color: var(--faint); margin-top: 1.2mm; }
+
+  table.t { width: 100%; border-collapse: collapse; font-size: 8.5pt; }
+  .t th { text-align: left; font-size: 7.6pt; font-weight: 600; color: var(--muted); padding: 1.7mm 2.2mm; border-bottom: 1.3px solid var(--ink); vertical-align: bottom; }
+  .t td { padding: 1.9mm 2.2mm; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .t td:first-child { font-weight: 600; }
+  .t tr.hl td { background: var(--tint); }
+  .t .c { text-align: center; }
+
+  .pill { display: inline-block; padding: 0.2mm 2mm; border-radius: 99px; font-size: 7.5pt; font-weight: 700; white-space: nowrap; }
+  .p-green { background: var(--tint); color: var(--brand); }
+  .p-gold { background: var(--gold-bg); color: var(--gold-ink); }
+  .p-red { background: var(--red-bg); color: var(--red-ink); }
+  .p-blue { background: var(--blue-bg); color: var(--blue-ink); }
+  .p-gray { background: var(--soft-2); color: var(--muted); }
+
+  .num-big { font-size: 22pt; font-weight: 700; color: var(--brand); line-height: 1; }
+  .note { font-size: 8.3pt; color: var(--muted); border-left: 2px solid var(--brand); padding-left: 3mm; }
+  .rec { border: 1.5px solid var(--brand); border-radius: 3mm; padding: 3.4mm 4mm; background: #f7fbf8; }
+  .rec .tag { font-size: 7.8pt; font-weight: 700; color: var(--brand); letter-spacing: 0.3px; }
+
+  /* sitemap */
+  .sitemap { display: grid; grid-template-columns: repeat(6, 1fr); gap: 2.4mm; }
+  .sm { border: 1px solid var(--line); border-radius: 2.5mm; overflow: hidden; }
+  .sm h4 { background: var(--brand); color: #fff; font-size: 8.8pt; padding: 1.8mm 2.4mm; }
+  .sm h4.alt { background: var(--brand-deep); }
+  .sm h4.gold { background: #b7862a; }
+  .sm ul { list-style: none; padding: 2mm 2.4mm; gap: 0.7mm; font-size: 7.8pt; color: var(--ink); }
+  .sm ul li.sub { color: var(--muted); padding-left: 2mm; }
+
+  /* architecture */
+  .arch { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 3mm; align-items: stretch; }
+  .layer { border-radius: 3mm; padding: 3mm 3.4mm; font-size: 8.2pt; }
+  .layer b { display: block; font-size: 9.4pt; margin-bottom: 1mm; }
+  .l-front { background: var(--tint); }
+  .l-core { background: var(--brand-deep); color: #eaf4ee; }
+  .l-core b { color: #fff; }
+  .l-commerce { background: var(--gold-bg); }
+  .flow { font-family: var(--mono); font-size: 7.8pt; background: var(--soft); border-radius: 2.5mm; padding: 2.6mm 3.4mm; line-height: 1.75; white-space: pre; overflow: hidden; }
+
+  .flows { display: grid; gap: 2.4mm; background: var(--soft); border-radius: 2.5mm; padding: 3.2mm 3.6mm; }
+  .fl { display: grid; grid-template-columns: 27mm 1fr; gap: 3mm; align-items: baseline; font-size: 8.2pt; }
+  .fl > b { font-size: 8.2pt; color: var(--brand); }
+  .steps { display: flex; flex-wrap: wrap; gap: 1.3mm; align-items: center; }
+  .st { background: #fff; border: 1px solid var(--line); border-radius: 1.6mm; padding: 0.3mm 2mm; }
+  .st.core { background: var(--brand-deep); border-color: var(--brand-deep); color: #fff; font-weight: 600; }
+  .st.shop { background: var(--gold-bg); border-color: var(--gold-bg); }
+  .ar { color: var(--faint); }
+  .photos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3.2mm; }
+  .ph { position: relative; height: 44mm; border-radius: 3mm; overflow: hidden; }
+  .ph img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .ph span { position: absolute; left: 2.4mm; bottom: 2.4mm; font-size: 7.6pt; font-weight: 600; background: rgba(11,61,41,0.82); color: #fff; padding: 0.5mm 2.2mm; border-radius: 1.5mm; }
+
+  /* roadmap */
+  .gantt { display: grid; grid-template-columns: 38mm repeat(24, 1fr); font-size: 7.4pt; row-gap: 1.6mm; align-items: center; }
+  .gantt .lbl { font-weight: 600; font-size: 8pt; padding-right: 2mm; }
+  .gantt .wk { color: var(--faint); text-align: center; font-family: var(--mono); font-size: 6.4pt; }
+  .gantt .bar { height: 5.2mm; border-radius: 1.4mm; display: flex; align-items: center; padding: 0 1.6mm; color: #fff; font-weight: 600; white-space: nowrap; overflow: hidden; font-size: 7.2pt; }
+  .b0 { background: #8a9a92; } .b1 { background: var(--brand); } .b2 { background: #b7862a; } .b3 { background: var(--brand-deep); }
+  .gantt .ms { font-size: 7.2pt; color: var(--brand); font-weight: 700; white-space: nowrap; }
+
+  /* cover */
+  .cover { background: var(--brand-deep); color: #eaf4ee; padding: 0; grid-template-rows: 1fr auto; gap: 0; }
+  .cover-top { padding: 18mm 16mm 0; display: grid; gap: 7mm; align-content: start; }
+  .cover .kicker { color: #9fd6b6; }
+  .cover h1 { font-size: 31pt; line-height: 1.08; color: #fff; margin-top: 2mm; }
+  .cover .lede { font-size: 11.4pt; color: #c7e2d2; max-width: 160mm; line-height: 1.55; }
+  .cover-img { height: 128mm; border-radius: 4mm; overflow: hidden; position: relative; }
+  .cover-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .cover-img .tag { position: absolute; right: 3mm; bottom: 3mm; font-size: 6.8pt; background: rgba(0,0,0,0.45); color: #fff; padding: 0.6mm 2mm; border-radius: 1.5mm; }
+  .goals { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3mm; }
+  .goal { border-top: 1px solid rgba(185,212,196,0.35); padding-top: 2.4mm; }
+  .goal .n { font-family: var(--mono); font-size: 7.4pt; color: #9fd6b6; }
+  .goal b { display: block; color: #fff; font-size: 10.6pt; margin: 0.6mm 0 1mm; }
+  .goal span { font-size: 8.4pt; color: #c7e2d2; line-height: 1.45; display: block; }
+  .cover-foot { padding: 6mm 16mm 10mm; display: flex; justify-content: space-between; align-items: end; font-size: 8pt; color: #9fd6b6; }
+</style></head>
+<body>
+<!-- ════════════ 1 · COVER ════════════ -->
+<section class="page cover">
+  <div class="cover-top">
+    <div>
+      <div class="kicker">MST Golf Thailand · Digital Plan</div>
+      <h1>mstgolf.co.th<br>ทำให้เป็นของไทย พร้อมเปิดขาย</h1>
+    </div>
+    <p class="lede">แผนยกระดับร้านออนไลน์ของ MST Golf Thailand ให้ลูกค้าไทยใช้ได้จริง — ราคา ภาษา การชำระเงิน การจัดส่ง และบริการทุกอย่างของร้านชาญอิสสระ ทาวเวอร์ 1 — บนระบบเดียวกับ MST Golf Group และเชื่อมกับระบบสมาชิกที่มีอยู่แล้ว</p>
+    <div class="cover-img"><img src="img/hero.jpg" alt=""><span class="tag">ภาพประกอบ</span></div>
+    <div class="goals">
+      <div class="goal"><span class="n">01</span><b>เว็บไทยเว็บเดียว</b><span>mstgolf.co.th รวมร้านค้าและทุกบริการ: Arena · Fitting · Academy · Membership · Corporate · Events</span></div>
+      <div class="goal"><span class="n">02</span><b>ขายออนไลน์แบบไทย</b><span>ราคาบาทจริง รวม VAT · PromptPay · ผ่อน 0% · ส่งทั่วไทย · รับที่ร้าน · ใบกำกับภาษี</span></div>
+      <div class="goal"><span class="n">03</span><b>ลูกค้าคนเดียวทุกช่องทาง</b><span>ซื้อที่ร้าน ออนไลน์ หรือจองซิม — แต้มและระดับสมาชิกเดียวกัน ผ่าน LINE</span></div>
+    </div>
+  </div>
+  <div class="cover-foot">
+    <div>จัดทำโดย ORIONS · สำหรับ MST Golf Thailand และ MST Golf Group</div>
+    <div>ฉบับร่าง · กันยายน 2026</div>
+  </div>
+</section>
+
+<!-- ════════════ 2 · EXECUTIVE SUMMARY ════════════ -->
+<section class="page">
+  <div class="head">
+    <div class="kicker">บทสรุปผู้บริหาร</div>
+    <h2>ฐานมีครบแล้ว เหลือทำให้เป็นของไทยและต่อเข้าหากัน</h2>
+    <p>MST Golf Group เปิดร้าน Shopify สำหรับไทยไว้แล้วที่ mstgolf.co.th และ MST Golf Thailand มีระบบสมาชิก จองซิม และหลังบ้านพร้อมใช้ แผนนี้ไม่สร้างเว็บใหม่แข่งกัน แต่ทำให้สองส่วนนี้เป็นประสบการณ์เดียวสำหรับลูกค้าไทย</p>
+  </div>
+  <div class="body">
+    <div class="grid3">
+      <div class="card soft"><div class="num-big">5,574</div><h3 style="margin-top:2mm">สินค้าบน mstgolf.co.th</h3><p class="small muted">ร้าน Shopify ของกลุ่ม ธีมภาษาไทย สกุล THB — ยังเป็นแคตตาล็อก ยังไม่เปิดขาย</p></div>
+      <div class="card soft"><div class="num-big">4</div><h3 style="margin-top:2mm">ประเทศ ร้าน Shopify แยกกัน</h3><p class="small muted">มาเลเซีย · สิงคโปร์ · อินโดนีเซีย · ไทย — ธีม MST เดียวกัน ปรับตามประเทศ</p></div>
+      <div class="card soft"><div class="num-big">1</div><h3 style="margin-top:2mm">ฐานสมาชิกไทย</h3><p class="small muted">MST Golf Platform: สมาชิก 3 ระดับ แต้ม จองซิม ล็อกอิน LINE — สร้างเสร็จแล้ว</p></div>
+    </div>
+
+    <div class="card" style="border-color:#e9b8b0; background:#fdf6f5;">
+      <h3 style="color:var(--red-ink)">ต้องแก้ก่อนเปิดขาย</h3>
+      <ul class="small">
+        <li><b>ราคาบน mstgolf.co.th ยังไม่ใช่ราคาบาทจริง</b> — เช่น รองเท้ากอล์ฟ FootJoy แสดง ฿189 ตัวเลขตรงกับราคาร้านสิงคโปร์ (SGD) แต่ใส่สัญลักษณ์บาท</li>
+        <li>เนื้อหาเกือบทั้งหมดยังเป็นภาษาอังกฤษ · หน้า About us ขึ้น 404 · ไม่มีหน้าบริการของร้านไทย</li>
+        <li>ร้านไทยยังไม่อยู่ในรายชื่อร้านบน mstgolf.com และเว็บของแต่ละประเทศยังไม่ลิงก์ถึงกัน</li>
+      </ul>
+    </div>
+
+    <div class="rec">
+      <div class="tag">ข้อเสนอหลัก</div>
+      <h3 style="font-size:11pt; margin: 1mm 0 2mm;">mstgolf.co.th เป็นหน้าร้านหลักของไทย · MST Golf Platform เป็นระบบสมาชิกและการจอง</h3>
+      <ul class="small">
+        <li><b>mstgolf.co.th (Shopify ของกลุ่ม)</b> — สินค้า ตะกร้า ชำระเงิน จัดส่ง และหน้าบริการทั้งหมด ในภาษาไทย ราคาบาทจริง</li>
+        <li><b>MST Golf Platform (ของ MST Thailand)</b> — สมัครสมาชิกด้วย LINE · บัตรและแต้ม · จองซิม ฟิตติ้ง คลาส — เปิดจากเว็บด้วยลิงก์ที่หน้าตาเดียวกัน</li>
+        <li><b>ต่อกันด้วยข้อมูล</b> — คำสั่งซื้อออนไลน์ให้แต้มและนับยอดขึ้นระดับ · ระดับสมาชิกใช้ได้กับดีลออนไลน์</li>
+        <li>หน้าข้อมูลร้านของเว็บ Phase 1 ย้ายเนื้อหาเข้า mstgolf.co.th — เหลือโดเมนเดียวสำหรับลูกค้า</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>แผนงานโดยสรุป</h3>
+      <table class="t">
+        <thead><tr><th>เฟส</th><th>ได้อะไร</th><th>ระยะเวลา</th></tr></thead>
+        <tbody>
+          <tr><td>0 · Discovery</td><td>ตัดสินใจร่วมกับ MST TH และกลุ่ม · ตรวจสิทธิ์แบรนด์ · ราคาบาท · ช่องทางชำระเงิน</td><td>2 สัปดาห์</td></tr>
+          <tr><td>1 · Thai-ready</td><td>ราคาบาทถูกต้อง · ภาษาไทยทุกหน้าหลัก · หน้าบริการครบ · ต่อระบบสมาชิก/จอง · SEO</td><td>6 สัปดาห์</td></tr>
+          <tr class="hl"><td>2 · เปิดขาย</td><td>ชำระเงินไทย · จัดส่ง/รับที่ร้าน · ใบกำกับภาษี · แต้มจากคำสั่งซื้อ · ดีลสมาชิก</td><td>8 สัปดาห์</td></tr>
+          <tr><td>3 · Growth</td><td>Marketplace · แคมเปญจากข้อมูลสมาชิก · แลกแต้ม · รีวิว</td><td>ต่อเนื่อง</td></tr>
+        </tbody>
+      </table>
+      <p class="cap">นับจากวันที่ได้การตัดสินใจในหน้า 12 · เฟส 1 เปิดให้ลูกค้าเห็นได้ก่อนเฟส 2</p>
+    </div>
+  </div>
+  <div class="ft"><span>MST Golf Thailand · แผนเว็บไซต์และอีคอมเมิร์ซ</span><span>02</span></div>
+</section>
+
+<!-- ════════════ 3 · CURRENT STATE ════════════ -->
+<section class="page">
+  <div class="head">
+    <div class="kicker">01 · สถานะวันนี้</div>
+    <h2>มีสามอย่าง แต่ยังไม่ต่อกัน</h2>
+    <p>ตรวจเมื่อ 26 ก.ย. 2026 จากหน้าเว็บสาธารณะ</p>
+  </div>
+  <div class="body">
+    <table class="t">
+      <thead><tr><th style="width:34mm"></th><th>mstgolf.com (มาเลเซีย)</th><th>mstgolf.co.th (ไทย)</th><th>MST Golf Platform (ไทย)</th></tr></thead>
+      <tbody>
+        <tr><td>ระบบ</td><td>Shopify ธีม MST/main</td><td>Shopify แยกร้าน ธีม MST/main-th · ภาษาไทยที่ /th</td><td>ระบบของ MST Thailand (ORIONS) · เว็บ + LINE</td></tr>
+        <tr><td>สถานะ</td><td>ขายออนไลน์ 7,500+ สินค้า</td><td><span class="pill p-gold">แคตตาล็อก</span> 5,574 สินค้า ยังไม่เปิดขาย</td><td><span class="pill p-green">พร้อมเปิดใช้</span></td></tr>
+        <tr><td>ราคา</td><td>RM</td><td><span class="pill p-red">ผิด</span> ตัวเลขราคาสิงคโปร์ แสดงเป็นบาท</td><td>ราคาซิม ส่วนลดตามระดับ</td></tr>
+        <tr><td>ภาษา</td><td>อังกฤษ</td><td>เมนูบางส่วนไทย · สินค้าและหน้าเนื้อหาเป็นอังกฤษ</td><td>ไทย</td></tr>
+        <tr><td>สมาชิก</td><td>MST Golf Membership (Eber) · ไม่มีระดับ · 1 แต้ม/RM1 · แลกเป็นส่วนลด 2% · หมดอายุ 12 เดือน</td><td>–</td><td>Member / Silver / Gold ตามยอด 12 เดือน · ล็อกอิน LINE · แต้มจากบิล POS</td></tr>
+        <tr><td>Arena (ซิม)</td><td>จองทาง WhatsApp/โทร · ไม่แสดงราคา</td><td>–</td><td><span class="pill p-green">จองออนไลน์</span> 3 lane · ส่วนลดตามระดับ</td></tr>
+        <tr><td>Fitting · Academy</td><td>หน้าบริการ · จองผ่านระบบ Golf Lab ของกลุ่ม / WhatsApp</td><td>–</td><td>ระบบจองพร้อมขยาย</td></tr>
+        <tr><td>ชำระเงิน</td><td>บัตร · online banking · ไม่มีผ่อน/BNPL</td><td>ยังไม่เปิด</td><td>ซิมชำระที่ร้าน</td></tr>
+        <tr><td>จัดส่ง · คืน</td><td>3–6 วัน · คืนได้ 14 วัน · ยังไม่มีรับที่ร้าน</td><td>ยังไม่เปิด</td><td>–</td></tr>
+        <tr><td>เนื้อหา</td><td>ข่าวทัวร์นาเมนต์ · ไม่มีบทความใหม่ตั้งแต่ ก.พ. 2026</td><td>ยังไม่มี · หน้า About us 404</td><td>บทความจากหลังบ้าน</td></tr>
+        <tr><td>ช่องทางคุย</td><td>WhatsApp · อีเมล</td><td>Shopify Inbox</td><td>LINE OA</td></tr>
+      </tbody>
+    </table>
+
+    <div class="grid2">
+      <div class="card tint">
+        <h3>จุดแข็งที่ใช้ได้ทันที</h3>
+        <ul class="small">
+          <li>ธีมและโครงสินค้าของกลุ่มพร้อมแล้ว — ไม่ต้องสร้างร้านใหม่</li>
+          <li>ข้อมูลสินค้า 5,574 รายการพร้อมรูปและตัวเลือก</li>
+          <li>ระบบสมาชิกไทยล้ำกว่ามาเลเซียในบางเรื่อง: ระดับสมาชิก จองซิมออนไลน์ ล็อกอิน LINE</li>
+          <li>ร้านจริงที่ชาญอิสสระ ทาวเวอร์ 1 มีทั้ง pro shop ซิม และฟิตติ้งในที่เดียว</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>ช่องว่างที่แผนนี้ปิด</h3>
+        <ul class="small">
+          <li>ราคาบาทจริง และสินค้าเฉพาะที่ขายในไทยได้</li>
+          <li>เนื้อหาภาษาไทยที่เขียนเพื่อคนไทย ไม่ใช่แปล</li>
+          <li>หน้าบริการของร้านไทยทั้งหมด พร้อมทางจอง</li>
+          <li>ลูกค้าคนเดียวข้ามเว็บ LINE และร้าน</li>
+          <li>ชำระเงิน จัดส่ง ใบกำกับภาษี แบบไทย</li>
+        </ul>
+      </div>
+    </div>
+    <p class="cap">ข้อมูล mstgolf.com และ mstgolf.co.th จากหน้าเว็บสาธารณะ — ยืนยันรายละเอียดกับทีมกลุ่มในเฟส 0</p>
+  </div>
+  <div class="ft"><span>MST Golf Thailand · แผนเว็บไซต์และอีคอมเมิร์ซ</span><span>03</span></div>
+</section>
+
+<!-- ════════════ 4 · LOCALISATION ════════════ -->
+<section class="page">
+  <div class="head">
+    <div class="kicker">02 · ทำให้เป็นของไทย</div>
+    <h2>คงมาตรฐานกลุ่ม ปรับทุกจุดที่ลูกค้าไทยสัมผัส</h2>
+    <p>"เป็นของไทย" ไม่ใช่แปลหน้าเว็บ — คือราคา การจ่าย การส่ง ภาษา บริการ และช่องทางคุย ที่คนไทยคุ้นเคย</p>
+  </div>
+  <div class="body">
+    <table class="t">
+      <thead><tr><th style="width:30mm">เรื่อง</th><th>ทำอย่างไรใน mstgolf.co.th</th><th style="width:24mm">ระดับงาน</th></tr></thead>
+      <tbody>
+        <tr><td>ราคาและภาษี</td><td>ราคาบาทจริงจาก MST Thailand · รวม VAT 7% · ราคาเทียบ/ราคาลดชัดเจน · แสดงผ่อนต่อเดือน</td><td><span class="pill p-red">ต้องแก้ก่อน</span></td></tr>
+        <tr><td>สินค้าที่ขาย</td><td>เฉพาะแบรนด์และรุ่นที่ MST Thailand มีสิทธิ์ขายและมีของ · ซ่อนสินค้าที่ไม่ขายในไทย · สต็อกไทย</td><td><span class="pill p-red">ต้องแก้ก่อน</span></td></tr>
+        <tr><td>ภาษา</td><td>ไทยเป็นหลัก อังกฤษรอง · ชื่อหมวด ตัวกรอง ปุ่ม นโยบาย เป็นไทย · ชื่อรุ่นสินค้าคงเดิม · คำอธิบายภาษาไทยสำหรับรุ่นขายดี</td><td><span class="pill p-gold">ปรับใหญ่</span></td></tr>
+        <tr><td>ชำระเงิน</td><td>PromptPay QR · บัตร · ผ่อน 0% ผ่านบัตรธนาคาร · e-wallet · ปลายทางเฉพาะสินค้าเล็ก — ผ่านผู้ให้บริการที่ต่อกับ Shopify ในไทยได้</td><td><span class="pill p-gold">ปรับใหญ่</span></td></tr>
+        <tr><td>จัดส่ง</td><td>กรุงเทพฯ ภายในวัน · ทั่วไทย 1–3 วัน · พัสดุขนาดใหญ่สำหรับไม้/ถุงกอล์ฟ · <b>รับที่ร้าน</b> (กลุ่มยังไม่มี — ไทยเริ่มได้เพราะมีร้านเดียว)</td><td><span class="pill p-gold">ปรับใหญ่</span></td></tr>
+        <tr><td>เอกสาร</td><td>ใบกำกับภาษีเต็มรูป (บุคคล/นิติบุคคล สาขา) · e-Tax Invoice ถ้า MST ใช้ · นโยบายคืนสินค้าและรับประกันตามกฎหมายไทย</td><td><span class="pill p-gold">ปรับใหญ่</span></td></tr>
+        <tr><td>สมาชิก</td><td>สมัครและดูบัตรด้วย LINE · แต้มจากคำสั่งซื้อออนไลน์ · ดีลตามระดับ</td><td><span class="pill p-blue">ต่อระบบ</span></td></tr>
+        <tr><td>บริการ</td><td>Arena · Fitting · Academy · Corporate · Events เป็นหน้าในเว็บ พร้อมปุ่มจองออนไลน์</td><td><span class="pill p-blue">ต่อระบบ</span></td></tr>
+        <tr><td>ช่องทางคุย</td><td>LINE OA แทน WhatsApp · ปุ่มแชตทุกหน้า · แจ้งสถานะคำสั่งซื้อทาง LINE</td><td><span class="pill p-blue">ต่อระบบ</span></td></tr>
+        <tr><td>ข้อมูลร้าน</td><td>ชาญอิสสระ ทาวเวอร์ 1 ชั้น P · เวลาเปิด (บนเว็บกลุ่มระบุ 10:00–21:00 — ยืนยัน) · แผนที่ · ใส่ในรายชื่อร้านของกลุ่ม</td><td><span class="pill p-gray">ง่าย</span></td></tr>
+        <tr><td>กฎหมาย</td><td>PDPA ไทย · จดทะเบียนพาณิชย์อิเล็กทรอนิกส์ · ข้อกำหนดการขาย · นโยบายคุกกี้</td><td><span class="pill p-gold">ตรวจโดยกฎหมาย</span></td></tr>
+      </tbody>
+    </table>
+
+    <div class="grid2">
+      <div class="card">
+        <h3>คงไว้ให้เหมือนกลุ่ม</h3>
+        <ul class="small">
+          <li>ธีม MST และรูปแบบหน้า — ทีมกลุ่มดูแลต่อได้เหมือนอีก 3 ประเทศ</li>
+          <li>ชื่อบริการ: <b>MST Golf Arena · Academy · Fitting · Membership · Corporate Merchandise</b></li>
+          <li>โครงหมวดสินค้าและคอลเลกชันตามแบรนด์ · มาตรฐานภาพสินค้า</li>
+          <li>ลิงก์ระหว่างเว็บ 4 ประเทศ (hreflang) และตัวเลือกประเทศ</li>
+        </ul>
+      </div>
+      <div class="card tint">
+        <h3>เขียนให้คนไทยค้นเจอ</h3>
+        <ul class="small">
+          <li>ใช้คำที่ลูกค้าไทยพูดจริง: ไม้ชุด · ก้านไม้ · ฟิตติ้ง · ซิมกอล์ฟ · ออกรอบ</li>
+          <li>ตารางไซส์รองเท้าและเสื้อผ้าเป็นภาษาไทย</li>
+          <li>ปฏิทินโปรโมชันไทย: 9.9 · 11.11 · 12.12 · ปีใหม่ · สงกรานต์ · วันพ่อ</li>
+          <li>บทความ: สนามกอล์ฟในไทย · อีเวนต์ร้าน · เทคนิคจากโปรในร้าน</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="ft"><span>MST Golf Thailand · แผนเว็บไซต์และอีคอมเมิร์ซ</span><span>04</span></div>
+</section>
+
+<!-- ════════════ 5 · SITEMAP ════════════ -->
+<section class="page">
+  <div class="head">
+    <div class="kicker">03 · โครงสร้างเว็บไซต์</div>
+    <h2>โครงเดียวกับกลุ่ม ร้านค้าและบริการอยู่ในเว็บเดียว</h2>
+    <p>ลูกค้าที่มาดูไม้กอล์ฟเห็นทางไปฟิตติ้งและลองบนซิม ลูกค้าที่มาจองซิมเห็นสินค้าและสิทธิ์สมาชิก · <span class="pill p-gold">Shopify</span> หน้าในร้านค้า · <span class="pill p-green">Platform</span> หน้าที่เปิดจากระบบสมาชิก</p>
+  </div>
+  <div class="body">
+    <div class="sitemap">
+      <div class="sm"><h4>ร้านค้า</h4><ul>
+        <li>สินค้าใหม่</li><li>ไม้กอล์ฟ</li><li class="sub">ไดรเวอร์ · แฟร์เวย์ · ไฮบริด</li><li class="sub">เหล็ก · เวดจ์ · พัตเตอร์</li><li class="sub">ไม้ชุด · ผู้หญิง · เด็ก</li>
+        <li>เสื้อผ้า</li><li class="sub">ชาย · หญิง · เด็ก</li><li>รองเท้า</li><li>ลูกกอล์ฟ</li><li>ถุงกอล์ฟ · รถเข็น</li><li>อุปกรณ์ · เทคโนโลยี</li>
+      </ul></div>
+      <div class="sm"><h4>แบรนด์</h4><ul>
+        <li>แบรนด์ที่ขายในไทย A–Z</li><li>หน้าแบรนด์</li><li class="sub">เรื่องราว · คอลเลกชัน</li><li>คอลเลกชันพิเศษ</li><li class="sub">รุ่นใหม่ · Limited</li>
+      </ul></div>
+      <div class="sm"><h4 class="gold">ดีล</h4><ul>
+        <li>ดีลประจำเดือน</li><li>ดีลสมาชิก</li><li class="sub">Silver · Gold</li><li>ออนไลน์เท่านั้น</li><li>ลดราคา · Clearance</li><li>แคมเปญเทศกาล</li>
+      </ul></div>
+      <div class="sm"><h4 class="alt">บริการ</h4><ul>
+        <li>MST Golf Arena</li><li class="sub">ซิม 3 lane · จองออนไลน์</li><li>MST Golf Fitting</li><li class="sub">นัดฟิตติ้ง</li><li>MST Golf Academy</li><li class="sub">คลาส · โปร · จองเรียน</li><li>MST Golf Membership</li><li>Corporate Merchandise</li>
+      </ul></div>
+      <div class="sm"><h4 class="alt">ชุมชน</h4><ul>
+        <li>อีเวนต์</li><li class="sub">Golf Day · คลินิก</li><li class="sub">ลงทะเบียน</li><li>บทความ</li><li class="sub">เทคนิค · รีวิวอุปกรณ์</li><li class="sub">สนามกอล์ฟในไทย</li><li>ข่าวร้าน</li>
+      </ul></div>
+      <div class="sm"><h4>ร้านและช่วยเหลือ</h4><ul>
+        <li>ร้านชาญอิสสระ ทาวเวอร์ 1</li><li class="sub">แผนที่ · เวลาเปิด</li><li>สั่งซื้อและชำระเงิน</li><li>จัดส่ง · รับที่ร้าน</li><li>คืนสินค้า · รับประกัน</li><li>ใบกำกับภาษี</li><li>คำถามที่พบบ่อย</li><li>ติดต่อทาง LINE</li>
+      </ul></div>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <h3>บัญชีของฉัน</h3>
+        <table class="t">
+          <tbody>
+            <tr><td>บัตรสมาชิก · แต้ม · ระดับ</td><td><span class="pill p-green">Platform</span> ล็อกอิน LINE · <b>มีแล้ว</b></td></tr>
+            <tr><td>การจองซิม</td><td><span class="pill p-green">Platform</span> <b>มีแล้ว</b></td></tr>
+            <tr><td>จองฟิตติ้ง · คลาส</td><td><span class="pill p-green">Platform</span> เฟส 1</td></tr>
+            <tr><td>คำสั่งซื้อ · ที่อยู่ · ใบกำกับ</td><td><span class="pill p-gold">Shopify</span> เฟส 2</td></tr>
+            <tr><td>รายการโปรด · แจ้งของเข้า</td><td><span class="pill p-gold">Shopify</span> เฟส 3</td></tr>
+          </tbody>
+        </table>
+        <p class="cap">หน้า Platform เปิดที่ app.mstgolf.co.th ด้วยหัวเว็บและเมนูเดียวกับร้าน ลูกค้าไม่รู้สึกว่าข้ามเว็บ</p>
+      </div>
+      <div class="card">
+        <h3>หลักการออกแบบ</h3>
+        <ul class="small">
+          <li><b>มือถือก่อน</b> — ลูกค้าส่วนใหญ่มาจาก LINE และ Google บนมือถือ</li>
+          <li><b>หน้าสินค้ามีทางไปบริการ</b> — "ลองรุ่นนี้บนซิม" · "นัดฟิตติ้ง" · "ถามทาง LINE" (เว็บกลุ่มยังไม่มี)</li>
+          <li><b>หน้าบริการมีทางไปสินค้า</b> — จบคลาส/ฟิตติ้ง แนะนำไม้ที่เหมาะ</li>
+          <li><b>ราคาสมาชิกเห็นชัด</b> สำหรับผู้ที่ล็อกอิน</li>
+          <li><b>เร็ว</b> — ผ่าน Core Web Vitals บนมือถือ</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card soft">
+      <h3>ลำดับหน้าแรก</h3>
+      <p class="small">แคมเปญหลัก → ช้อปตามหมวด → สินค้าใหม่ / ดีลสมาชิก → <b>บริการ (Arena · Fitting · Academy พร้อมปุ่มจอง)</b> → แบรนด์ในไทย → สมาชิก (สมัครด้วย LINE รับแต้มต้อนรับ) → อีเวนต์และบทความ → ร้านชาญอิสสระ ทาวเวอร์ 1</p>
+    </div>
+  </div>
+  <div class="ft"><span>MST Golf Thailand · แผนเว็บไซต์และอีคอมเมิร์ซ</span><span>05</span></div>
+</section>
+
+<!-- ════════════ 6 · SERVICES ════════════ -->
+<section class="page">
+  <div class="head">
+    <div class="kicker">04 · บริการทั้งหมด</div>
+    <h2>ทุกบริการมีหน้าเว็บ จองออนไลน์ได้ และเชื่อมกับสมาชิก</h2>
+    <p>ชื่อและโครงบริการตรงกับกลุ่ม · ขั้นตอนเป็นแบบไทย — จองเองได้ทันที หรือคุยต่อทาง LINE (กลุ่มใช้ WhatsApp)</p>
+  </div>
+  <div class="body">
+    <table class="t">
+      <thead><tr><th style="width:32mm">บริการ</th><th>เนื้อหาในหน้า (โครงตามกลุ่ม)</th><th style="width:42mm">ลูกค้าทำอะไรได้</th><th style="width:28mm">สถานะในไทย</th></tr></thead>
+      <tbody>
+        <tr><td>MST Golf Arena</td><td>3 lane · ราคาและส่วนลดตามระดับ · กติกา · จัดงาน/เหมา lane</td><td>จองรายชั่วโมงออนไลน์ · ดู/ยกเลิกการจอง</td><td><span class="pill p-green">มีแล้ว</span></td></tr>
+        <tr><td>MST Golf Fitting</td><td>ประเภทแบบกลุ่ม: Club Evaluation · Gapping · Putter Optimization · Putter Setup · ฟิตติ้งฟรีเมื่อซื้อ (ถ้าไทยใช้เหมือนกัน)</td><td>จองนัดตามช่องเวลาฟิตเตอร์ · ใส่ข้อมูลวงสวิงล่วงหน้า</td><td><span class="pill p-blue">เฟส 1</span></td></tr>
+        <tr><td>MST Golf Academy</td><td>โปรแกรมแบบกลุ่ม: Baseline Test · Fundamentals · Scoring · Skill-specific · Juniors · Corporate · ประวัติโปร</td><td>จองคลาสเดี่ยว · ซื้อแพ็กเกจหลายครั้ง (เฟส 2)</td><td><span class="pill p-blue">เฟส 1</span></td></tr>
+        <tr><td>MST Golf Membership</td><td>Member / Silver / Gold · วิธีได้แต้ม · สิทธิ์แต่ละระดับ · FAQ</td><td>สมัครด้วย LINE · บัตร QR · ดูแต้ม · ดีลสมาชิก</td><td><span class="pill p-green">มีแล้ว</span></td></tr>
+        <tr><td>Corporate Merchandise</td><td>ของที่ระลึกองค์กร · ปักโลโก้ · ลูกกอล์ฟพิมพ์โลโก้ · ของรางวัลกอล์ฟเดย์</td><td>ส่งคำขอใบเสนอราคา → ทีมขายติดต่อกลับ</td><td><span class="pill p-blue">เฟส 1</span></td></tr>
+        <tr><td>Events</td><td>Golf Day · คลินิก · เปิดตัวสินค้า · ภาพงาน</td><td>ลงทะเบียน · จำกัดที่นั่ง · สมาชิกลงก่อน</td><td><span class="pill p-gold">เฟส 2</span></td></tr>
+      </tbody>
+    </table>
+    <p class="note">ในไทยการจองซิมออนไลน์ใช้งานได้แล้ว ขณะที่ Arena ในมาเลเซียยังจองผ่าน WhatsApp — ระบบจองของไทยขยายไปฟิตติ้งและคลาสได้ด้วยโครงเดียวกัน</p>
+    <div class="photos">
+      <div class="ph"><img src="img/sim-bays.jpg" alt=""><span>Arena</span></div>
+      <div class="ph"><img src="img/fitting.jpg" alt=""><span>Fitting</span></div>
+      <div class="ph"><img src="img/academy.jpg" alt=""><span>Academy</span></div>
+    </div>
+    <p class="cap" style="margin-top:-2.4mm">ภาพประกอบ — แทนด้วยภาพจริงของร้านก่อนเปิดใช้</p>
+
+    <div class="grid3">
+      <div class="card tint">
+        <h3>ลองก่อนซื้อ</h3>
+        <ol class="small">
+          <li>เห็นไดรเวอร์รุ่นใหม่บนเว็บ</li>
+          <li>กด "ลองบนซิม" หรือ "นัดฟิตติ้ง"</li>
+          <li>ลองที่ร้าน ได้สเปกที่เหมาะ</li>
+          <li>ซื้อที่ร้าน หรือกลับไปซื้อออนไลน์</li>
+          <li>แต้มเข้าบัญชีเดียว</li>
+        </ol>
+      </div>
+      <div class="card tint">
+        <h3>ผู้เริ่มต้น</h3>
+        <ol class="small">
+          <li>ค้นหา "เรียนกอล์ฟ กรุงเทพ"</li>
+          <li>จอง Baseline Test / คลาสแรก</li>
+          <li>สมัครสมาชิกด้วย LINE</li>
+          <li>ครบคลาส ได้คำแนะนำไม้ชุด</li>
+          <li>ซื้อไม้ชุด ระดับขึ้นตามยอด</li>
+        </ol>
+      </div>
+      <div class="card tint">
+        <h3>องค์กร</h3>
+        <ol class="small">
+          <li>ค้นหา "ของที่ระลึก กอล์ฟ องค์กร"</li>
+          <li>ดูผลงาน Corporate</li>
+          <li>ส่งคำขอราคา</li>
+          <li>ใบเสนอราคา · ใบกำกับภาษีบริษัท</li>
+          <li>จัดกอล์ฟเดย์ · เหมา Arena</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+  <div class="ft"><span>MST Golf Thailand · แผนเว็บไซต์และอีคอมเมิร์ซ</span><span>06</span></div>
+</section>
+
+<!-- ════════════ 7 · E-COMMERCE ════════════ -->
+<section class="page">
+  <div class="head">
+    <div class="kicker">05 · เปิดขายออนไลน์</div>
+    <h2>ซื้อง่าย จ่ายแบบคนไทย ส่งถึงเร็ว</h2>
+    <p>สินค้ากอล์ฟราคาสูง ลูกค้าต้องการผ่อน ต้องการใบกำกับภาษี และอยากลองก่อน — การตั้งค่าทุกข้อด้านล่างตอบสามเรื่องนี้</p>
+  </div>
+  <div class="body">
+    <div class="grid2">
+      <div class="card">
+        <h3>หน้าสินค้า</h3>
+        <ul class="small">
+          <li>ตัวเลือกแบบกลุ่ม: มือ · ก้าน · loft/flex · สี · ไซส์</li>
+          <li>ราคาบาท · ราคาลด · ผ่อนต่อเดือน · ดีลสมาชิก</li>
+          <li>สต็อกไทย: มีที่ร้าน / สั่งได้ / พรีออเดอร์</li>
+          <li><b>ลองบนซิม · นัดฟิตติ้ง · ถามทาง LINE</b></li>
+          <li>ตารางไซส์ภาษาไทย · รีวิว (กลุ่มใช้ Judge.me)</li>
+          <li>รับประกันตามผู้แทนในไทย แสดงในหน้า</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>ชำระเงิน</h3>
+        <table class="t">
+          <tbody>
+            <tr><td>PromptPay QR</td><td>ค่าธรรมเนียมต่ำ · ยืนยันทันที</td></tr>
+            <tr><td>บัตรเครดิต/เดบิต</td><td>Visa · Mastercard · JCB · 3-D Secure</td></tr>
+            <tr><td>ผ่อน 0%</td><td>3–10 เดือนผ่านบัตรธนาคาร — สำคัญสำหรับไม้ราคาหลักหมื่น</td></tr>
+            <tr><td>e-wallet</td><td>ตามที่ผู้ให้บริการรองรับ</td></tr>
+            <tr><td>ปลายทาง</td><td>เฉพาะสินค้าราคาไม่เกินที่กำหนด</td></tr>
+          </tbody>
+        </table>
+        <p class="cap">Shopify Payments ไม่เปิดในไทย — เทียบผู้ให้บริการที่ต่อกับ Shopify ได้ เช่น 2C2P · Opn Payments · GB Prime Pay · อนุมัติร้านค้า 2–4 สัปดาห์</p>
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <h3>จัดส่งและรับสินค้า</h3>
+        <table class="t">
+          <tbody>
+            <tr><td>รับที่ร้าน</td><td>ฟรี · ภายในวัน · ลอง/ปรับก่อนรับได้</td></tr>
+            <tr><td>กรุงเทพฯ ด่วน</td><td>ไรเดอร์ภายในวัน</td></tr>
+            <tr><td>ทั่วประเทศ</td><td>1–3 วันทำการ · ส่งฟรีตามยอดขั้นต่ำ</td></tr>
+            <tr><td>ไม้ · ถุงกอล์ฟ</td><td>พัสดุใหญ่ · แพ็กกันกระแทก · ประกันพัสดุ</td></tr>
+          </tbody>
+        </table>
+        <p class="cap">กลุ่มส่ง 3–6 วันและยังไม่มีรับที่ร้าน — ไทยเร็วกว่าได้เพราะส่งจากร้านเดียวในกรุงเทพฯ</p>
+      </div>
+      <div class="card">
+        <h3>หลังการขาย</h3>
+        <ul class="small">
+          <li><b>ใบกำกับภาษีเต็มรูป</b> ขอได้ตอนชำระเงิน ส่งเป็น PDF</li>
+          <li><b>คืนสินค้า</b> ตั้งต้นจากนโยบายกลุ่ม (14 วัน ไม่รับคืนสินค้าลดราคา/สั่งทำ) แล้วปรับตามกฎหมายไทย</li>
+          <li><b>รับประกัน</b> ตามนโยบายกลุ่ม (ไม้ 1 ปี ฯลฯ) และผู้แทนในไทย</li>
+          <li><b>สถานะคำสั่งซื้อ</b> แจ้งทาง LINE · ติดตามพัสดุ</li>
+          <li><b>แต้ม</b> ได้เมื่อพ้นระยะคืนสินค้า (กลุ่มใช้ 14 วันหลังส่ง) · คืนสินค้าหักแต้ม</li>
+        </ul>
+      </div>
+    </div>
+    <div class="card dark">
+      <h3>ข้อได้เปรียบที่ร้านอื่นไม่มี: ระดับสมาชิก</h3>
+      <p class="small" style="color:#c7e2d2">สมาชิก Silver และ Gold เห็นดีลตามระดับบนเว็บ · ยอดซื้อออนไลน์นับรวมเพื่อขึ้นระดับ · แต้มเดือนเกิดใช้ได้ทั้งร้านและออนไลน์ · ลูกค้ามีเหตุผลซื้อกับ MST แทนร้านที่ราคาใกล้กัน</p>
+    </div>
+  </div>
+  <div class="ft"><span>MST Golf Thailand · แผนเว็บไซต์และอีคอมเมิร์ซ</span><span>07</span></div>
+</section>
+
+<!-- ════════════ 8 · ARCHITECTURE ════════════ -->
+<section class="page">
+  <div class="head">
+    <div class="kicker">06 · ระบบเบื้องหลัง</div>
+    <h2>ใช้ของที่มีให้เต็มที่ ต่อด้วยข้อมูล</h2>
+    <p>ไม่สร้างร้านค้าใหม่ ไม่แยกลูกค้าเป็นสองฐาน · Shopify ทำเรื่องขาย · Platform ทำเรื่องสมาชิกและการจอง</p>
+  </div>
+  <div class="body">
+    <div class="arch">
+      <div class="layer l-commerce"><b>mstgolf.co.th — Shopify ของกลุ่ม</b>สินค้า · ราคาบาท · สต็อก · ตะกร้า · ชำระเงิน · จัดส่ง · คืนสินค้า · หน้าเนื้อหาและบริการ<br><br><span class="small muted">ธีม MST/main-th · ทีมกลุ่มดูแลธีม</span></div>
+      <div class="layer l-core"><b>MST Golf Platform</b>สมาชิก · แต้ม · ระดับ · จองซิม/ฟิตติ้ง/คลาส · ข้อความ LINE · Dashboard · ยอดขายจาก POS<br><br><span class="small" style="color:#9fd6b6">มีแล้ว — ฐานลูกค้าไทยเดียว</span></div>
+      <div class="layer l-front"><b>LINE OA + app.mstgolf.co.th</b>ปุ่ม Rich Menu · หน้าสมาชิกและหน้าจองที่เปิดได้ทั้งใน LINE และบนเว็บ · หัวเว็บเดียวกับร้าน<br><br><span class="small muted">ย้ายจากเว็บ Phase 1</span></div>
+    </div>
+    <div class="flows">
+<div class="fl"><b>ซื้อออนไลน์</b><div class="steps"><span class="st shop">ลูกค้าซื้อบน mstgolf.co.th</span><span class="ar">→</span><span class="st shop">ชำระเงิน PromptPay / บัตร / ผ่อน</span><span class="ar">→</span><span class="st">webhook คำสั่งซื้อ</span><span class="ar">→</span><span class="st core">MST Golf Platform</span><span class="ar">→</span><span class="st">จับคู่ลูกค้าจากเบอร์/อีเมล</span><span class="ar">→</span><span class="st">แต้มตามระดับ</span><span class="ar">→</span><span class="st">นับยอดขึ้นระดับ</span><span class="ar">→</span><span class="st">แจ้งทาง LINE</span></div></div>
+<div class="fl"><b>ดีลสมาชิก</b><div class="steps"><span class="st core">ระดับใน MST Golf Platform</span><span class="ar">→</span><span class="st">tag ลูกค้าใน Shopify</span><span class="ar">→</span><span class="st shop">ดีล Silver / Gold บนเว็บ</span></div></div>
+<div class="fl"><b>ซื้อที่ร้าน</b><div class="steps"><span class="st">POS ร้านชาญอิสสระ</span><span class="ar">→</span><span class="st core">ยอดขายเข้า Platform (มีแล้ว)</span><span class="ar">→</span><span class="st shop">สต็อกร้าน ⇄ Shopify (เฟส 2)</span></div></div>
+</div>
+
+    <div class="card">
+      <h3>ทางเลือก</h3>
+      <table class="t">
+        <thead><tr><th style="width:44mm">ทางเลือก</th><th>ข้อดี</th><th>ข้อจำกัด</th><th style="width:18mm">แนะนำ</th></tr></thead>
+        <tbody>
+          <tr class="hl"><td>A · mstgolf.co.th (Shopify กลุ่ม) + Platform</td><td>ใช้ร้านและสินค้าที่กลุ่มเตรียมไว้ · ตรงมาตรฐาน 4 ประเทศ · เปิดขายเร็ว · สมาชิก/จองยังเป็นของไทย</td><td>หน้าตาร้านขึ้นกับธีมกลุ่ม · ดีลสมาชิกทำผ่านความสามารถของ Shopify ตามแพ็กเกจกลุ่ม</td><td><span class="pill p-green">หลัก</span></td></tr>
+          <tr><td>B · เว็บไทยของเรา (headless) ใช้ Shopify ไทยเป็นระบบขาย</td><td>ประสบการณ์เดียวทั้งร้าน สมาชิก จอง · ควบคุม SEO ไทยเต็มที่</td><td>ต่างจากอีก 3 ประเทศ · กลุ่มต้องเห็นชอบ · งานสร้างและดูแลมากกว่า A</td><td><span class="pill p-gold">ขั้นถัดไป</span></td></tr>
+          <tr><td>C · สองเว็บแยกกัน (เว็บ Phase 1 + mstgolf.co.th)</td><td>ไม่ต้องเปลี่ยนอะไร</td><td>ลูกค้าสับสนสองโดเมน · SEO แย่งกันเอง · เนื้อหาซ้ำ</td><td><span class="pill p-red">ไม่แนะนำ</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card soft">
+      <h3>ระบบสมาชิก: ของไทย หรือของกลุ่ม</h3>
+      <p class="small">กลุ่มใช้ MST Golf Membership บน Eber (ไม่มีระดับ แต้มแลกเป็นส่วนลด 2% หมดอายุ 12 เดือน) · ไทยใช้ MST Golf Platform (3 ระดับ ล็อกอิน LINE จองซิม ต่อ POS) — <b>เสนอให้ไทยใช้ Platform ต่อ</b> เพราะผูกกับ LINE การจอง และหน้าร้านไทยแล้ว และปรับกติกาการแลกแต้มในเฟส 3 ให้ใกล้กลุ่ม (แลกเป็นส่วนลดที่ร้าน / voucher ออนไลน์) ต้องได้ความเห็นชอบจากกลุ่ม</p>
+    </div>
+  </div>
+  <div class="ft"><span>MST Golf Thailand · แผนเว็บไซต์และอีคอมเมิร์ซ</span><span>08</span></div>
+</section>
+
+<!-- ════════════ 9 · ROADMAP ════════════ -->
+<section class="page">
+  <div class="head">
+    <div class="kicker">07 · แผนงาน</div>
+    <h2>เปิดทีละเฟส ทุกเฟสใช้งานได้จริง</h2>
+    <p>นับสัปดาห์จากวันที่ได้การตัดสินใจในหน้า 12 · ยื่นขอผู้ให้บริการชำระเงินตั้งแต่สัปดาห์แรกเพื่อไม่ให้เฟส 2 ต้องรอ</p>
+  </div>
+  <div class="body">
+    <div class="card">
+      <div class="gantt">
+        <div></div>
+        <div class="wk">1</div><div class="wk">2</div><div class="wk">3</div><div class="wk">4</div><div class="wk">5</div><div class="wk">6</div><div class="wk">7</div><div class="wk">8</div><div class="wk">9</div><div class="wk">10</div><div class="wk">11</div><div class="wk">12</div><div class="wk">13</div><div class="wk">14</div><div class="wk">15</div><div class="wk">16</div><div class="wk">17</div><div class="wk">18</div><div class="wk">19</div><div class="wk">20</div><div class="wk">21</div><div class="wk">22</div><div class="wk">23</div><div class="wk">24</div>
+        <div class="lbl">0 · Discovery</div><div class="bar b0" style="grid-column: 2 / span 2">ตัดสินใจ</div><div style="grid-column: 4 / -1"></div>
+        <div class="lbl">1 · Thai-ready</div><div style="grid-column: 2 / span 2"></div><div class="bar b1" style="grid-column: 4 / span 6">ราคา · ภาษา · บริการ</div><div style="grid-column: 10 / -1"></div>
+        <div class="lbl">ขออนุมัติชำระเงิน</div><div style="grid-column: 2 / span 1"></div><div class="bar b0" style="grid-column: 3 / span 4">KYC</div><div style="grid-column: 7 / -1"></div>
+        <div class="lbl">2 · เปิดขาย</div><div style="grid-column: 2 / span 7"></div><div class="bar b2" style="grid-column: 9 / span 8">ชำระเงิน · จัดส่ง · แต้ม</div><div style="grid-column: 17 / -1"></div>
+        <div class="lbl">Soft launch</div><div style="grid-column: 2 / span 14"></div><div class="bar b1" style="grid-column: 16 / span 2">สมาชิก</div><div style="grid-column: 18 / -1"></div>
+        <div class="lbl">3 · Growth</div><div style="grid-column: 2 / span 16"></div><div class="bar b3" style="grid-column: 18 / span 7">Marketplace · แคมเปญ →</div>
+        <div></div><div style="grid-column: 2 / span 8"></div><div class="ms" style="grid-column: 10 / span 6">▲ เว็บไทยพร้อม (สัปดาห์ 9)</div><div style="grid-column: 16 / span 2"></div><div class="ms" style="grid-column: 18 / span 7">▲ เปิดขาย (สัปดาห์ 17)</div>
+      </div>
+    </div>
+
+    <div class="grid3">
+      <div class="card">
+        <h3><span class="pill p-gray">เฟส 0</span> Discovery</h3>
+        <ul class="small">
+          <li>Workshop กับ MST TH และทีมกลุ่ม</li>
+          <li>สิทธิ์ขายแบรนด์ในไทย · ราคาบาท</li>
+          <li>สิทธิ์เข้าร้าน Shopify ไทย · แพ็กเกจ · แอป</li>
+          <li>ผู้ให้บริการชำระเงิน · ขนส่ง</li>
+          <li>นโยบายคืนสินค้า ส่งฟรี ผ่อน</li>
+          <li>นัดถ่ายภาพร้าน</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3><span class="pill p-green">เฟส 1</span> Thai-ready</h3>
+        <ul class="small">
+          <li>ราคาบาทถูกต้อง · ซ่อนสินค้าที่ไม่ขายในไทย</li>
+          <li>ภาษาไทย: เมนู หมวด นโยบาย รุ่นขายดี</li>
+          <li>หน้าบริการครบ + ปุ่มจอง/LINE</li>
+          <li>app.mstgolf.co.th: สมาชิก · จองซิม ฟิตติ้ง คลาส</li>
+          <li>ย้ายเนื้อหาเว็บ Phase 1 · redirect</li>
+          <li>SEO · hreflang กลุ่ม · Google Business Profile</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3><span class="pill p-gold">เฟส 2</span> เปิดขาย</h3>
+        <ul class="small">
+          <li>ชำระเงินไทย · ผ่อน 0%</li>
+          <li>จัดส่ง · รับที่ร้าน · คืนสินค้า</li>
+          <li>ใบกำกับภาษี</li>
+          <li>คำสั่งซื้อ → แต้ม · ดีลตามระดับ</li>
+          <li>แจ้งสถานะทาง LINE</li>
+          <li>Soft launch สมาชิกก่อน 2 สัปดาห์</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>สิ่งที่ส่งมอบและเกณฑ์ตรวจรับ</h3>
+      <table class="t">
+        <thead><tr><th style="width:24mm">เฟส</th><th>ส่งมอบ</th><th>ตรวจรับเมื่อ</th></tr></thead>
+        <tbody>
+          <tr><td>0</td><td>สรุปการตัดสินใจ · แผนเนื้อหา · ขอบเขตและใบเสนอราคาเฟส 1–2</td><td>MST TH และกลุ่มรับทราบ</td></tr>
+          <tr><td>1</td><td>mstgolf.co.th ภาษาไทยราคาบาท · หน้าบริการ · app.mstgolf.co.th · SEO</td><td>ราคาถูกต้องทุกสินค้าที่เปิดขาย · จองได้จริงบนมือถือ · Core Web Vitals ผ่าน</td></tr>
+          <tr><td>2</td><td>ร้านออนไลน์ครบวงจร · ใบกำกับภาษี · แต้มออนไลน์ · คู่มือทีมคำสั่งซื้อ</td><td>ทดสอบซื้อทุกช่องทางชำระเงิน · คืนสินค้าแล้วแต้มหักถูก · soft launch ผ่าน</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card tint">
+      <h3><span class="pill p-green" style="background:#fff">เฟส 3</span> Growth</h3>
+      <p class="small">Shopee · Lazada · LINE Shopping (สต็อกเดียวกัน) · แคมเปญ LINE จากข้อมูลสมาชิก (ลองไม้แล้วยังไม่ซื้อ · ใกล้ขึ้นระดับ) · แลกแต้ม · รีวิว · แจ้งของเข้า · สั่งซื้อองค์กร · แพ็กเกจเรียนและชั่วโมงซิม</p>
+    </div>
+  </div>
+  <div class="ft"><span>MST Golf Thailand · แผนเว็บไซต์และอีคอมเมิร์ซ</span><span>09</span></div>
+</section>
+
+<!-- ════════════ 10 · CONTENT & SEO ════════════ -->
+<section class="page">
+  <div class="head">
+    <div class="kicker">08 · เนื้อหาและการถูกค้นเจอ</div>
+    <h2>ให้คนไทยที่ค้นเรื่องกอล์ฟ เจอ MST ก่อน</h2>
+    <p>เว็บกลุ่มเน้นข่าวทัวร์นาเมนต์และไม่มีบทความใหม่ตั้งแต่ ก.พ. 2026 — เนื้อหาภาษาไทยที่มีประโยชน์คือโอกาสของไทยโดยตรง</p>
+  </div>
+  <div class="body">
+    <div class="grid2">
+      <div class="card">
+        <h3>กลุ่มคำค้นเป้าหมาย</h3>
+        <table class="t">
+          <thead><tr><th>กลุ่ม</th><th>ตัวอย่าง</th><th>หน้า</th></tr></thead>
+          <tbody>
+            <tr><td>ร้าน</td><td>ร้านกอล์ฟ กรุงเทพ · ร้านไม้กอล์ฟ พระราม 4</td><td>หน้าแรก · ร้าน</td></tr>
+            <tr><td>สินค้า</td><td>ไดรเวอร์ [รุ่น] ราคา · ไม้กอล์ฟชุด ผู้หญิง</td><td>หมวด · สินค้า</td></tr>
+            <tr><td>บริการ</td><td>ฟิตติ้งไม้กอล์ฟ · ซิมกอล์ฟ กรุงเทพ · เรียนกอล์ฟ</td><td>Fitting · Arena · Academy</td></tr>
+            <tr><td>องค์กร</td><td>ของที่ระลึก กอล์ฟ · ลูกกอล์ฟพิมพ์โลโก้</td><td>Corporate</td></tr>
+            <tr><td>ความรู้</td><td>เลือกก้านไม้ · loft ไดรเวอร์ · ไซส์ถุงมือ</td><td>บทความ</td></tr>
+          </tbody>
+        </table>
+        <p class="cap">ยืนยันปริมาณคำค้นด้วยเครื่องมือ SEO ในเฟส 0</p>
+      </div>
+      <div class="card">
+        <h3>งาน SEO ที่ต้องมี</h3>
+        <ul class="small">
+          <li>Google Business Profile: รูปจริง · เวลา · บริการ · ลิงก์จอง</li>
+          <li>hreflang th-TH / en-TH และลิงก์ถึงเว็บ 4 ประเทศของกลุ่ม</li>
+          <li>คำอธิบายหมวดภาษาไทยของตัวเอง ไม่ซ้ำกับเว็บมาเลเซีย</li>
+          <li>ข้อมูลโครงสร้าง: ร้าน · สินค้า (ราคา/สต็อก) · บทความ · FAQ</li>
+          <li>redirect หน้าเว็บ Phase 1 ไป mstgolf.co.th แบบถาวร (301)</li>
+          <li>Search Console · GA4 แยกของไทย · วัดการจองและการซื้อ</li>
+        </ul>
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <h3>ปฏิทินเนื้อหาต่อเดือน</h3>
+        <table class="t">
+          <tbody>
+            <tr><td>บทความความรู้</td><td>2 เรื่อง — เทคนิค อุปกรณ์ วิธีเลือก</td></tr>
+            <tr><td>สินค้าใหม่</td><td>ทุกคอลเลกชันที่เข้าร้านไทย พร้อมภาพในร้าน</td></tr>
+            <tr><td>อีเวนต์ / ข่าวร้าน</td><td>ก่อนงาน + สรุปหลังงาน</td></tr>
+            <tr><td>แคมเปญ</td><td>ตามปฏิทินโปรโมชันไทย</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card">
+        <h3>ภาพและเนื้อหาที่ต้องผลิต</h3>
+        <ul class="small">
+          <li>ถ่ายภาพร้าน Arena ห้องฟิตติ้ง ทีมโปร (1 วัน)</li>
+          <li>ภาพและคำอธิบายไทย 50–100 รุ่นขายดี</li>
+          <li>คำอธิบายภาษาไทยของหมวดและบริการ</li>
+          <li>คลิปสั้นจากซิมและฟิตติ้ง</li>
+          <li>ตารางไซส์ · FAQ · นโยบายภาษาไทย</li>
+        </ul>
+      </div>
+    </div>
+    <div class="note">ภาพจริงของร้านไทยคือสิ่งที่ทำให้เว็บน่าเชื่อถือที่สุด — ตอนนี้ทั้งเว็บ Phase 1 และ mstgolf.co.th ยังไม่มี ควรนัดถ่ายในเฟส 0</div>
+  </div>
+  <div class="ft"><span>MST Golf Thailand · แผนเว็บไซต์และอีคอมเมิร์ซ</span><span>10</span></div>
+</section>
+
+<!-- ════════════ 11 · TEAM, KPI, RISKS ════════════ -->
+<section class="page">
+  <div class="head">
+    <div class="kicker">09 · ทีมงาน ตัวชี้วัด ความเสี่ยง</div>
+    <h2>เว็บขายได้ ต่อเมื่อหลังร้านพร้อม</h2>
+    <p>อีคอมเมิร์ซไม่ได้จบที่เว็บ — ต้องมีคนดูสต็อก แพ็กของ ตอบแชต และดูตัวเลขทุกสัปดาห์</p>
+  </div>
+  <div class="body">
+    <div class="card">
+      <h3>ใครทำอะไร</h3>
+      <table class="t">
+        <thead><tr><th style="width:30mm">งาน</th><th>MST Golf Thailand</th><th>MST Golf Group</th><th>ORIONS</th></tr></thead>
+        <tbody>
+          <tr><td>สินค้าและราคา</td><td>เลือกสินค้า · ราคาบาท · โปรโมชัน</td><td>ข้อมูล/ภาพสินค้า · มาตรฐานแบรนด์</td><td>ตรวจราคาและข้อมูลก่อนเปิด</td></tr>
+          <tr><td>ร้าน Shopify</td><td>อนุมัติการตั้งค่า</td><td>บัญชี · ธีม · แอปของกลุ่ม</td><td>ตั้งค่าไทย · หน้าไทย · เชื่อมระบบ</td></tr>
+          <tr><td>คำสั่งซื้อ</td><td>แพ็ก · ส่ง · รับที่ร้าน · คืน</td><td>–</td><td>แจ้งเตือน · รายงาน</td></tr>
+          <tr><td>ลูกค้าสัมพันธ์</td><td>ตอบ LINE · หน้าร้าน</td><td>–</td><td>ข้อความอัตโนมัติ · ข้อมูลสมาชิก</td></tr>
+          <tr><td>เนื้อหา</td><td>บทความ · ข่าว · ภาพร้าน</td><td>แคมเปญกลุ่ม</td><td>โครงหน้า · SEO</td></tr>
+          <tr><td>สมาชิกและจอง</td><td>ใช้งาน</td><td>–</td><td>MST Golf Platform</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <h3>ตัวชี้วัด (ตั้งตัวเลขเป้าร่วมกันในเฟส 0)</h3>
+      <div class="grid4">
+        <div class="card soft"><b class="small">ถูกค้นเจอ</b><ul class="small" style="margin-top:1mm"><li>ผู้เข้าชมจาก Google</li><li>โทร/ดูเส้นทางจาก Google Business</li></ul></div>
+        <div class="card soft"><b class="small">ลูกค้าใหม่</b><ul class="small" style="margin-top:1mm"><li>สมาชิกใหม่จากเว็บ</li><li>เพื่อน LINE OA ใหม่</li></ul></div>
+        <div class="card soft"><b class="small">บริการ</b><ul class="small" style="margin-top:1mm"><li>จองซิม ฟิตติ้ง คลาส</li><li>คำขอ Corporate</li></ul></div>
+        <div class="card soft"><b class="small">ยอดขาย</b><ul class="small" style="margin-top:1mm"><li>ยอดออนไลน์ · ต่อบิล</li><li>% คำสั่งซื้อจากสมาชิก</li></ul></div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>ความเสี่ยงและวิธีรับมือ</h3>
+      <table class="t">
+        <tbody>
+          <tr><td>ราคาผิดบนเว็บ</td><td>ห้ามเปิดขายจนกว่าราคาบาททุกสินค้าผ่านการตรวจ · ซ่อนสินค้าที่ยังไม่มีราคาไทย</td></tr>
+          <tr><td>สิทธิ์ขายแบรนด์</td><td>บางแบรนด์มีผู้แทนในไทยที่กำหนดช่องทางและราคา → ยืนยันรายชื่อในเฟส 0</td></tr>
+          <tr><td>สองโดเมน</td><td>ย้ายเนื้อหาเข้า mstgolf.co.th · redirect 301 · LINE และ Google ชี้โดเมนเดียว</td></tr>
+          <tr><td>สมาชิกไม่ตรงกลุ่ม</td><td>ตกลงกับกลุ่มว่าไทยใช้ Platform · กติกาแลกแต้มปรับให้ใกล้กลุ่ม</td></tr>
+          <tr><td>ชำระเงินอนุมัติช้า</td><td>ยื่น KYC สัปดาห์แรก · เฟส 1 ไม่ต้องรอ</td></tr>
+          <tr><td>หลังร้านไม่พอ</td><td>Soft launch กับสมาชิก · กำหนดเวลาตอบ LINE · คู่มือแพ็กของ</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="ft"><span>MST Golf Thailand · แผนเว็บไซต์และอีคอมเมิร์ซ</span><span>11</span></div>
+</section>
+
+<!-- ════════════ 12 · DECISIONS ════════════ -->
+<section class="page">
+  <div class="head">
+    <div class="kicker">10 · สิ่งที่ต้องตัดสินใจและขั้นตอนถัดไป</div>
+    <h2>ตอบ 8 ข้อนี้ เริ่มงานได้ทันที</h2>
+    <p>ข้อที่มี ✦ ต้องได้ก่อนเฟส 2 · ที่เหลือทำคู่กับเฟส 1 ได้</p>
+  </div>
+  <div class="body">
+    <table class="t">
+      <thead><tr><th style="width:6mm">#</th><th style="width:44mm">เรื่อง</th><th>ตัวเลือก / สิ่งที่ต้องได้</th><th style="width:28mm">ใครตัดสินใจ</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>หน้าร้านหลักของไทย</td><td>ทางเลือก A (แนะนำ): mstgolf.co.th เป็นเว็บเดียว · สิทธิ์ให้ ORIONS ทำงานในร้าน Shopify ไทย</td><td>กลุ่ม + MST TH</td></tr>
+        <tr><td>2</td><td>ระบบสมาชิกไทย</td><td>ใช้ MST Golf Platform ต่อ (แนะนำ) หรือย้ายไป Eber ของกลุ่ม</td><td>กลุ่ม + MST TH</td></tr>
+        <tr><td>3</td><td>แบรนด์และราคา ✦</td><td>รายชื่อแบรนด์ที่ขายออนไลน์ได้ · ราคาบาททุกสินค้า · นโยบายราคาขั้นต่ำ</td><td>MST TH</td></tr>
+        <tr><td>4</td><td>ผู้ให้บริการชำระเงิน ✦</td><td>เทียบค่าธรรมเนียม ผ่อน 0% เวลาอนุมัติ · เอกสารบริษัทสำหรับ KYC</td><td>MST TH</td></tr>
+        <tr><td>5</td><td>นโยบายการขาย ✦</td><td>ส่งฟรีเมื่อยอด · ปลายทาง · คืนสินค้ากี่วัน · ผ่อนกี่เดือน · ดีลสมาชิกออนไลน์</td><td>MST TH</td></tr>
+        <tr><td>6</td><td>ขนส่ง</td><td>ขนส่งหลัก · ไรเดอร์กรุงเทพฯ · วิธีส่งไม้กอล์ฟ</td><td>MST TH</td></tr>
+        <tr><td>7</td><td>ทีมหลังร้าน ✦</td><td>ผู้รับผิดชอบคำสั่งซื้อ · เวลาตอบแชต · คนถ่ายภาพ/เขียนเนื้อหา</td><td>MST TH</td></tr>
+        <tr><td>8</td><td>บริการในไทย</td><td>Fitting · Academy · Corporate · Events — ใช้ประเภทและราคาแบบกลุ่มหรือกำหนดเอง · ตารางเวลาโปร/ฟิตเตอร์</td><td>MST TH</td></tr>
+      </tbody>
+    </table>
+
+    <div class="grid3">
+      <div class="card tint"><h3>สัปดาห์ที่ 1</h3><ul class="small"><li>Workshop 2 ชั่วโมง MST TH + ทีมกลุ่ม</li><li>ขอสิทธิ์ร้าน Shopify ไทย</li><li>ยื่นขอผู้ให้บริการชำระเงิน</li></ul></div>
+      <div class="card tint"><h3>สัปดาห์ที่ 2</h3><ul class="small"><li>สรุปการตัดสินใจ 8 ข้อ</li><li>แผนเนื้อหาและวันถ่ายภาพ</li><li>ขอบเขตและใบเสนอราคาเฟส 1–2</li></ul></div>
+      <div class="card tint"><h3>สัปดาห์ที่ 3</h3><ul class="small"><li>เริ่มเฟส 1: แก้ราคาและภาษาก่อน</li><li>เปิดส่วนใหม่ทีละหมวดให้ MST ตรวจ</li></ul></div>
+    </div>
+
+    <div class="rec">
+      <div class="tag">สรุป</div>
+      <p style="margin-top:1.4mm;">MST Golf Thailand มีสิ่งที่ร้านกอล์ฟทั่วไปไม่มี — ร้านจริง ซิม ฟิตติ้ง อคาเดมี ระบบสมาชิกของตัวเอง และร้านออนไลน์ที่กลุ่มเตรียมไว้แล้ว แผนนี้ต่อทุกอย่างเข้าหากันบน mstgolf.co.th ในภาษาไทย ราคาบาท เปิดขายด้วยมาตรฐานเดียวกับกลุ่ม และให้ทุกการซื้อทุกการจองกลับเข้าฐานสมาชิกเดียวกัน</p>
+    </div>
+    <p class="cap">ข้อมูลเกี่ยวกับ mstgolf.com, mstgolf.co.th และ mstgolfgroup.com มาจากหน้าเว็บสาธารณะ ตรวจเมื่อ 26 ก.ย. 2026</p>
+  </div>
+  <div class="ft"><span>MST Golf Thailand · แผนเว็บไซต์และอีคอมเมิร์ซ</span><span>12</span></div>
+</section>
+</body>
+</html>
