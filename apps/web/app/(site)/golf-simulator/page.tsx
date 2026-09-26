@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { priceFor } from "@mstgolf/core";
-import { LanePlan } from "@/components/Illustrations";
+import { Photo } from "@/components/Photo";
+import { PHOTOS } from "@/lib/images";
 import { tierClass } from "@/components/TierCards";
 import { formatBaht, hoursLines } from "@/lib/format";
 import { getLanes, getOrg, getStore } from "@/lib/org";
@@ -52,7 +53,7 @@ export default async function SimulatorPage() {
             </div>
           </div>
           <div className="sim-head-visual">
-            <LanePlan lanes={lanes.length ? lanes : [1, 2, 3].map((n) => ({ id: String(n), name: `Lane ${n}` }))} />
+            <Photo photo={PHOTOS.simBays} ratio="16 / 10" priority className="sim-photo" />
           </div>
         </div>
       </section>

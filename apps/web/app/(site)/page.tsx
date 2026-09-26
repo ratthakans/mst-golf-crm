@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { BallFlight, LanePlan } from "@/components/Illustrations";
+import { Photo } from "@/components/Photo";
+import { PHOTOS, SERVICE_PHOTO } from "@/lib/images";
 import { IconArrow, IconClock, IconPhone, IconPin } from "@/components/icons";
 import { MyStatus } from "@/components/MyStatus";
 import { PostList } from "@/components/PostList";
@@ -74,7 +75,7 @@ export default async function HomePage() {
             </div>
           </div>
           <div className="hero-visual">
-            <BallFlight />
+            <Photo photo={PHOTOS.hero} priority className="hero-photo" />
             <MyStatus welcomePoints={s.welcomeBonus} />
           </div>
         </div>
@@ -89,6 +90,7 @@ export default async function HomePage() {
           <ul className="svc-list">
             {SERVICES.map((svc) => (
               <li key={svc.slug} className="svc-row">
+                {SERVICE_PHOTO[svc.slug] && <Photo photo={SERVICE_PHOTO[svc.slug]!} className="svc-thumb" sizes="(min-width: 900px) 180px, 100vw" />}
                 <div className="svc-name">
                   <h3>{svc.name}</h3>
                   <span>{svc.thai}</span>
@@ -115,7 +117,8 @@ export default async function HomePage() {
                 <div>
                   <dt>ราคา</dt>
                   <dd className="num">
-                    {prices.map((p) => formatBaht(p)).join(" / ")} <small>ต่อชั่วโมง</small>
+                    {prices.map((p) => formatBaht(p)).join(" / ")}
+                    <small className="nowrap"> /ชม.</small>
                   </dd>
                 </div>
               )}
@@ -150,7 +153,7 @@ export default async function HomePage() {
             </div>
           </div>
           <div className="sim-visual">
-            <LanePlan lanes={lanes.length ? lanes : [1, 2, 3].map((n) => ({ id: String(n), name: `Lane ${n}` }))} />
+            <Photo photo={PHOTOS.simBays} ratio="16 / 10" className="sim-photo" />
           </div>
         </div>
       </section>
@@ -191,6 +194,7 @@ export default async function HomePage() {
           <div>
             <h2 id="visit-h">แวะมาที่ร้าน</h2>
             <p className="visit-place">{store?.name ?? org.name}</p>
+            <Photo photo={PHOTOS.store} ratio="16 / 9" className="visit-photo" />
           </div>
           <div className="visit-facts">
             <ul className="facts">

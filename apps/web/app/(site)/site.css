@@ -1034,3 +1034,41 @@
   }
 }
 
+
+/* ------------------------------------------------------------------ photos */
+/* Mockup photography (lib/images.ts) — same frames will hold MST's real photos. */
+
+.photo {
+  position: relative;
+  overflow: hidden;
+  border-radius: 22px;
+  background: var(--color-tint);
+  width: 100%;
+}
+.hero-photo {
+  box-shadow: var(--shadow-card);
+}
+.sim-photo {
+  border: 1px solid rgba(185, 212, 196, 0.3);
+}
+.svc-thumb {
+  border-radius: var(--radius-md);
+  aspect-ratio: 16 / 9 !important;
+}
+.svc-detail-photo {
+  margin-top: var(--space-6);
+}
+.visit-photo {
+  margin-top: var(--space-6);
+}
+.nowrap {
+  white-space: nowrap;
+}
+@media (min-width: 900px) {
+  .svc-row {
+    grid-template-columns: 180px minmax(0, 1fr) minmax(0, 1.4fr) auto;
+  }
+  .svc-thumb {
+    aspect-ratio: 4 / 3 !important;
+  }
+}

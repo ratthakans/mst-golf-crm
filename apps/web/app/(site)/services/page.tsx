@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { IconCheck } from "@/components/icons";
+import { Photo } from "@/components/Photo";
 import { SERVICES } from "@/lib/content";
+import { SERVICE_PHOTO } from "@/lib/images";
 import { getOrg } from "@/lib/org";
 
 export const revalidate = 300;
@@ -39,6 +41,7 @@ export default async function ServicesPage() {
             <div className="svc-detail-head">
               <h2 id={`${svc.slug}-h`}>{svc.name}</h2>
               <p className="svc-thai">{svc.thai}</p>
+              {SERVICE_PHOTO[svc.slug] && <Photo photo={SERVICE_PHOTO[svc.slug]!} className="svc-detail-photo" sizes="(min-width: 900px) 40vw, 100vw" />}
             </div>
             <div className="svc-detail-body">
               {svc.body.map((p) => (
