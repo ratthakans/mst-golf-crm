@@ -750,3 +750,60 @@ export async function refreshMemberSpend(
   });
   return { tierChanged: after > before ? "up" : after < before ? "down" : null, tier: next.key, spend12mSatang };
 }
+
+// ---------------------------------------------------------------------------
+// Customer 360 (back office)
+// ---------------------------------------------------------------------------
+
+export interface MemberActivity {
+  sales: Array<{
+    id: string;
+    invoiceNo: string;
+    type: "SALE" | "RETURN" | "VOID";
+    occurredAt: Date;
+    netSatang: number;
+    storeName: string;
+    points: number;
+    lines: Array<{ name: string; sku: string | null; qty: number; netSatang: number }>;
+  }>;
+  identities: Array<{ type: "LINE" | "PHONE"; value: string; verifiedAt: Date | null; source: MemberSource; createdAt: Date }>;
+  consents: Array<{ purpose: "TERMS" | "MARKETING"; version: string; granted: boolean; channel: MemberSource | null; createdAt: Date }>;
+  events: Array<{ type: string; occurredAt: Date; payload: Record<string, unknown> }>;
+  openReviews: number;
+}
+
+export async function memberActivity(orgId: string, memberId: string): Promise<MemberActivity> {
+  const client = db(orgId);
+  const [sales, identities, consents, events, openReviews] = await Promise.all([
+    client.sale.findMany({
+      where: { memberId, status: "POSTED" },
+      orderBy: { occurredAt: "desc" },
+      take: 100,
+      include: {
+        store: { select: { name: true } },
+        lines: { select: { name: true, sku: true, qty: true, netSatang: true } },
+        pointTransactions: { select: { delta: true } },
+      },
+    }),
+    client.memberIdentity.findMany({ where: { memberId }, orderBy: { createdAt: "asc" } }),
+    client.consent.findMany({ where: { memberId }, orderBy: { createdAt: "desc" }, take: 50 }),
+    client.event.findMany({ where: { memberId }, orderBy: { occurredAt: "desc" }, take: 80 }),
+    client.reviewItem.count({ where: { memberId, status: "OPEN" } }),
+  ]);
+  return {
+    sales: sales.map((s) => ({
+      id: s.id,
+      invoiceNo: s.invoiceNo,
+      type: s.type,
+      occurredAt: s.occurredAt,
+      netSatang: s.netSatang,
+      storeName: s.store.name,
+      points: s.pointTransactions.reduce((sum, t) => sum + t.delta, 0),
+      lines: s.lines,
+    })),
+    identities: identities.map((i) => ({ type: i.type, value: i.value, verifiedAt: i.verifiedAt, source: i.source, createdAt: i.createdAt })),
+    consents: consents.map((c) => ({ purpose: c.purpose, version: c.version, granted: c.granted, channel: c.channel, createdAt: c.createdAt })),
+    events: events.map((e) => ({ type: e.type, occurredAt: e.occurredAt, payload: (e.payload ?? {}) as Record<string, unknown> })),
+    openReviews,
+  };
+}

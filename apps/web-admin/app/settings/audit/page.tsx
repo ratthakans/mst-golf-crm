@@ -1,6 +1,7 @@
 import { allowPage } from "../../../lib/auth";
-import { getRepo } from "../../../lib/repo";
+import { listAudit } from "../../../lib/users";
 import { Forbidden } from "../../Forbidden";
+import { formatDateTime } from "../../ui/format";
 
 export const dynamic = "force-dynamic";
 
@@ -17,20 +18,51 @@ const ACTION_LABEL: Record<string, string> = {
   "member.create": "สร้างสมาชิก",
   "member.photo_set": "อัปโหลดรูปสมาชิก",
   "member.photo_remove": "ลบรูปสมาชิก",
-  "sale.record": "บันทึกการซื้อ",
-  "import.run": "นำเข้า POS",
+  "member.update": "แก้ไขข้อมูลสมาชิก",
+  "member.merge": "รวมบัญชี",
+  "member.erase": "ลบข้อมูลสมาชิก (PDPA)",
+  "points.adjust": "ปรับแต้ม",
+  "import.commit": "นำเข้า POS",
+  "import.rollback": "ยกเลิกการนำเข้า POS",
+  "booking.create": "สร้างการจอง",
+  "booking.move": "ย้ายการจอง",
+  "booking.cancel": "ยกเลิกการจอง",
+  "booking.check_in": "เช็กอิน",
+  "booking.no_show": "ไม่มาตามนัด",
+  "booking.payment": "บันทึกยอดชำระ",
+  "lane.block": "ปิด lane",
+  "lane.unblock": "เปิด lane",
+  "lane.create": "เพิ่ม lane",
+  "lane.update": "แก้ไข lane",
+  "store.create": "เพิ่มสาขา",
+  "store.update": "แก้ไขสาขา",
+  "post.create": "สร้างบทความ",
+  "post.update": "แก้ไขบทความ",
+  "post.delete": "ลบบทความ",
+  "consent_text.publish": "ออกข้อความ PDPA ใหม่",
+  "line.save": "ตั้งค่า LINE",
+  "review.merge_request": "ขอรวมบัญชี",
+  "review.erase_request": "ขอลบข้อมูล",
+  "review.resolve": "ปิดเรื่องในคิวตรวจสอบ",
+  "settings.tiers": "ตั้งค่าระดับสมาชิก",
+  "settings.points": "ตั้งค่าแต้ม",
+  "settings.booking": "ตั้งค่าการจอง",
+  "settings.notifications": "ตั้งค่าข้อความ LINE",
+  "settings.pos": "ตั้งค่า POS",
+  "settings.site": "ตั้งค่าเว็บไซต์",
 };
 
 function detail(v: unknown): string {
   if (v === null || v === undefined) return "";
   return Object.entries(v as Record<string, unknown>)
     .map(([k, x]) => `${k}: ${typeof x === "object" ? JSON.stringify(x) : String(x)}`)
-    .join(" · ");
+    .join(" · ")
+    .slice(0, 400);
 }
 
 export default async function AuditPage() {
   if (!(await allowPage("audit.view"))) return <Forbidden />;
-  const rows = await (await getRepo()).listAudit(300);
+  const rows = await listAudit({ limit: 300 });
 
   return (
     <>
@@ -50,9 +82,9 @@ export default async function AuditPage() {
               )}
               {rows.map((r) => (
                 <tr key={r.id}>
-                  <td className="mono">{r.createdAt.toLocaleString("en-GB")}</td>
+                  <td className="mono nowrap">{formatDateTime(r.createdAt)}</td>
                   <td>{r.userName ?? "—"}</td>
-                  <td>{ACTION_LABEL[r.action] ?? r.action}</td>
+                  <td>{ACTION_LABEL[r.action] ?? r.action}{r.reason && <span className="sub">{r.reason}</span>}</td>
                   <td className="audit-detail">
                     {[r.entityId && `${r.entity} ${r.entityId}`, detail(r.before) && `ก่อน ${detail(r.before)}`, detail(r.after) && `หลัง ${detail(r.after)}`]
                       .filter(Boolean)

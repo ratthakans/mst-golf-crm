@@ -18,13 +18,11 @@ export interface ShellUser {
 }
 
 export function AppShell({
-  live,
   orgName,
   productName,
   user,
   children,
 }: {
-  live: boolean;
   orgName: string;
   productName: string;
   user: ShellUser | null;
@@ -75,7 +73,6 @@ export function AppShell({
         </button>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/mst-logo.png" alt={orgName} className="topbar-logo" />
-        {!live && <span className="topbar-tag">ตัวอย่าง</span>}
       </header>
 
       <div
@@ -121,15 +118,6 @@ export function AppShell({
             </div>
           )}
           <ThemeToggle />
-          <div className={`src-badge ${live ? "live" : "sample"}`}>
-            <span className="src-dot" />
-            {live ? "ฐานข้อมูลจริง" : "ข้อมูลตัวอย่าง"}
-            <div className="src-hint">
-              {live
-                ? "อ่าน/เขียน Postgres"
-                : "ตั้ง DATA_SOURCE=database เพื่อใช้ Postgres"}
-            </div>
-          </div>
         </aside>
         <main className="main">{children}</main>
       </div>

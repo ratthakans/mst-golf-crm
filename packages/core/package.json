@@ -12,14 +12,19 @@
   },
   "typesVersions": {
     "*": {
-      "time": ["src/time.ts"],
-      "money": ["src/money.ts"]
+      "time": [
+        "src/time.ts"
+      ],
+      "money": [
+        "src/money.ts"
+      ]
     }
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
-    "test:db": "node --env-file-if-exists=../../.env.local node_modules/vitest/vitest.mjs run --config vitest.db.config.ts"
+    "test:db": "node --env-file-if-exists=../../.env.local node_modules/vitest/vitest.mjs run --config vitest.db.config.ts",
+    "demo": "node --env-file-if-exists=../../.env.local --import tsx scripts/demo.ts"
   },
   "dependencies": {
     "@mstgolf/database": "workspace:*",
@@ -28,6 +33,7 @@
   "devDependencies": {
     "@types/node": "^20.16.0",
     "typescript": "^5.6.0",
-    "vitest": "^2.1.0"
+    "vitest": "^2.1.0",
+    "tsx": "^4.19.0"
   }
 }

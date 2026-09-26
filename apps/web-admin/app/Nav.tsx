@@ -7,27 +7,28 @@ import type { Permission } from "../lib/permissions";
 
 type Item = { href: string; label: string; icon: string; soon?: string; perm?: Permission };
 
-// The six back-office menus (MST-DEV-PLAN §6). Campaigns and Simulator ship in
-// phase 2 — shown, but not linked, so the shape of the product is visible now.
+// Phase 1 menus (MST-DEV-PLAN §9.1). Intelligence pages appear only when the
+// tenant has them switched on (their permissions are withheld otherwise).
 const PRIMARY: Item[] = [
-  { href: "/", label: "ภาพรวม", icon: "📊", perm: "overview.view" },
-  { href: "/playbook", label: "แผนลงมือ", icon: "🎬", perm: "playbook.view" },
+  { href: "/", label: "ภาพรวม", icon: "📊", perm: "dashboard.view" },
   { href: "/members", label: "สมาชิก", icon: "👥", perm: "members.view" },
   { href: "/import", label: "นำเข้า POS", icon: "📥", perm: "import.run" },
-  { href: "/campaigns", label: "แคมเปญ", icon: "📣", soon: "เฟส 2" },
-  { href: "/simulator", label: "ซิมกอล์ฟ", icon: "⛳", soon: "เฟส 2" },
+  { href: "/simulator", label: "ซิมกอล์ฟ", icon: "⛳", perm: "booking.view" },
+  { href: "/website", label: "เว็บไซต์", icon: "📝", perm: "posts.manage" },
+  { href: "/reviews", label: "คิวตรวจสอบ", icon: "🗂", perm: "reviews.request" },
+  { href: "/playbook", label: "แผนลงมือ", icon: "🎬", perm: "playbook.view" },
 ];
 
-// Interim tools (segments become the WHO step of campaigns in phase 2) and
-// Super Admin settings.
 const TOOLS: Item[] = [
-  { href: "/segments", label: "กลุ่มลูกค้า", icon: "🎯", perm: "segments.view" },
+  { href: "/settings", label: "ตั้งค่า", icon: "⚙️", perm: "settings.manage" },
   { href: "/settings/users", label: "ผู้ใช้และสิทธิ์", icon: "🔑", perm: "users.manage" },
   { href: "/settings/audit", label: "บันทึกการใช้งาน", icon: "🧾", perm: "audit.view" },
+  { href: "/segments", label: "กลุ่มลูกค้า", icon: "🎯", perm: "segments.view" },
+  { href: "/automations", label: "ระบบอัตโนมัติ", icon: "🤖", perm: "automations.view" },
 ];
 
 const isActive = (href: string, pathname: string) =>
-  href === "/" ? pathname === "/" : pathname.startsWith(href);
+  href === "/" ? pathname === "/" : href === "/settings" ? pathname === "/settings" || /^\/settings\/(tiers|points|booking|consent|line|site)/.test(pathname) : pathname.startsWith(href);
 
 function NavLink({ item, pathname }: { item: Item; pathname: string }) {
   if (item.soon) {

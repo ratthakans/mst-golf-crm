@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { verifyPassword } from "@mstgolf/shared/password";
 import { audit, startSession } from "../../../../lib/auth";
 import { clearFailures, isLocked, recordFailure } from "../../../../lib/login-throttle";
-import { getRepo } from "../../../../lib/repo";
+import { findUserByEmail, updateUser } from "../../../../lib/users";
 import { authConfigured } from "../../../../lib/session-token";
 
 /** Only same-site paths, never "//evil.com". */
@@ -29,8 +29,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "ใส่รหัสผิดหลายครั้ง ลองใหม่ใน 15 นาที" }, { status: 429 });
   }
 
-  const repo = await getRepo();
-  const user = await repo.findUserByEmail(email);
+  const user = await findUserByEmail(email);
   const ok = !!user && user.isActive && (await verifyPassword(password, user.passwordHash));
   if (!ok || !user) {
     recordFailure(email);
@@ -39,7 +38,7 @@ export async function POST(req: Request) {
   }
 
   clearFailures(email);
-  await repo.updateUser(user.id, { lastLoginAt: new Date() });
+  await updateUser(user.id, { lastLoginAt: new Date() });
   await startSession(user);
   await audit(user, { action: "auth.login", entity: "user", entityId: user.id });
   return NextResponse.json({ ok: true, next: user.mustChangePassword ? "/account/password" : safeNext(body.next) });

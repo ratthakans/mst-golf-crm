@@ -1,6 +1,5 @@
-// Pages rendered without the back-office shell or ⌘K palette, and reachable
-// without signing in.
-const PUBLIC_PAGES = ["/register", "/login"];
+// Pages rendered without the back-office shell and reachable without signing in.
+const PUBLIC_PAGES = ["/login"];
 
 export function isPublicPath(pathname: string | null): boolean {
   if (!pathname) return false;

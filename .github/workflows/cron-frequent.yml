@@ -1,0 +1,20 @@
+# Booking reminders + LINE outbox every 15 minutes. Runs here rather than on
+# Vercel Cron because Vercel's Hobby plan allows only daily cron jobs.
+# Repo secrets: ADMIN_URL (e.g. https://mst-golf-crm.vercel.app), CRON_SECRET.
+name: cron-frequent
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch: {}
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Call /api/cron/frequent
+        env:
+          ADMIN_URL: ${{ secrets.ADMIN_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$ADMIN_URL" ] || [ -z "$CRON_SECRET" ]; then echo "ADMIN_URL / CRON_SECRET not set — skipping"; exit 0; fi
+          curl --fail-with-body -sS -m 90 -H "Authorization: Bearer $CRON_SECRET" "$ADMIN_URL/api/cron/frequent"

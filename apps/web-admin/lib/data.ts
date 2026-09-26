@@ -19,8 +19,9 @@ import {
   type MemberLike,
   type MemberProfile,
   type RfmScore,
+  type EventLike,
 } from "@mstgolf/analytics";
-import { getRepo } from "./repo";
+import { analyticsEvents, analyticsMembers, analyticsOrg } from "./analytics-source";
 
 export interface AutomationView {
   automation: Automation;
@@ -28,10 +29,9 @@ export interface AutomationView {
 }
 
 export interface CrmData {
-  source: "sample" | "database";
   org: DemoOrg;
   members: MemberLike[];
-  events: Awaited<ReturnType<Awaited<ReturnType<typeof getRepo>>["listEvents"]>>;
+  events: EventLike[];
   stats: ReturnType<typeof overviewStats>;
   segments: ReturnType<typeof segmentCounts>;
   funnel: ReturnType<typeof acquisitionFunnel>;
@@ -46,13 +46,8 @@ export interface CrmData {
 }
 
 export async function getCrmData(): Promise<CrmData> {
-  const repo = await getRepo();
   const now = new Date();
-  const [org, members, events] = await Promise.all([
-    repo.getOrg(),
-    repo.listMembers(),
-    repo.listEvents(),
-  ]);
+  const [org, members, events] = await Promise.all([analyticsOrg(), analyticsMembers(), analyticsEvents()]);
 
   const rfm = computeRfm(members, events, now);
   const clv = computeClv(members, events, now);
@@ -63,7 +58,6 @@ export async function getCrmData(): Promise<CrmData> {
   });
 
   return {
-    source: repo.source,
     org,
     members,
     events,

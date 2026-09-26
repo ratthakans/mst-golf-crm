@@ -11,7 +11,7 @@ Rules:
 - Output ONLY the briefing text — no markdown, headings, bullet points, or preamble.`;
 
 export async function POST() {
-  const session = await requireApi("overview.view");
+  const session = await requireApi("playbook.view");
   if (session instanceof NextResponse) return session;
   if (!isAiConfigured()) {
     return NextResponse.json({ configured: false });

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { hashPassword, temporaryPassword } from "@mstgolf/shared/password";
 import { audit, requireApi } from "../../../../../lib/auth";
 import { isRole } from "../../../../../lib/permissions";
-import { getRepo } from "../../../../../lib/repo";
+import { getUser, listUsers, updateUser } from "../../../../../lib/users";
 
 type Body =
   | { action: "role"; role: string }
@@ -20,13 +20,12 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   } catch {
     return NextResponse.json({ error: "ข้อมูลไม่ถูกต้อง" }, { status: 400 });
   }
-  const repo = await getRepo();
-  const target = await repo.getUser(params.id);
+  const target = await getUser(params.id);
   if (!target) return NextResponse.json({ error: "ไม่พบผู้ใช้" }, { status: 404 });
 
   const self = target.id === admin.id;
   // The org must always keep at least one active Super Admin.
-  const otherActiveAdmins = (await repo.listUsers()).filter(
+  const otherActiveAdmins = (await listUsers()).filter(
     (u) => u.id !== target.id && u.isActive && u.role === "SUPER_ADMIN",
   ).length;
   const removesLastAdmin = target.role === "SUPER_ADMIN" && target.isActive && otherActiveAdmins === 0;
@@ -38,25 +37,25 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
       if (removesLastAdmin && body.role !== "SUPER_ADMIN") {
         return NextResponse.json({ error: "ต้องมีผู้ดูแลระบบอย่างน้อย 1 คน" }, { status: 400 });
       }
-      await repo.updateUser(target.id, { role: body.role });
+      await updateUser(target.id, { role: body.role });
       await audit(admin, { action: "user.role_change", entity: "user", entityId: target.id, before: { role: target.role }, after: { role: body.role } });
       return NextResponse.json({ ok: true });
     }
     case "deactivate": {
       if (self) return NextResponse.json({ error: "ปิดบัญชีของตัวเองไม่ได้" }, { status: 400 });
       if (removesLastAdmin) return NextResponse.json({ error: "ต้องมีผู้ดูแลระบบอย่างน้อย 1 คน" }, { status: 400 });
-      await repo.updateUser(target.id, { isActive: false });
+      await updateUser(target.id, { isActive: false });
       await audit(admin, { action: "user.deactivate", entity: "user", entityId: target.id });
       return NextResponse.json({ ok: true });
     }
     case "activate": {
-      await repo.updateUser(target.id, { isActive: true });
+      await updateUser(target.id, { isActive: true });
       await audit(admin, { action: "user.activate", entity: "user", entityId: target.id });
       return NextResponse.json({ ok: true });
     }
     case "reset_password": {
       const tempPassword = temporaryPassword();
-      await repo.updateUser(target.id, { passwordHash: await hashPassword(tempPassword), mustChangePassword: true });
+      await updateUser(target.id, { passwordHash: await hashPassword(tempPassword), mustChangePassword: true });
       await audit(admin, { action: "user.password_reset", entity: "user", entityId: target.id });
       return NextResponse.json({ ok: true, tempPassword });
     }

@@ -7,20 +7,25 @@ import type { Permission } from "../lib/permissions";
 
 interface MemberHit {
   id: string;
+  code: string;
   name: string;
   tier: string;
   points: number;
 }
 
 const ALL_PAGES: Array<{ label: string; href: string; icon: string; hint: string; perm: Permission }> = [
-  { label: "ภาพรวม", href: "/", icon: "📊", hint: "Overview", perm: "overview.view" },
-  { label: "แผนลงมือ", href: "/playbook", icon: "🎬", hint: "Playbook", perm: "playbook.view" },
+  { label: "ภาพรวม", href: "/", icon: "📊", hint: "Dashboard", perm: "dashboard.view" },
   { label: "สมาชิก", href: "/members", icon: "👥", hint: "Members", perm: "members.view" },
-  { label: "นำเข้า POS", href: "/import", icon: "📥", hint: "Import", perm: "import.run" },
-  { label: "กลุ่มลูกค้า", href: "/segments", icon: "🎯", hint: "Segments", perm: "segments.view" },
   { label: "เพิ่มสมาชิก", href: "/members/new", icon: "➕", hint: "New member", perm: "members.create" },
+  { label: "นำเข้า POS", href: "/import", icon: "📥", hint: "Import", perm: "import.run" },
+  { label: "ซิมกอล์ฟ", href: "/simulator", icon: "⛳", hint: "Simulator booking", perm: "booking.view" },
+  { label: "คิวตรวจสอบ", href: "/reviews", icon: "🗂", hint: "Review queue", perm: "reviews.request" },
+  { label: "บทความเว็บไซต์", href: "/website", icon: "📝", hint: "Website posts", perm: "posts.manage" },
+  { label: "ตั้งค่า", href: "/settings", icon: "⚙️", hint: "Settings", perm: "settings.manage" },
   { label: "ผู้ใช้และสิทธิ์", href: "/settings/users", icon: "🔑", hint: "Users", perm: "users.manage" },
   { label: "บันทึกการใช้งาน", href: "/settings/audit", icon: "🧾", hint: "Audit log", perm: "audit.view" },
+  { label: "แผนลงมือ", href: "/playbook", icon: "🎬", hint: "Playbook", perm: "playbook.view" },
+  { label: "กลุ่มลูกค้า", href: "/segments", icon: "🎯", hint: "Segments", perm: "segments.view" },
 ];
 
 const norm = (s: string) => s.toLowerCase().replace(/[\s-]/g, "");
@@ -55,21 +60,35 @@ export function CommandPalette({ permissions }: { permissions: Permission[] }) {
     };
   }, []);
 
-  // Lazy-load the member index the first time the palette opens.
+  // Members are searched on the server as you type (name, phone or code).
   useEffect(() => {
-    if (open && members === null) {
-      fetch("/api/members")
-        .then((r) => r.json())
-        .then((d) => setMembers(d.members ?? []))
-        .catch(() => setMembers([]));
+    const term = q.trim();
+    if (!open || term.length < 2 || !permKey.split(",").includes("members.view")) {
+      setMembers(term.length < 2 ? [] : null);
+      return;
     }
+    setMembers(null);
+    const ctl = new AbortController();
+    const t = setTimeout(() => {
+      fetch(`/api/members/search?q=${encodeURIComponent(term)}`, { signal: ctl.signal })
+        .then((r) => r.json())
+        .then((d) => setMembers(d.rows ?? []))
+        .catch(() => undefined);
+    }, 200);
+    return () => {
+      clearTimeout(t);
+      ctl.abort();
+    };
+  }, [q, open, permKey]);
+
+  useEffect(() => {
     if (open) {
       setActive(0);
       setTimeout(() => inputRef.current?.focus(), 20);
     } else {
       setQ("");
     }
-  }, [open, members]);
+  }, [open]);
 
   const results = useMemo(() => {
     const nq = norm(q);
@@ -78,10 +97,7 @@ export function CommandPalette({ permissions }: { permissions: Permission[] }) {
     );
     const mem = !nq
       ? []
-      : (members ?? [])
-          .filter((m) => norm(m.name).includes(nq) || m.id.includes(nq))
-          .slice(0, 8)
-          .map((m) => ({ kind: "member" as const, ...m }));
+      : (members ?? []).slice(0, 8).map((m) => ({ kind: "member" as const, ...m }));
     return [...pages.slice(0, nq ? 4 : PAGES.length), ...mem];
   }, [q, members, PAGES]);
 

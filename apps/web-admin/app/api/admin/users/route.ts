@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { hashPassword, temporaryPassword } from "@mstgolf/shared/password";
 import { audit, requireApi } from "../../../../lib/auth";
 import { isRole } from "../../../../lib/permissions";
-import { DuplicateUserError, getRepo } from "../../../../lib/repo";
+import { createUser, DuplicateUserError } from "../../../../lib/users";
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -25,7 +25,7 @@ export async function POST(req: Request) {
 
   const tempPassword = temporaryPassword();
   try {
-    const user = await (await getRepo()).createUser({
+    const user = await createUser({
       email, name, role: body.role, passwordHash: await hashPassword(tempPassword), mustChangePassword: true,
     });
     await audit(admin, { action: "user.create", entity: "user", entityId: user.id, after: { email, name, role: user.role } });

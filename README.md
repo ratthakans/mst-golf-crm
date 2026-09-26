@@ -1,111 +1,60 @@
 # MST Golf Platform
 
-Customer Intelligence platform for **MST Golf** (Bangkok, Thailand) — one golfer, one profile, across POS, LINE, points, rewards, the golf simulator and campaigns. Our platform, MST Golf is tenant #1; multi-tenant / config-driven under the hood. Package scope `@mstgolf/*`.
+Member system, points, POS import, golf-simulator booking and website for
+**MST Golf Thailand** (tenant #1 of our multi-tenant platform). Plan of record:
+[`MST-DEV-PLAN.md`](MST-DEV-PLAN.md). Rules for working in this repo: [`CLAUDE.md`](CLAUDE.md).
 
-The development plan of record is [`MST-DEV-PLAN.md`](MST-DEV-PLAN.md).
-
-## Run the admin app — no database needed
-
-The dashboard runs in **sample-data mode** out of the box (a bundled MST Golf
-dataset), so you can see the full product without any infrastructure:
-
-```bash
-pnpm install
-pnpm --filter @mstgolf/web-admin dev   # http://localhost:3100
-```
-
-Sign in at `/login` — locally in sample mode: `admin@mstgolf.local` /
-`mstgolf-dev-admin` (development only). Deployed builds need `AUTH_SECRET` plus
-`ADMIN_EMAIL` / `ADMIN_PASSWORD` (see `.env.example`). The public sign-up page
-`/register` needs no login.
-
-Back office: **Overview** (KPIs · RFM segments · AI brief) · **Action Plan**
-(playbook) · **Members** (RFM-scored, tier + progress on each 360) · **POS
-Import**. Campaigns and Simulator arrive in phase 2. Interim tools: Segments and
-the Sign-up form (moves to the LINE LIFF app).
-
-Tiers: **Member / Silver / Gold** by net spend over the last 12 months
-(defaults 0 / ฿100,000 / ฿1,000,000, point rate ×1 / ×1.25 / ×1.5) — set per org in
-`settings.tiers`.
-
-Adding someone on the sign-up form writes a member + REGISTER event + signup
-points + PDPA consent, and they appear instantly in Members, already scored.
-
-### Switch to the live database
-
-```bash
-pnpm infra:up && pnpm db:generate && pnpm db:migrate && pnpm db:seed
-DATA_SOURCE=database pnpm --filter @mstgolf/web-admin dev
-```
-
-Now the same screens read and write real Postgres via `forOrg(orgId)`. No LINE
-integration is required — that's deferred until the customer signs off.
+| App / package | What | Local port |
+|---|---|---|
+| `apps/web-admin` | Back office for MST staff (5 roles) + cron routes | 3100 |
+| `apps/web` | Public website + customer pages (`/app/member`, `/app/booking`) — the same pages open in LINE (LIFF) and in a browser (LINE Login) | 3200 |
+| `packages/core` | All business logic: members, points, tiers, POS import, booking, LINE outbox, dashboard | – |
+| `packages/database` | Prisma schema v2 + migrations + seed | – |
+| `packages/shared` | Types, tiers, phone, password, crypto | – |
+| `packages/analytics` | RFM/CLV/churn (intelligence pages — outside the Phase 1 contract, hidden per tenant) | – |
 
 ## Requirements
-- Node 20+
-- pnpm 9+ (`corepack enable`)
-- Docker (Postgres 16 + Redis 7) — only for live-database mode
 
-## Setup (database)
+Node 20+ (this machine: `export PATH="$HOME/.nvm/versions/node/v24.18.0/bin:$PATH"`), pnpm 9.12.
+
+## Local setup
 
 ```bash
 pnpm install
-cp .env.example .env          # then set a real ENCRYPTION_KEY and JWT_SECRET
-
-pnpm infra:up                 # start Postgres + Redis
-pnpm db:generate              # generate Prisma client
-pnpm db:migrate               # first run: name it "init"
-pnpm db:seed                  # seed MST Golf (org, config, 7 fields) — SEED_DEMO=1 adds 5 demo members + history
-pnpm --filter @mstgolf/database admin:create you@example.com   # first Super Admin (prints a temporary password once)
-pnpm db:studio                # inspect the data
+cp .env.example .env.local        # fill DATABASE_URL(_UNPOOLED); keep DATABASE_SCHEMA=dev
+ln -s ../../.env.local apps/web-admin/.env.local
+pnpm db:generate
+pnpm db:deploy                    # migrates the dev schema only
+pnpm db:seed                      # org, store, 3 lanes, PDPA texts, admin from ADMIN_EMAIL/ADMIN_PASSWORD
+pnpm demo                         # optional: demo members, a month of bills, bookings, an article
+pnpm --filter @mstgolf/web-admin dev
 ```
 
-Generate a real encryption key for `.env`:
+All environments share one Neon database, each in its own Postgres schema
+(`public` = production, `preview`, `dev`, `test_core`). The Prisma wrapper
+(`packages/database/scripts/prisma.mjs`) refuses `public` unless `ALLOW_PRODUCTION=1`.
+
+## Tests
 
 ```bash
-node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+pnpm --filter @mstgolf/core test        # pure unit tests
+pnpm test:db                            # integration tests on a throwaway test_core schema
+pnpm --filter @mstgolf/shared test
 ```
 
-## Common commands
+## Scheduled work
 
-| Command | What it does |
-|---|---|
-| `pnpm dev` | run all apps (turbo) |
-| `pnpm test` | run tests (crypto unit test; tenant/ledger tests need a live DB) |
-| `pnpm db:reset` | drop + migrate + seed (dev only) |
-| `pnpm infra:down` | stop Docker services |
+| Job | Where | When |
+|---|---|---|
+| `/api/cron/nightly` — 12-month spend slides forward, tier review on the 1st, finish sessions, clear stale holds | Vercel Cron (`apps/web-admin/vercel.json`) | 02:00 Bangkok |
+| `/api/cron/frequent` — booking reminders + LINE outbox | GitHub Actions `cron-frequent.yml` (secrets `ADMIN_URL`, `CRON_SECRET`) | every 15 min |
+| Encrypted `pg_dump` of production to a private Blob store, 30 days | GitHub Actions `backup.yml` (secrets `DATABASE_URL_UNPOOLED`, `BACKUP_BLOB_TOKEN`, `BACKUP_PASSPHRASE`) | 03:00 Bangkok |
 
-## What's built
-**Data / schema**
-- Prisma schema: `Organization`, `User`, `Member`, `Event`, `PointTransaction`, `FieldDefinition`, `LineChannel`, `Consent`
-- `forOrg(orgId)` tenant-isolation helper + integration test
-- `encrypt/decrypt` (AES-256-GCM) for secrets at rest + unit test
-- Seed data for MST Golf (Malaysia)
+## LINE
 
-**Analytics** (`@mstgolf/analytics`, pure + tested — 37 tests)
-- Statistical: quantile RFM, CLV, churn scoring, cohort retention, time-series,
-  product affinity (market-basket lift), two-proportion z-test
-- Engines: rule-based segment resolver, automation trigger evaluation
-- Deterministic synthetic generator (~1,240 members, 18-month history) so the
-  whole dashboard — including the Playbook — computes from one consistent base
-
-**Admin app** (`@mstgolf/web-admin`, Next.js)
-- Overview (KPIs, revenue trend, RFM segments, funnel, AI brief)
-- Action Plan (ten statistical plays → audience, evidence, message)
-- Members + Customer 360 (tier progress, behavioural timeline, CLV/churn, live purchase logging)
-- POS import (CSV → members, purchases, points, tier review)
-- Dynamic config-driven sign-up form; sample-data & live-Postgres backends (`DATA_SOURCE`)
-
-**AI layer** (`@anthropic-ai/sdk`, model from `AI_MODEL`)
-- Campaign-copy generator on every Playbook play (tone: formal / friendly / playful)
-- AI daily briefing on the Overview page, written from live CRM data
-- Set `ANTHROPIC_API_KEY` in `.env` to enable; without it the UI shows a config hint
-
-**Workers** (`@mstgolf/jobs`)
-- Nightly job: recompute RFM/CLV/churn, write `RfmSnapshot`, review tiers (downgrades on the 1st), evaluate automations
-- `pnpm --filter @mstgolf/jobs run:nightly` (one-off) or `dev` (scheduled worker)
-
-**Not yet connected:** LINE (webhook / LIFF / Rich Menu) — deferred until the
-customer confirms.
-
-See `CLAUDE.md` for architecture and coding rules, and the roadmap.
+The LINE agency owns the OA, the single Rich Menu, auto replies and chat. We
+need from them: the Messaging API channel (ID, secret, long-lived token) and a
+LINE Login channel **in the same provider** with a LIFF app (endpoint
+`https://<site>/app`). A Super Admin enters these at **Settings › LINE**
+(stored encrypted); the page then shows the two links for Rich Menu buttons
+A+B (`…/member`) and D (`…/booking`). No webhook, no per-user Rich Menu.

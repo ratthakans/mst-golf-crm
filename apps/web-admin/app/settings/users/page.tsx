@@ -1,5 +1,5 @@
 import { allowPage } from "../../../lib/auth";
-import { getRepo } from "../../../lib/repo";
+import { listUsers } from "../../../lib/users";
 import { ROLE_LABEL, ROLES } from "../../../lib/permissions";
 import { Forbidden } from "../../Forbidden";
 import { UsersAdmin, type UserRow } from "./UsersAdmin";
@@ -10,7 +10,7 @@ export default async function UsersPage() {
   const me = await allowPage("users.manage");
   if (!me) return <Forbidden />;
 
-  const users = await (await getRepo()).listUsers();
+  const users = await listUsers();
   const rows: UserRow[] = users.map((u) => ({
     id: u.id,
     email: u.email,

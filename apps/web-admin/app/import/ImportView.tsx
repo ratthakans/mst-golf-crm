@@ -1,191 +1,270 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useRef, useState } from "react";
+import { api, errorText } from "../ui/api";
+import { formatBaht, formatDate, num } from "../ui/format";
 
-interface Row { phone: string; name: string; amount: number; category: string; brand: string; branch: string; channel: string; }
-interface Result { imported: number; matched: number; created: number; revenue: number; pointsAwarded: number; skipped: number; }
+type Field = string;
+type Mapping = Record<Field, string | undefined>;
 
-const HEADERS: Record<keyof Row, string[]> = {
-  phone: ["phone", "เบอร์", "เบอร์โทร", "tel", "mobile"],
-  name: ["name", "ชื่อ", "ลูกค้า"],
-  amount: ["amount", "ยอด", "ยอดขาย", "จำนวนเงิน", "total", "price"],
-  category: ["category", "หมวด", "ประเภท"],
-  brand: ["brand", "แบรนด์", "ยี่ห้อ"],
-  branch: ["branch", "สาขา"],
-  channel: ["channel", "ช่องทาง"],
-};
-
-const SAMPLE = `phone,name,amount,category,brand,branch,channel
-0812345678,สมชาย ทองดี,15900,clubs,TaylorMade,MST สยามพารากอน,store
-0898765432,วิภา ศรีสุข,1800,balls,Titleist,MST เมกาบางนา,store
-0855550001,,4800,footwear,FootJoy,MST ทองหล่อ,online
-0866660002,ธนา รุ่งเรือง,1290,apparel,Callaway,MST สยามพารากอน,store
-0877770003,กมล ภักดี,18000,clubs,Titleist,MST เซ็นทรัลลาดพร้าว,store
-0844440004,อารยา สุวรรณ,590,accessories,FootJoy,MST เมกาบางนา,store
-0833330005,พงศ์ ตันติกุล,3800,apparel,TaylorMade,MST ทองหล่อ,online
-0822220006,,14500,clubs,Mizuno,MST อารีนา รัชโยธิน,arena
-0811110007,ณัฐ วัฒนา,1600,balls,Callaway,MST สยามพารากอน,store
-0800000008,สุดา แสงทอง,8900,accessories,Titleist,MST เมกาบางนา,store`;
-
-function parseCsv(text: string): string[][] {
-  const rows: string[][] = [];
-  let field = "", record: string[] = [], inQ = false;
-  for (let i = 0; i < text.length; i++) {
-    const c = text[i]!;
-    if (inQ) {
-      if (c === '"') { if (text[i + 1] === '"') { field += '"'; i++; } else inQ = false; }
-      else field += c;
-    } else if (c === '"') inQ = true;
-    else if (c === ",") { record.push(field); field = ""; }
-    else if (c === "\n") { record.push(field); rows.push(record); record = []; field = ""; }
-    else if (c !== "\r") field += c;
-  }
-  if (field !== "" || record.length) { record.push(field); rows.push(record); }
-  return rows.filter((r) => r.some((c) => c.trim() !== ""));
+interface Counts {
+  lines: number;
+  bills: number;
+  ok: number;
+  unmatched: number;
+  invalid: number;
+  duplicate: number;
+  membersMatched: number;
+  membersToCreate: number;
+  returns: number;
+  salesSatang: number;
+  identifiedSatang: number;
+  pointsEstimate: number;
+  from: string | null;
+  to: string | null;
+  pointsAwarded?: number;
+  pointsReversed?: number;
+  membersCreated?: number;
+  tierUps?: number;
 }
 
-function toRows(text: string): { rows: Row[]; error?: string } {
-  const raw = parseCsv(text);
-  if (raw.length < 2) return { rows: [], error: "ไฟล์ต้องมีหัวตารางและอย่างน้อย 1 แถว" };
-  const header = raw[0]!.map((h) => h.trim().toLowerCase());
-  const idx = (keys: string[]) => header.findIndex((h) => keys.includes(h));
-  const cols = {
-    phone: idx(HEADERS.phone), name: idx(HEADERS.name), amount: idx(HEADERS.amount),
-    category: idx(HEADERS.category), brand: idx(HEADERS.brand), branch: idx(HEADERS.branch), channel: idx(HEADERS.channel),
-  };
-  if (cols.amount < 0) return { rows: [], error: "ไม่พบคอลัมน์ยอดเงิน (amount / ยอดขาย)" };
-  const get = (r: string[], i: number) => (i >= 0 ? (r[i] ?? "").trim() : "");
-  const rows: Row[] = raw.slice(1).map((r) => ({
-    phone: get(r, cols.phone), name: get(r, cols.name), amount: Number(get(r, cols.amount).replace(/[^0-9.]/g, "")),
-    category: get(r, cols.category), brand: get(r, cols.brand), branch: get(r, cols.branch), channel: get(r, cols.channel),
-  }));
-  return { rows };
+interface Preview {
+  batchId: string;
+  counts: Counts;
+  headers: string[];
+  mapping: Mapping;
+  mappingProblems: string[];
+  encoding: string;
+  problems: Array<{ rowNumber: number; invoiceNo: string | null; status: string; message: string }>;
 }
 
-const num = (n: number) => n.toLocaleString("en-TH");
+const STATUS_TEXT: Record<string, string> = { UNMATCHED: "ไม่มีเจ้าของ", INVALID: "ผิดรูปแบบ", DUPLICATE: "ซ้ำ" };
+const STATUS_TONE: Record<string, string> = { UNMATCHED: "amber", INVALID: "red", DUPLICATE: "gray" };
 
-export function ImportView() {
-  const [rows, setRows] = useState<Row[]>([]);
-  const [fileName, setFileName] = useState("");
+export function ImportView({
+  stores,
+  fieldLabels,
+  savedMapping,
+}: {
+  stores: Array<{ id: string; name: string }>;
+  fieldLabels: Record<string, string>;
+  savedMapping: boolean;
+}) {
+  const router = useRouter();
+  const input = useRef<HTMLInputElement>(null);
+  const [storeId, setStoreId] = useState(stores[0]?.id ?? "");
+  const [mode, setMode] = useState<"DAILY" | "HISTORY">("DAILY");
+  const [file, setFile] = useState<File | null>(null);
+  const [preview, setPreview] = useState<Preview | null>(null);
+  const [mapping, setMapping] = useState<Mapping | null>(null);
+  const [showMapping, setShowMapping] = useState(false);
+  const [busy, setBusy] = useState<"preview" | "commit" | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
-  const [result, setResult] = useState<Result | null>(null);
+  const [done, setDone] = useState<Counts | null>(null);
+  const [over, setOver] = useState(false);
 
-  async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const f = e.target.files?.[0];
-    if (!f) return;
-    setFileName(f.name);
-    setResult(null);
-    const text = await f.text();
-    const { rows, error } = toRows(text);
-    setError(error ?? null);
-    setRows(rows);
-  }
-
-  function downloadSample() {
-    const blob = new Blob([SAMPLE], { type: "text/csv;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url; a.download = "mst-pos-sample.csv"; a.click();
-    URL.revokeObjectURL(url);
-  }
-
-  async function runImport() {
-    setBusy(true);
+  async function runPreview(f: File, m?: Mapping) {
+    setBusy("preview");
     setError(null);
+    setDone(null);
     try {
-      const res = await fetch("/api/import", {
-        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ rows }),
-      });
-      const data = await res.json();
-      if (!res.ok) setError(data.error ?? "นำเข้าไม่สำเร็จ");
-      else { setResult(data); setRows([]); setFileName(""); }
-    } catch {
-      setError("เชื่อมต่อไม่สำเร็จ");
+      const fd = new FormData();
+      fd.append("file", f);
+      fd.append("storeId", storeId);
+      fd.append("mode", mode);
+      if (m) fd.append("mapping", JSON.stringify(Object.fromEntries(Object.entries(m).filter(([, v]) => v))));
+      const p = await api<Preview>("/api/import", { form: fd });
+      setPreview(p);
+      setMapping(p.mapping);
+      setShowMapping(p.mappingProblems.length > 0);
+    } catch (e) {
+      setPreview(null);
+      setError(errorText(e));
     } finally {
-      setBusy(false);
+      setBusy(null);
     }
   }
 
-  const valid = rows.filter((r) => Number.isFinite(r.amount) && r.amount > 0 && (r.phone || r.name)).length;
+  function choose(f: File | undefined) {
+    if (!f) return;
+    setFile(f);
+    void runPreview(f);
+  }
+
+  async function commit() {
+    if (!preview) return;
+    setBusy("commit");
+    setError(null);
+    try {
+      const r = await api<{ counts: Counts }>(`/api/import/${preview.batchId}/commit`, { method: "POST" });
+      setDone(r.counts);
+      setPreview(null);
+      setFile(null);
+      router.refresh();
+    } catch (e) {
+      setError(errorText(e));
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  const c = preview?.counts;
+  const canCommit = !!preview && preview.mappingProblems.length === 0 && (c?.ok ?? 0) + (c?.unmatched ?? 0) > 0;
 
   return (
-    <>
-      <div className="page-head">
-        <h1>นำเข้ายอดขายจาก POS</h1>
-        <p>
-          อัปโหลดไฟล์ยอดขาย (CSV) จากระบบ POS ท้ายวันครั้งเดียว — ระบบจับคู่สมาชิกเดิมจากเบอร์โทร
-          (ถ้าไม่เจอก็สร้างใหม่) แล้วบันทึกยอด + แต้ม + tier ให้อัตโนมัติ พนักงานไม่ต้องคีย์ทีละบิล
-        </p>
-      </div>
-
-      {result ? (
-        <div className="card import-done">
-          <div className="check">✓</div>
-          <h2>นำเข้าสำเร็จ {num(result.imported)} รายการ</h2>
-          <div className="import-stats">
-            <div className="pp-chip"><span>จับคู่สมาชิกเดิม</span>{num(result.matched)}</div>
-            <div className="pp-chip"><span>สร้างสมาชิกใหม่</span>{num(result.created)}</div>
-            <div className="pp-chip"><span>ยอดขายรวม</span>฿{num(result.revenue)}</div>
-            <div className="pp-chip"><span>แต้มที่แจก</span>{num(result.pointsAwarded)}</div>
-            {result.skipped > 0 && <div className="pp-chip"><span>ข้าม (ข้อมูลไม่ครบ)</span>{num(result.skipped)}</div>}
-          </div>
-          <p className="muted-sub" style={{ marginTop: 14 }}>ทุกหน้าอัปเดตแล้ว — ยอดขาย/สมาชิก/แต้ม/กราฟ คำนวณจากข้อมูลใหม่ทันที</p>
-          <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
-            <Link className="btn" href="/">ดูภาพรวม →</Link>
-            <Link className="btn btn-ghost" href="/members">ดูสมาชิก</Link>
-            <button className="btn btn-ghost" onClick={() => setResult(null)}>นำเข้าอีกไฟล์</button>
-          </div>
+    <div className="card">
+      <div className="row" style={{ marginBottom: 14 }}>
+        {stores.length > 1 && (
+          <label className="field" style={{ margin: 0 }}>
+            <span>สาขา</span>
+            <select value={storeId} onChange={(e) => setStoreId(e.target.value)}>
+              {stores.map((s) => (
+                <option key={s.id} value={s.id}>{s.name}</option>
+              ))}
+            </select>
+          </label>
+        )}
+        <div className="row" role="radiogroup" aria-label="ประเภทไฟล์">
+          <button type="button" className={`chip${mode === "DAILY" ? " chip-on" : ""}`} onClick={() => setMode("DAILY")}>ยอดขายประจำวัน</button>
+          <button type="button" className={`chip${mode === "HISTORY" ? " chip-on" : ""}`} onClick={() => setMode("HISTORY")}>ยอดย้อนหลัง (ย้ายข้อมูลเก่า)</button>
         </div>
-      ) : (
-        <div className="card">
-          <div className="import-drop">
-            <input id="csv" type="file" accept=".csv,text/csv" onChange={onFile} style={{ display: "none" }} />
-            <label htmlFor="csv" className="btn">เลือกไฟล์ CSV</label>
-            <span className="import-file">{fileName || "ยังไม่ได้เลือกไฟล์"}</span>
-            <button className="btn btn-ghost" onClick={downloadSample}>ดาวน์โหลดไฟล์ตัวอย่าง</button>
+      </div>
+      {mode === "HISTORY" && (
+        <p className="secret-note" style={{ marginBottom: 12 }}>
+          ยอดย้อนหลังใช้ตอนย้ายข้อมูลเก่าเท่านั้น: นับเป็นยอดซื้อ 12 เดือนเพื่อจัดระดับ แต่ <b>ไม่ให้แต้มและไม่ส่งข้อความ</b> หาลูกค้า
+        </p>
+      )}
+
+      {!preview && !done && (
+        <div
+          className={`drop${over ? " over" : ""}`}
+          role="button"
+          tabIndex={0}
+          onClick={() => input.current?.click()}
+          onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && input.current?.click()}
+          onDragOver={(e) => {
+            e.preventDefault();
+            setOver(true);
+          }}
+          onDragLeave={() => setOver(false)}
+          onDrop={(e) => {
+            e.preventDefault();
+            setOver(false);
+            choose(e.dataTransfer.files[0]);
+          }}
+        >
+          <strong>{busy === "preview" ? "กำลังตรวจไฟล์…" : "วางไฟล์ CSV จาก POS ที่นี่ หรือคลิกเพื่อเลือก"}</strong>
+          <span className="muted small">รองรับภาษาไทยทั้ง UTF-8 และ TIS-620 · ตรวจก่อนนำเข้าทุกครั้ง ยังไม่มีอะไรเปลี่ยนจนกว่าจะกดยืนยัน</span>
+          <input ref={input} type="file" accept=".csv,text/csv" hidden onChange={(e) => choose(e.target.files?.[0] ?? undefined)} />
+        </div>
+      )}
+
+      {error && <p className="form-error" style={{ marginTop: 12 }}>{error}</p>}
+
+      {done && (
+        <div>
+          <div className="form-ok">
+            นำเข้าเรียบร้อย — ให้แต้ม {num(done.pointsAwarded ?? 0)} แต้ม
+            {done.pointsReversed ? ` · หักคืนจากการคืนสินค้า ${num(done.pointsReversed)} แต้ม` : ""}
+            {done.membersCreated ? ` · สมาชิกใหม่จากบิล ${num(done.membersCreated)} คน` : ""}
+            {done.tierUps ? ` · เลื่อนระดับ ${num(done.tierUps)} คน` : ""} · ข้อความแจ้งแต้มกำลังส่งทาง LINE
           </div>
-          <p className="muted-sub" style={{ marginTop: 10 }}>
-            คอลัมน์ที่รองรับ: <code>phone, name, amount, category, brand, branch, channel</code> (ต้องมี amount เป็นอย่างน้อย)
-          </p>
+          <button className="btn btn-ghost" onClick={() => setDone(null)}>นำเข้าไฟล์ถัดไป</button>
+        </div>
+      )}
 
-          {error && <div className="form-error" style={{ marginTop: 12 }}>{error}</div>}
+      {preview && c && (
+        <div className="stack" style={{ gap: 14 }}>
+          <div className="row between">
+            <div>
+              <b>{file?.name}</b>
+              <span className="muted small">
+                {" "}· {num(c.lines)} แถว · {c.from ? `${formatDate(c.from)} – ${formatDate(c.to)}` : "ไม่มีวันที่"} · {preview.encoding === "windows-874" ? "TIS-620" : "UTF-8"}
+              </span>
+            </div>
+            <button className="link-btn" onClick={() => setShowMapping((v) => !v)}>
+              {showMapping ? "ซ่อนการจับคู่คอลัมน์" : "ตรวจการจับคู่คอลัมน์"}
+            </button>
+          </div>
 
-          {rows.length > 0 && (
-            <>
-              <div className="import-summary">
-                พบ {num(rows.length)} แถว · พร้อมนำเข้า <strong>{num(valid)}</strong> รายการ
-                {rows.length - valid > 0 && <span className="muted-sub"> (ข้าม {num(rows.length - valid)} แถวที่ข้อมูลไม่ครบ)</span>}
+          {preview.mappingProblems.length > 0 && (
+            <p className="form-error">
+              {preview.mappingProblems.join(" · ")} — เลือกคอลัมน์ให้ถูกด้านล่าง แล้วกด ตรวจอีกครั้ง
+            </p>
+          )}
+
+          {showMapping && mapping && (
+            <div className="card" style={{ background: "var(--bg)" }}>
+              <p className="muted small" style={{ marginTop: 0 }}>
+                ระบบเดาคอลัมน์จากหัวตาราง{savedMapping ? " (หรือใช้แบบที่บันทึกไว้จากครั้งก่อน)" : ""} · ครั้งแรกตรวจให้ถูก แล้วระบบจำไว้ใช้ครั้งต่อไป
+              </p>
+              <div className="mapping-grid">
+                {Object.entries(fieldLabels).map(([field, label]) => (
+                  <label key={field} className="field">
+                    <span>{label}{["invoiceNo", "date"].includes(field) && <b> *</b>}</span>
+                    <select value={mapping[field] ?? ""} onChange={(e) => setMapping({ ...mapping, [field]: e.target.value || undefined })}>
+                      <option value="">— ไม่มี —</option>
+                      {preview.headers.map((h) => (
+                        <option key={h} value={h}>{h}</option>
+                      ))}
+                    </select>
+                  </label>
+                ))}
               </div>
-              <div style={{ overflowX: "auto" }}>
-                <table>
+              <button className="btn btn-ghost" disabled={busy !== null || !file} onClick={() => file && runPreview(file, mapping)}>
+                {busy === "preview" ? "กำลังตรวจ…" : "ตรวจอีกครั้งด้วยคอลัมน์นี้"}
+              </button>
+            </div>
+          )}
+
+          <div className="preview-nums">
+            <div><b>{num(c.bills)}</b><span>บิลในไฟล์</span></div>
+            <div><b>{num(c.ok)}</b><span>จับคู่สมาชิกได้ / บิลคืน</span></div>
+            <div className="warn"><b>{num(c.unmatched)}</b><span>ไม่มีเจ้าของ (นำเข้าได้ ไม่มีใครได้แต้ม)</span></div>
+            <div className="bad"><b>{num(c.invalid)}</b><span>ผิดรูปแบบ (ข้าม)</span></div>
+            <div><b>{num(c.duplicate)}</b><span>นำเข้าแล้ว (ข้าม)</span></div>
+            <div><b>{num(c.membersToCreate)}</b><span>สมาชิกใหม่จากเบอร์ในบิล</span></div>
+            <div><b>{formatBaht(c.salesSatang)}</b><span>ยอดขายสุทธิ</span></div>
+            <div><b>{mode === "HISTORY" ? "0" : `~${num(c.pointsEstimate)}`}</b><span>แต้มที่จะให้{c.returns ? ` · บิลคืน ${num(c.returns)}` : ""}</span></div>
+          </div>
+
+          {preview.problems.length > 0 && (
+            <details>
+              <summary className="link-btn">ดูรายการที่มีปัญหา ({num(preview.problems.length)})</summary>
+              <div className="table-scroll" style={{ maxHeight: 320, overflowY: "auto", marginTop: 8 }}>
+                <table className="tbl">
                   <thead>
-                    <tr><th>เบอร์</th><th>ชื่อ</th><th className="mono">ยอด</th><th>หมวด</th><th>แบรนด์</th><th>สาขา</th><th>ช่องทาง</th></tr>
+                    <tr>
+                      <th>แถว</th>
+                      <th>เลขที่บิล</th>
+                      <th>สถานะ</th>
+                      <th>เหตุผล</th>
+                    </tr>
                   </thead>
                   <tbody>
-                    {rows.slice(0, 12).map((r, i) => (
+                    {preview.problems.map((p, i) => (
                       <tr key={i}>
-                        <td className="mono">{r.phone || "—"}</td>
-                        <td>{r.name || "—"}</td>
-                        <td className="mono">฿{num(r.amount || 0)}</td>
-                        <td>{r.category || "—"}</td>
-                        <td>{r.brand || "—"}</td>
-                        <td style={{ whiteSpace: "nowrap" }}>{r.branch || "—"}</td>
-                        <td>{r.channel || "—"}</td>
+                        <td className="mono">{p.rowNumber}</td>
+                        <td className="mono">{p.invoiceNo ?? "–"}</td>
+                        <td><span className={`pill ${STATUS_TONE[p.status] ?? "gray"}`}>{STATUS_TEXT[p.status] ?? p.status}</span></td>
+                        <td>{p.message}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
-              {rows.length > 12 && <p className="muted-sub" style={{ marginTop: 8 }}>แสดง 12 จาก {num(rows.length)} แถว</p>}
-              <button className="btn btn-full" style={{ marginTop: 14 }} onClick={runImport} disabled={busy || valid === 0}>
-                {busy ? "กำลังนำเข้า…" : `นำเข้า ${num(valid)} รายการ`}
-              </button>
-            </>
+            </details>
           )}
+
+          <div className="btn-row">
+            <button className="btn btn-ghost" disabled={busy !== null} onClick={() => { setPreview(null); setFile(null); }}>ยกเลิก</button>
+            <button className="btn" disabled={!canCommit || busy !== null} onClick={commit}>
+              {busy === "commit" ? "กำลังนำเข้า…" : `ยืนยันนำเข้า ${num(c.ok + c.unmatched)} บิล`}
+            </button>
+          </div>
         </div>
       )}
-    </>
+    </div>
   );
 }

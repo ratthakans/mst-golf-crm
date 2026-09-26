@@ -2,11 +2,9 @@ import "server-only";
 
 // Member profile photos. Photos are personal data (PDPA), so in production they
 // live in a *private* Vercel Blob store and are only ever served through
-// /api/members/[id]/photo — never by a public URL. Sample-data mode has no
-// store, so it keeps the (already resized) image inline as a data URL.
+// /api/members/[id]/photo — never by a public URL.
 //
 // What Member.pictureUrl can hold:
-//   data:image/…                          sample mode only
 //   https://….blob.vercel-storage.com/…   our private Blob store
 //   any other https URL                   an external picture (e.g. LINE profile)
 
@@ -32,25 +30,15 @@ function isBlobUrl(url: string): boolean {
 }
 
 /** Stores a photo and returns the value to keep in Member.pictureUrl. */
-export async function storeMemberPhoto(
-  memberId: string,
-  file: Blob,
-  source: "sample" | "database",
-): Promise<string> {
-  if (blobConfigured()) {
-    const { put } = await import("@vercel/blob");
-    const blob = await put(`members/${memberId}/photo`, file, {
-      access: "private",
-      addRandomSuffix: true,
-      contentType: file.type,
-    });
-    return blob.url;
-  }
-  if (source === "sample") {
-    const bytes = Buffer.from(await file.arrayBuffer());
-    return `data:${file.type};base64,${bytes.toString("base64")}`;
-  }
-  throw new PhotoStorageNotConfigured();
+export async function storeMemberPhoto(memberId: string, file: Blob): Promise<string> {
+  if (!blobConfigured()) throw new PhotoStorageNotConfigured();
+  const { put } = await import("@vercel/blob");
+  const blob = await put(`members/${memberId}/photo`, file, {
+    access: "private",
+    addRandomSuffix: true,
+    contentType: file.type,
+  });
+  return blob.url;
 }
 
 /** Deletes a stored photo we own. External pictures are left alone. */

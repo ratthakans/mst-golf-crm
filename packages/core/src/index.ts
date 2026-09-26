@@ -7,6 +7,7 @@ export * from "./money";
 export * from "./time";
 export * from "./context";
 export { db, inTx } from "./db";
+export { writeAudit, type AuditEntry } from "./audit";
 export * from "./settings";
 export * from "./points";
 export * from "./members";

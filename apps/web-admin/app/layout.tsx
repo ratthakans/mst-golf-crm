@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import "./fonts.css";
 import "./globals.css";
+import "./phase1.css";
 import { AppShell } from "./AppShell";
 import { CommandPalette } from "./CommandPalette";
-import { getRepo } from "../lib/repo";
 import { getSessionUser } from "../lib/auth";
+import { currentOrg } from "../lib/org";
 import { ROLE_LABEL } from "../lib/permissions";
 
 // Runs before paint to set the theme attribute from storage / OS preference, so
@@ -13,38 +14,30 @@ const THEME_INIT = `(function(){try{var t=localStorage.getItem('mst-theme');if(t
 
 // Names come from the tenant's config, never from code.
 export async function generateMetadata(): Promise<Metadata> {
-  const org = await (await getRepo()).getOrg();
+  const org = await currentOrg();
   return {
-    title: org.productName,
-    description: `ระบบ Customer Intelligence ของ ${org.name}`,
+    title: org.settings.productName,
+    description: `ระบบสมาชิก แต้ม และจองซิมกอล์ฟของ ${org.name}`,
+    robots: { index: false, follow: false },
   };
 }
 
-export default async function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const repo = await getRepo();
-  const live = repo.source === "database";
-  const org = await repo.getOrg();
-  const user = await getSessionUser();
-
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const [org, user] = await Promise.all([currentOrg(), getSessionUser()]);
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="th" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT }} />
       </head>
       <body>
         <AppShell
-          live={live}
           orgName={org.name}
-          productName={org.productName}
+          productName={org.settings.productName}
           user={user ? { name: user.name, roleLabel: ROLE_LABEL[user.role], permissions: user.permissions } : null}
         >
           {children}
         </AppShell>
-        <CommandPalette permissions={user?.permissions ?? []} />
+        {user && <CommandPalette permissions={user.permissions} />}
       </body>
     </html>
   );

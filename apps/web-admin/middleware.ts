@@ -2,10 +2,9 @@ import { NextResponse, type NextRequest } from "next/server";
 import { isPublicPath } from "./lib/public-paths";
 import { SESSION_COOKIE, verifySession } from "./lib/session-token";
 
-// Everything in the back office requires a signed-in staff member. Open to the
-// public: the sign-up page, the login page, and the two endpoints they post to.
+// Everything in the back office requires a signed-in staff member. Open: the
+// login page and its endpoints, and the cron routes (they check CRON_SECRET).
 const PUBLIC_API: Array<[method: string, path: string]> = [
-  ["POST", "/api/members"], // public sign-up (staff sessions get admin semantics in the route)
   ["POST", "/api/auth/login"],
   ["POST", "/api/auth/logout"],
 ];
@@ -16,6 +15,7 @@ export async function middleware(req: NextRequest) {
   const { pathname, search } = req.nextUrl;
   if (isPublicPath(pathname)) return NextResponse.next();
   if (PUBLIC_API.some(([m, p]) => req.method === m && pathname === p)) return NextResponse.next();
+  if (pathname.startsWith("/api/cron/")) return NextResponse.next();
 
   const isApi = pathname.startsWith("/api/");
   const claims = await verifySession(req.cookies.get(SESSION_COOKIE)?.value);

@@ -4,19 +4,19 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import QRCode from "qrcode";
 
-// The public sign-up link (/register) with copy, open and a printable QR for
-// the counter. The link is built from the current origin, so it always points
-// at the environment staff are looking at.
-export function SignupLinkButton({ orgName, signupBonus }: { orgName: string; signupBonus: number }) {
+// The customer sign-up link — the LIFF member page (same as Rich Menu button
+// A+B) — with copy, open and a printable QR for the counter. Null until the
+// LINE agency hands over the LIFF app.
+export function SignupLinkButton({ orgName, signupBonus, signupUrl }: { orgName: string; signupBonus: number; signupUrl: string | null }) {
   const [open, setOpen] = useState(false);
-  const [url, setUrl] = useState("");
+  const [url, setUrl] = useState(signupUrl ?? "");
   const [copied, setCopied] = useState(false);
   const canvas = useRef<HTMLCanvasElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
-    setUrl(`${window.location.origin}/register`);
-  }, []);
+    setUrl(signupUrl ?? "");
+  }, [signupUrl]);
 
   useEffect(() => {
     if (!open || !url || !canvas.current) return;
@@ -70,10 +70,14 @@ export function SignupLinkButton({ orgName, signupBonus }: { orgName: string; si
               </button>
             </div>
             <p className="link-dialog-sub">
-              ส่งลิงก์นี้ให้ลูกค้า หรือตั้ง QR ไว้ที่เคาน์เตอร์ ลูกค้าสมัครเป็นสมาชิก {orgName} ได้เอง
+              ลิงก์เดียวกับปุ่ม "สมัครสมาชิก" ใน LINE — ลูกค้าสแกนแล้วล็อกอินด้วย LINE สมัครเป็นสมาชิก {orgName} ได้เอง
               และได้แต้มต้อนรับ {signupBonus.toLocaleString("en-TH")} แต้มทันที
             </p>
 
+            {!url ? (
+              <p className="secret-note">ยังไม่มีลิงก์ — รอทีม LINE ส่งข้อมูล LIFF แล้วใส่ที่ ตั้งค่า › LINE ระหว่างนี้เพิ่มสมาชิกที่เคาน์เตอร์ได้ตามปกติ</p>
+            ) : (
+            <>
             <div className="link-row">
               <input className="link-input" value={url} readOnly onFocus={(e) => e.currentTarget.select()} aria-label="ลิงก์สมัครสมาชิก" />
               <button type="button" className="btn" onClick={copy}>{copied ? "คัดลอกแล้ว ✓" : "คัดลอก"}</button>
@@ -83,9 +87,11 @@ export function SignupLinkButton({ orgName, signupBonus }: { orgName: string; si
               <canvas ref={canvas} aria-label="QR code ของลิงก์สมัครสมาชิก" />
               <div className="link-qr-actions">
                 <button type="button" className="btn btn-ghost" onClick={downloadQr}>ดาวน์โหลด QR</button>
-                <a className="btn btn-ghost" href="/register" target="_blank" rel="noreferrer">เปิดหน้าสมัคร ↗</a>
+                <a className="btn btn-ghost" href={url} target="_blank" rel="noreferrer">เปิดหน้าสมัคร ↗</a>
               </div>
             </div>
+            </>
+            )}
           </div>
         </div>,
         document.body,
