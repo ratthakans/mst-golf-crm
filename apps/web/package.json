@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 3200",
-    "build": "next build",
+    "build": "pnpm --filter @mstgolf/database db:generate && next build",
     "start": "next start -p 3200",
     "lint": "next lint",
     "typecheck": "tsc --noEmit"
