@@ -161,7 +161,7 @@ export function UsersAdmin({
           </table>
         </div>
       </div>
-      <p className="users-foot">สิทธิ์: {roles.map((r) => label(r.value)).join(" · ")} — รายละเอียดสิทธิ์แต่ละระดับอยู่ใน MST-DEV-PLAN §10</p>
+      <p className="users-foot">สิทธิ์: {roles.map((r) => label(r.value)).join(" · ")}</p>
     </>
   );
 }

@@ -10,7 +10,7 @@ import { enqueue } from "./notify/outbox";
 import { awardWelcome, postPoints } from "./points";
 import { getOrg, type ResolvedSettings } from "./settings";
 
-// Member identity (MST-DEV-PLAN §3.2, §4.2). One person = one Member.code;
+// Member identity (docs/PRODUCT.md §3.2, §4.2). One person = one Member.code;
 // LINE UID and phone are MemberIdentity rows, each owned by exactly one member.
 
 export interface MemberSummary {

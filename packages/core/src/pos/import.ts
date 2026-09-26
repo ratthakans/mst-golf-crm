@@ -16,7 +16,7 @@ import { decodeFile, parseCsv, toCsv } from "./csv";
 import { applyMapping, detectMapping, mappingProblems } from "./mapping";
 import { parseBills, type ParsedBill, type RowError } from "./parse";
 
-// POS import (MST-DEV-PLAN §6): upload → preview → commit → (rollback within 7
+// POS import (docs/PRODUCT.md §6): upload → preview → commit → (rollback within 7
 // days). Idempotent: the same file twice is refused, and a bill that is already
 // in the database is skipped as DUPLICATE however it arrives.
 

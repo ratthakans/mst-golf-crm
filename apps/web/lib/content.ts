@@ -1,4 +1,4 @@
-// Placeholder copy (MST-DEV-PLAN §7.3): MST supplies the final text and photos;
+// Placeholder copy (docs/PRODUCT.md §7.3): MST supplies the final text and photos;
 // until then these describe the store plainly — no prices beyond the lane
 // price in settings, no invented numbers or brand claims.
 

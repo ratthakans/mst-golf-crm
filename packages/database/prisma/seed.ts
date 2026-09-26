@@ -87,7 +87,7 @@ async function main() {
 
   // -------------------------------------------------------------------------
   // Store and simulator lanes. Opening hours are a placeholder until MST
-  // confirms them (MST-DEV-PLAN §13 #10) — editable in Settings.
+  // confirms them (docs/PRODUCT.md §6 #3) — editable in Settings.
   // -------------------------------------------------------------------------
   const hours: [string, string] = ["10:00", "22:00"];
   const store = await prisma.store.upsert({

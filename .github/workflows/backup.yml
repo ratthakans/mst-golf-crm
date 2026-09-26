@@ -1,5 +1,5 @@
 # Daily encrypted pg_dump of the production schema into a private Vercel Blob
-# store, 30 days kept (MST-DEV-PLAN §4.4).
+# store, 30 days kept (docs/PRODUCT.md §4.4).
 # Repo secrets: DATABASE_URL_UNPOOLED, BACKUP_BLOB_TOKEN (read-write token of a
 # PRIVATE Blob store used only for backups), BACKUP_PASSPHRASE.
 # Restore: download, `openssl enc -d -aes-256-cbc -pbkdf2 -in f.sql.gz.enc | gunzip | psql <url>`.

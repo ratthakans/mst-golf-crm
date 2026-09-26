@@ -1,4 +1,4 @@
-// Who may do what in the back office (MST-DEV-PLAN §9.2). Pure data, used by
+// Who may do what in the back office (docs/PRODUCT.md §9.2). Pure data, used by
 // the API routes (enforcement), the pages (enforcement) and the nav (hiding).
 
 export const ROLES = ["SUPER_ADMIN", "MARKETING", "STORE_MANAGER", "STORE_STAFF", "CUSTOMER_SERVICE"] as const;

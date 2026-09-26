@@ -1,4 +1,4 @@
-// @mstgolf/core — MST Golf Platform business logic (MST-DEV-PLAN §2).
+// @mstgolf/core — MST Golf Platform business logic (docs/PRODUCT.md §2).
 // Both apps call these functions; route handlers only parse input, check the
 // caller's permission and translate CoreError into an HTTP response.
 

@@ -3,7 +3,7 @@
 Customer Intelligence platform for **MST Golf (Bangkok, Thailand)** — pro shop + academy + fitting + arena + golf simulator, currency THB, locale `th`, timezone `Asia/Bangkok`.
 It is **our platform** and MST Golf is tenant #1: built multi-tenant / config-driven so more orgs can run on it. The back office is named **MST Golf Platform**; customer-facing LINE screens are branded **MST Golf**. Display names come from tenant config (`Organization.name`, `settings.productName`), never from code. There is no "Golffy" naming anywhere. Package scope is `@mstgolf/*`. TypeScript end-to-end.
 
-**The plan of record is `MST-DEV-PLAN.md`** (phases, schema v2, business rules, weekly sprints). Read it before changing scope.
+**What the product does and every business rule: `docs/PRODUCT.md`** (section numbers are referenced from code). **Status, remaining work and go-live steps: `MST-DEV-PLAN.md`.** Read both before changing scope.
 
 ## Architecture principles (do not break)
 1. **Event-driven** — every customer behavior is written to `Event`. All data features (RFM, funnel, churn, cohort, CLV) are computed from `Event` / `PointTransaction` / purchase amounts.
@@ -22,7 +22,7 @@ It is **our platform** and MST Golf is tenant #1: built multi-tenant / config-dr
 - Schema change → create a migration **and** update the seed.
 - Write tests for critical features — especially **tenant isolation** and the **points ledger**.
 
-## Platform rules (MST-DEV-PLAN §3 — do not break)
+## Platform rules (docs/PRODUCT.md §3 — do not break)
 1. **The LLM is called only to generate text a person will read.** Never per member, per event or per cron job.
 2. **Every score, signal and segment is computed with statistics** in `@mstgolf/analytics` — the LLM explains numbers, it never produces them.
 3. **AI never messages customers.** Every campaign reaches `APPROVED` by a human before it can be sent.
@@ -64,13 +64,11 @@ Money is integer **satang** in columns ending `Satang`; convert only with `toSat
 ## LINE
 One Rich Menu owned by the LINE agency; only buttons A+B (`liff.line.me/<liffId>/member`) and D (`…/booking`) link to us. No webhook. The customer's LINE UID comes from verifying a LIFF / LINE Login ID token; messages go out through the Notification outbox (`enqueue` inside the same transaction, `processOutbox` delivers with retry keys). Credentials live encrypted in `LineChannel`, entered at Settings › LINE.
 
-## Roadmap (detail in MST-DEV-PLAN.md §11)
+## Roadmap (detail in MST-DEV-PLAN.md §5)
 Phase 1 is the contracted scope (quote QT-20260923-01): member system · database design · simulator booking · POS import + Summary Dashboard · website. Rewards, campaigns and the intelligence pages are out of contract — keep their code, hide them per tenant with `settings.features`.
-- **W1** kickoff · split Neon branches · feature flags · `packages/core`
-- **W2–W3** schema v2 + core (identity · points · tiers · merge)
-- **W4–W5** POS import v2 · **W6–W7** `apps/web` LINE Login/LIFF + member pages + push · **W8** back office on real data + Summary Dashboard · **W9–W10** website + blog
-- **R1 go-live 11 Dec 2026** (members · import · dashboard · website)
-- **W13–W18** booking engine · customer booking pages · simulator calendar → **R2 go-live 5 Feb 2027**
+- **Built (Sep 2026, branch `phase1`):** all five parts, back office, website, LINE outbox, crons; previews on Vercel.
+- **Remaining:** LINE credentials (incl. LINE Login/LIFF in the OA's provider), real POS file, MST content/photos/domain, production env + GitHub secrets, UAT, go-live — checklist in MST-DEV-PLAN.md §4.
+- **Go-live:** everything at once, within ~3 weeks of MST's inputs, latest 11 Dec 2026.
 
 LINE: one Rich Menu owned by the LINE team (only buttons A+B and D link to us), no webhook, UID from LINE Login in the OA's provider, push via the Messaging API token.
 

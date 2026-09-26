@@ -1,7 +1,7 @@
 import { jwtVerify, SignJWT } from "jose";
 import { cookies } from "next/headers";
 
-// Customer session (MST-DEV-PLAN §2 "การยืนยันตัวลูกค้า"). After LINE verifies
+// Customer session (docs/PRODUCT.md §2 "การยืนยันตัวลูกค้า"). After LINE verifies
 // the ID token we keep only the LINE user in a signed, httpOnly cookie. The
 // member is resolved from it on every request — never from the request body.
 // A different key from the back office (AUTH_SECRET), so neither cookie can be

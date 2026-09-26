@@ -1,4 +1,4 @@
-// MST Golf Platform — schema v2 (MST-DEV-PLAN §4)
+// MST Golf Platform — schema v2 (docs/PRODUCT.md §4)
 // Design principles:
 //   - Multi-tenant: every table except Organization has `orgId`, and every
 //     query that touches tenant data is scoped to it (use `forOrg(orgId)`).

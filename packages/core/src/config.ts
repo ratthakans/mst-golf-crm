@@ -9,7 +9,7 @@ import { toSatang } from "./money";
 import { getOrg, updateSettings, type ResolvedSettings } from "./settings";
 import { parseHm } from "./time";
 
-// Back-office Settings (MST-DEV-PLAN §9.3): every value MST may change without
+// Back-office Settings (docs/PRODUCT.md §9.3): every value MST may change without
 // a code change. Each save is validated here and written to the audit log.
 
 async function audited(orgId: string, actor: Actor, action: string, before: unknown, after: unknown) {

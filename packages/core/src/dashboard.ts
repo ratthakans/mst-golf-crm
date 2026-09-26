@@ -6,7 +6,7 @@ import { getOrg } from "./settings";
 import { addDays, DAY_MS, localDateKey, localParts, parseDateKey, startOfLocalDay } from "./time";
 import { daySlots } from "./booking";
 
-// Summary Dashboard (MST-DEV-PLAN §6.4). Every number is defined once here so
+// Summary Dashboard (docs/PRODUCT.md §6.4). Every number is defined once here so
 // the dashboard, the tests and a SQL spot-check agree.
 
 export interface PeriodMetrics {

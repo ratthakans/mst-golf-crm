@@ -1,7 +1,7 @@
 # MST Golf Platform
 
 Member system, points, POS import, golf-simulator booking and website for
-**MST Golf Thailand** (tenant #1 of our multi-tenant platform). Plan of record:
+**MST Golf Thailand** (tenant #1 of our multi-tenant platform). Product spec: [`docs/PRODUCT.md`](docs/PRODUCT.md) · plan and status:
 [`MST-DEV-PLAN.md`](MST-DEV-PLAN.md). Rules for working in this repo: [`CLAUDE.md`](CLAUDE.md).
 
 | App / package | What | Local port |

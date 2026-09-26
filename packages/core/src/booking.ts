@@ -11,7 +11,7 @@ import { enqueue } from "./notify/outbox";
 import { getOrg, type ResolvedSettings } from "./settings";
 import { addDays, formatHm, localDateKey, openWindow, parseDateKey, startOfLocalDay } from "./time";
 
-// Golf simulator booking (MST-DEV-PLAN §5). One booking = one lane for one
+// Golf simulator booking (docs/PRODUCT.md §5). One booking = one lane for one
 // hour. A partial unique index on (laneId, startAt) for HELD/CONFIRMED/
 // CHECKED_IN makes a double booking impossible at the database, however many
 // customers and staff tap at once.

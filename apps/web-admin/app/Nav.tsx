@@ -7,7 +7,7 @@ import type { Permission } from "../lib/permissions";
 
 type Item = { href: string; label: string; icon: string; soon?: string; perm?: Permission };
 
-// Phase 1 menus (MST-DEV-PLAN §9.1). Intelligence pages appear only when the
+// Phase 1 menus (docs/PRODUCT.md §9.1). Intelligence pages appear only when the
 // tenant has them switched on (their permissions are withheld otherwise).
 const PRIMARY: Item[] = [
   { href: "/", label: "ภาพรวม", icon: "📊", perm: "dashboard.view" },

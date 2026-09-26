@@ -4,7 +4,7 @@ import type { Actor } from "./context";
 import { db, inTx } from "./db";
 import { CoreError, isUniqueViolation } from "./errors";
 
-// Website articles (MST-DEV-PLAN §7.2). Markdown bodies; MST's marketing team
+// Website articles (docs/PRODUCT.md §7.2). Markdown bodies; MST's marketing team
 // writes them in the back office and the website renders published ones.
 
 export interface PostInput {

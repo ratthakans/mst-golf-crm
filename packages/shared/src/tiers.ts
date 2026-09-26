@@ -8,7 +8,7 @@ import type { TierSettings } from "./types";
 export const TIER_WINDOW_DAYS = 365;
 
 // Three tiers ranked by net spend over the last 12 months. Thresholds, point
-// rates and benefits are defaults until MST confirms them (MST-DEV-PLAN §15 #8);
+// rates and benefits are defaults until MST confirms them (docs/PRODUCT.md §6 #4);
 // every org overrides them in Organization.settings.tiers.
 export const DEFAULT_TIERS: TierSettings[] = [
   {
