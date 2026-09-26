@@ -34,7 +34,7 @@ It is **our platform** and MST Golf is tenant #1: built multi-tenant / config-dr
 
 ## Staff login and permissions
 - Email + password (scrypt, `@mstgolf/shared/password`); session = signed HS256 cookie `mst_session` (12 h) via `jose`, key `AUTH_SECRET`.
-- `apps/web-admin/middleware.ts` blocks everything except `/login`, `/register` and `POST /api/members` (public sign-up), `/api/auth/*`. A temporary password forces `/account/password` first.
+- `apps/web-admin/middleware.ts` blocks everything except `/login`, `/api/auth/*` and `/api/cron/*` (which check `CRON_SECRET`). Customers never use the back office — they sign up in `apps/web`. A temporary password forces `/account/password` first.
 - Five roles; the permission matrix is `apps/web-admin/lib/permissions.ts`. **Every page calls `allowPage(perm)` and every API route `requireApi(perm)`** (`lib/auth.ts`) — the nav only hides links, it does not protect anything.
 - `getSessionUser()` re-reads the user each request, so deactivating an account or changing a role applies immediately.
 - Staff actions write `AuditLog` through `audit()`; Super Admins read it at `/settings/audit`.
