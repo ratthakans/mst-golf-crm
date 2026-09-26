@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { hashPassword, temporaryPassword } from "@mstgolf/shared/password";
+import { databaseUrl } from "../src/index";
 
 // Creates a Super Admin, or resets an existing account to Super Admin with a new
 // temporary password. The recovery path when nobody can sign in.
@@ -8,7 +9,7 @@ import { hashPassword, temporaryPassword } from "@mstgolf/shared/password";
 //
 // Prints the temporary password once; it must be changed at first sign-in.
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({ datasourceUrl: databaseUrl() });
 
 async function main() {
   const [emailArg, name = "ผู้ดูแลระบบ", orgSlug = "mst-golf"] = process.argv.slice(2);

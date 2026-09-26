@@ -10,10 +10,31 @@ import { PrismaClient, Prisma } from "@prisma/client";
  */
 const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
 
+/**
+ * The connection string for this environment. One Neon database holds every
+ * environment in its own Postgres schema: production uses `public`, while
+ * preview, local dev and tests set DATABASE_SCHEMA (e.g. "preview", "dev",
+ * "test") so they can never touch production rows.
+ */
+export function databaseUrl(
+  base: string | undefined = process.env.DATABASE_URL,
+  schema: string | undefined = process.env.DATABASE_SCHEMA,
+): string | undefined {
+  if (!base || !schema || schema === "public") return base;
+  if (!/^[a-z][a-z0-9_]*$/.test(schema)) throw new Error(`Invalid DATABASE_SCHEMA "${schema}"`);
+  const url = new URL(base);
+  url.searchParams.set("schema", schema);
+  return url.toString();
+}
+
 export const prisma =
   globalForPrisma.prisma ??
   new PrismaClient({
-    log: process.env.NODE_ENV === "development" ? ["warn", "error"] : ["error"],
+    datasourceUrl: databaseUrl(),
+    // Expected constraint violations (a double booking, a duplicate sign-up) are
+    // caught and turned into friendly errors, so Prisma's own error log would
+    // only be noise. Unexpected errors still reach the route handler's logger.
+    log: process.env.PRISMA_LOG_ERRORS === "1" ? ["warn", "error"] : ["warn"],
   });
 
 if (process.env.NODE_ENV !== "production") {
@@ -36,6 +57,21 @@ const TENANT_MODELS = new Set<string>([
   "Automation",
   "RfmSnapshot",
   "AuditLog",
+  "Counter",
+  "Store",
+  "MemberIdentity",
+  "ConsentText",
+  "MergeLog",
+  "ReviewItem",
+  "Sale",
+  "SaleLine",
+  "ImportBatch",
+  "ImportRow",
+  "Lane",
+  "Booking",
+  "LaneBlock",
+  "Notification",
+  "Post",
 ]);
 
 // Operations whose `where` clause should be constrained to the tenant.

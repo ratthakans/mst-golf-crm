@@ -10,15 +10,14 @@
   },
   "scripts": {
     "db:generate": "prisma generate",
-    "db:migrate": "prisma migrate dev",
-    "db:deploy": "prisma migrate deploy",
-    "db:seed": "prisma db seed",
-    "db:studio": "prisma studio",
-    "db:reset": "prisma migrate reset --force",
+    "db:deploy": "node --env-file-if-exists=../../.env.local scripts/prisma.mjs migrate deploy",
+    "db:status": "node --env-file-if-exists=../../.env.local scripts/prisma.mjs migrate status",
+    "db:seed": "node --env-file-if-exists=../../.env.local scripts/prisma.mjs db seed",
+    "db:studio": "node --env-file-if-exists=../../.env.local scripts/prisma.mjs studio",
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
-    "admin:create": "tsx prisma/create-admin.ts"
+    "admin:create": "node --env-file-if-exists=../../.env.local --import tsx prisma/create-admin.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

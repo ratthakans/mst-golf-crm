@@ -15,10 +15,9 @@
     "infra:up": "docker compose up -d",
     "infra:down": "docker compose down",
     "db:generate": "pnpm --filter @mstgolf/database db:generate",
-    "db:migrate": "pnpm --filter @mstgolf/database db:migrate",
     "db:seed": "pnpm --filter @mstgolf/database db:seed",
     "db:studio": "pnpm --filter @mstgolf/database db:studio",
-    "db:reset": "pnpm --filter @mstgolf/database db:reset"
+    "db:deploy": "pnpm --filter @mstgolf/database db:deploy"
   },
   "devDependencies": {
     "turbo": "^2.1.0",

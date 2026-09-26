@@ -1,10 +1,13 @@
-// MST Golf CRM — multi-tenant, event-driven, config-driven
+// MST Golf Platform — schema v2 (MST-DEV-PLAN §4)
 // Design principles:
-//   - Event-driven: every customer behavior is written to `Event`.
-//   - Multi-tenant by default: every table (except Organization) has `orgId`.
-//     EVERY query that touches tenant data MUST filter by `orgId`.
-//   - Customize by-project: org config in Organization.settings (JSONB);
-//     golf profile / dynamic fields in Member.attributes (JSONB) + FieldDefinition.
+//   - Multi-tenant: every table except Organization has `orgId`, and every
+//     query that touches tenant data is scoped to it (use `forOrg(orgId)`).
+//   - Member.code is the identity. Phone and LINE are MemberIdentity rows
+//     linked to it, never the key.
+//   - Points change only through PointTransaction; Member.points is a cache.
+//   - Money is stored as integer satang (1/100 THB) in columns ending in
+//     `Satang`. Tier thresholds in settings are whole baht.
+//   - Every customer behaviour is written to Event.
 
 generator client {
   provider = "prisma-client-js"
@@ -23,22 +26,37 @@ model Organization {
   name      String
   slug      String   @unique
   plan      Plan     @default(STARTER)
-  settings  Json     @default("{}") // customize by-project (see OrgSettings in @mstgolf/shared)
+  settings  Json     @default("{}") // OrgSettings in @mstgolf/shared
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   users             User[]
+  stores            Store[]
   members           Member[]
+  identities        MemberIdentity[]
   events            Event[]
   pointTransactions PointTransaction[]
   fieldDefinitions  FieldDefinition[]
   lineChannels      LineChannel[]
   consents          Consent[]
+  consentTexts      ConsentText[]
   segments          Segment[]
   automations       Automation[]
   rfmSnapshots      RfmSnapshot[]
   auditLogs         AuditLog[]
+  counters          Counter[]
+  mergeLogs         MergeLog[]
+  reviewItems       ReviewItem[]
+  sales             Sale[]
+  saleLines         SaleLine[]
+  importBatches     ImportBatch[]
+  importRows        ImportRow[]
+  lanes             Lane[]
+  bookings          Booking[]
+  laneBlocks        LaneBlock[]
+  notifications     Notification[]
+  posts             Post[]
 
   @@map("organizations")
 }
@@ -50,7 +68,7 @@ enum Plan {
 }
 
 // ---------------------------------------------------------------------------
-// User (admin/staff of an org — dashboard login)
+// Platform
 // ---------------------------------------------------------------------------
 model User {
   id                 String       @id @default(cuid())
@@ -60,7 +78,7 @@ model User {
   name               String?
   role               UserRole     @default(STORE_STAFF)
   passwordHash       String? // scrypt, see @mstgolf/shared/password
-  mustChangePassword Boolean      @default(false) // set when an admin issues a temporary password
+  mustChangePassword Boolean      @default(false)
   isActive           Boolean      @default(true)
   lastLoginAt        DateTime?
   createdAt          DateTime     @default(now())
@@ -73,8 +91,6 @@ model User {
   @@map("users")
 }
 
-// Five back-office roles (MST-DEV-PLAN §10). Permissions per role live in
-// apps/web-admin/lib/permissions.ts.
 enum UserRole {
   SUPER_ADMIN
   MARKETING
@@ -83,18 +99,14 @@ enum UserRole {
   CUSTOMER_SERVICE
 }
 
-// ---------------------------------------------------------------------------
-// AuditLog (who did what — every staff action that changes members, points,
-// privileges, bookings, campaigns or users)
-// ---------------------------------------------------------------------------
 model AuditLog {
   id        String       @id @default(cuid())
   orgId     String
   org       Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
   userId    String?
   user      User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
-  action    String // e.g. "member.create", "user.role_change"
-  entity    String // e.g. "member", "user"
+  action    String // e.g. "member.create", "points.adjust", "booking.check_in"
+  entity    String // e.g. "member", "booking"
   entityId  String?
   before    Json?
   after     Json?
@@ -107,39 +119,210 @@ model AuditLog {
   @@map("audit_logs")
 }
 
+// Per-org sequences (member codes). Incremented with UPDATE … RETURNING inside
+// the transaction that uses the number, so codes are never reused.
+model Counter {
+  orgId String
+  org   Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  key   String // e.g. "member_code"
+  value Int          @default(0)
+
+  @@id([orgId, key])
+  @@map("counters")
+}
+
+model Store {
+  id        String       @id @default(cuid())
+  orgId     String
+  org       Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  code      String // e.g. "CIT1" — matched against the POS export
+  name      String
+  address   String?
+  openHours Json         @default("{}") // { "mon": ["10:00","22:00"], … } — see OpenHours in @mstgolf/shared
+  isActive  Boolean      @default(true)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  sales         Sale[]
+  lanes         Lane[]
+  importBatches ImportBatch[]
+
+  @@unique([orgId, code])
+  @@map("stores")
+}
+
 // ---------------------------------------------------------------------------
-// Member (end customer, identified via LINE)
+// Identity
 // ---------------------------------------------------------------------------
 model Member {
-  id          String       @id @default(cuid())
-  orgId       String
-  org         Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
-  lineUserId  String
-  displayName String?
-  pictureUrl  String?
-  phone       String?
-  email       String?
-  attributes  Json         @default("{}") // golf profile: handicap, dominantHand, skillLevel, preferredBrands[], interests[], homeCourse, playFrequency
-  points      Int          @default(0) // cache; source of truth = PointTransaction
-  tier        String?
-  lastSeenAt  DateTime?
-  consentAt   DateTime? // quick PDPA flag; full history in Consent
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  id             String       @id @default(cuid())
+  orgId          String
+  org            Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  code           String // "MST00003821" — never changes, never reused
+  displayName    String
+  firstName      String?
+  lastName       String?
+  birthday       DateTime?    @db.Date
+  email          String?
+  pictureUrl     String?
+  attributes     Json         @default("{}")
+  points         Int          @default(0) // cache; source of truth = PointTransaction
+  tier           String       @default("member") // TierSettings.key
+  spend12mSatang Int          @default(0) // cache, recomputed on every sale and nightly
+  lifetimeSatang Int          @default(0)
+  lastPurchaseAt DateTime?
+  lastSeenAt     DateTime?
+  source         MemberSource
+  status         MemberStatus @default(ACTIVE)
+  mergedIntoId   String?
+  erasedAt       DateTime?
+  lineReachable  Boolean      @default(true) // false once a push fails because the member blocked the OA
+  noShowCount    Int          @default(0)
+  consentAt      DateTime? // TERMS accepted
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
 
+  identities        MemberIdentity[]
   events            Event[]
   pointTransactions PointTransaction[]
   consents          Consent[]
   rfmSnapshots      RfmSnapshot[]
+  sales             Sale[]
+  bookings          Booking[]
+  notifications     Notification[]
+  reviewItems       ReviewItem[]
 
-  @@unique([orgId, lineUserId])
-  @@index([orgId, lastSeenAt])
+  @@unique([orgId, code])
+  @@index([orgId, status, createdAt])
   @@index([orgId, tier])
+  @@index([orgId, displayName])
   @@map("members")
 }
 
+enum MemberSource {
+  LINE // signed up in LINE (LIFF)
+  WEB // signed up on the website with LINE Login
+  COUNTER // created by staff in the back office
+  POS // created from a bill whose phone matched nobody
+  IMPORT // migrated from MST's old member list
+}
+
+enum MemberStatus {
+  ACTIVE
+  MERGED
+  ERASED
+}
+
+// One phone / one LINE UID belongs to exactly one member (the unique key).
+model MemberIdentity {
+  id         String       @id @default(cuid())
+  orgId      String
+  org        Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  memberId   String
+  member     Member       @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  type       IdentityType
+  value      String // PHONE: "0891112233" · LINE: "U4af49806…"
+  verifiedAt DateTime? // PHONE: first bill carrying this number · LINE: always (LINE verified it)
+  source     MemberSource
+  createdAt  DateTime     @default(now())
+
+  @@unique([orgId, type, value])
+  @@index([orgId, memberId])
+  @@map("member_identities")
+}
+
+enum IdentityType {
+  LINE
+  PHONE
+}
+
+model Consent {
+  id           String         @id @default(cuid())
+  orgId        String
+  org          Organization   @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  memberId     String
+  member       Member         @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  purpose      ConsentPurpose
+  version      String
+  granted      Boolean        @default(true)
+  textSnapshot String?
+  channel      MemberSource?
+  createdAt    DateTime       @default(now())
+
+  @@index([orgId, memberId, createdAt])
+  @@map("consents")
+}
+
+enum ConsentPurpose {
+  TERMS
+  MARKETING
+}
+
+// The exact wording of each consent version, so a member's consent can always
+// be shown as they saw it.
+model ConsentText {
+  id          String         @id @default(cuid())
+  orgId       String
+  org         Organization   @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  purpose     ConsentPurpose
+  version     String
+  title       String
+  body        String
+  effectiveAt DateTime       @default(now())
+  createdAt   DateTime       @default(now())
+
+  @@unique([orgId, purpose, version])
+  @@map("consent_texts")
+}
+
+model MergeLog {
+  id          String       @id @default(cuid())
+  orgId       String
+  org         Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  survivorId  String
+  mergedId    String
+  movedCounts Json
+  userId      String?
+  reason      String?
+  createdAt   DateTime     @default(now())
+
+  @@index([orgId, createdAt])
+  @@map("merge_logs")
+}
+
+// Work that needs a person: phone conflicts at sign-up, merge and erase requests.
+model ReviewItem {
+  id         String       @id @default(cuid())
+  orgId      String
+  org        Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  kind       ReviewKind
+  memberId   String?
+  member     Member?      @relation(fields: [memberId], references: [id], onDelete: SetNull)
+  payload    Json         @default("{}")
+  status     ReviewStatus @default(OPEN)
+  note       String?
+  resolvedBy String?
+  resolvedAt DateTime?
+  createdAt  DateTime     @default(now())
+
+  @@index([orgId, status, createdAt])
+  @@map("review_items")
+}
+
+enum ReviewKind {
+  PHONE_CONFLICT
+  MERGE_REQUEST
+  ERASE_REQUEST
+}
+
+enum ReviewStatus {
+  OPEN
+  DONE
+  DISMISSED
+}
+
 // ---------------------------------------------------------------------------
-// Event (every customer behavior — basis for all data features)
+// Events (every customer behaviour)
 // ---------------------------------------------------------------------------
 model Event {
   id         String       @id @default(cuid())
@@ -148,7 +331,7 @@ model Event {
   memberId   String
   member     Member       @relation(fields: [memberId], references: [id], onDelete: Cascade)
   type       EventType
-  payload    Json         @default("{}") // typed per EventType — see EventPayload in @mstgolf/shared
+  payload    Json         @default("{}")
   occurredAt DateTime     @default(now())
 
   @@index([orgId, type, occurredAt])
@@ -163,46 +346,359 @@ enum EventType {
   OPEN_MENU
   CLICK_PROMO
   PURCHASE
+  RETURN
   EARN_POINTS
   REDEEM_POINTS
   TIER_UP
+  TIER_DOWN
   FITTING_BOOKING
   VISIT
   MESSAGE_RECEIVED
+  LINE_LINKED
+  BOOKING_CREATED
+  BOOKING_CANCELLED
+  BOOKING_CHECKED_IN
+  BOOKING_NO_SHOW
+  MERGED
 }
 
 // ---------------------------------------------------------------------------
-// PointTransaction (ledger — source of truth for points)
+// Points
 // ---------------------------------------------------------------------------
 model PointTransaction {
-  id        String       @id @default(cuid())
-  orgId     String
-  org       Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
-  memberId  String
-  member    Member       @relation(fields: [memberId], references: [id], onDelete: Cascade)
-  delta     Int
-  reason    String
-  refId     String?
-  createdAt DateTime     @default(now())
+  id          String       @id @default(cuid())
+  orgId       String
+  org         Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  memberId    String
+  member      Member       @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  type        PointTxType
+  delta       Int
+  reason      String // WELCOME · PURCHASE · BIRTHDAY · RETURN · VOID · ROLLBACK · ADJUST · MERGE_IN · MERGE_OUT · OPENING
+  note        String? // staff's reason for an ADJUST
+  saleId      String?
+  sale        Sale?        @relation(fields: [saleId], references: [id], onDelete: SetNull)
+  batchId     String?
+  createdById String?
+  createdAt   DateTime     @default(now())
 
   @@index([orgId, memberId, createdAt])
+  @@index([orgId, saleId])
   @@map("point_transactions")
 }
 
+enum PointTxType {
+  EARN
+  BONUS
+  REVERSAL
+  ADJUST
+  OPENING
+}
+
 // ---------------------------------------------------------------------------
-// FieldDefinition (dynamic, config-driven form fields — customize by-project)
+// Sales (POS import)
+// ---------------------------------------------------------------------------
+model Sale {
+  id                  String       @id @default(cuid())
+  orgId               String
+  org                 Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  storeId             String
+  store               Store        @relation(fields: [storeId], references: [id])
+  invoiceNo           String
+  type                SaleType
+  refInvoiceNo        String? // RETURN / VOID point at the original bill
+  occurredAt          DateTime
+  memberId            String?
+  member              Member?      @relation(fields: [memberId], references: [id], onDelete: SetNull)
+  memberRef           String? // the raw value read from the bill remark
+  grossSatang         Int
+  discountSatang      Int          @default(0)
+  netSatang           Int // negative for RETURN / VOID
+  pointEligibleSatang Int
+  paymentMethod       String?
+  batchId             String
+  batch               ImportBatch  @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  historyOnly         Boolean      @default(false) // migrated history: counts toward spend, earns no points
+  status              SaleStatus   @default(POSTED)
+  createdAt           DateTime     @default(now())
+
+  lines             SaleLine[]
+  pointTransactions PointTransaction[]
+
+  @@unique([orgId, storeId, invoiceNo, type])
+  @@index([orgId, occurredAt])
+  @@index([orgId, memberId, occurredAt])
+  @@index([orgId, batchId])
+  @@map("sales")
+}
+
+enum SaleType {
+  SALE
+  RETURN
+  VOID
+}
+
+enum SaleStatus {
+  POSTED
+  REVERSED // its import batch was rolled back
+}
+
+model SaleLine {
+  id            String       @id @default(cuid())
+  orgId         String
+  org           Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  saleId        String
+  sale          Sale         @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  sku           String?
+  name          String
+  brand         String?
+  category      String?
+  qty           Int
+  unitSatang    Int
+  netSatang     Int
+  pointExcluded Boolean      @default(false)
+
+  @@index([orgId, saleId])
+  @@index([orgId, sku])
+  @@map("sale_lines")
+}
+
+model ImportBatch {
+  id           String       @id @default(cuid())
+  orgId        String
+  org          Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  storeId      String
+  store        Store        @relation(fields: [storeId], references: [id])
+  fileName     String
+  fileHash     String
+  mode         ImportMode   @default(DAILY)
+  uploadedBy   String?
+  status       ImportStatus @default(PREVIEW)
+  counts       Json         @default("{}") // ImportCounts in @mstgolf/core
+  committedAt  DateTime?
+  rolledBackAt DateTime?
+  createdAt    DateTime     @default(now())
+
+  sales Sale[]
+  rows  ImportRow[]
+
+  @@unique([orgId, fileHash])
+  @@index([orgId, createdAt])
+  @@map("import_batches")
+}
+
+enum ImportMode {
+  DAILY // normal: earns points, notifies members
+  HISTORY // migration of old bills: spend and tiers only
+}
+
+enum ImportStatus {
+  PREVIEW
+  COMMITTED
+  ROLLED_BACK
+}
+
+model ImportRow {
+  id        String          @id @default(cuid())
+  orgId     String
+  org       Organization    @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  batchId   String
+  batch     ImportBatch     @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  rowNumber Int
+  invoiceNo String?
+  raw       Json
+  status    ImportRowStatus
+  errorCode String?
+
+  @@index([orgId, batchId, status])
+  @@map("import_rows")
+}
+
+enum ImportRowStatus {
+  OK
+  UNMATCHED // valid bill, no member reference or reference matched nobody we could create
+  INVALID
+  DUPLICATE
+}
+
+// ---------------------------------------------------------------------------
+// Simulator booking
+// ---------------------------------------------------------------------------
+model Lane {
+  id                String       @id @default(cuid())
+  orgId             String
+  org               Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  storeId           String
+  store             Store        @relation(fields: [storeId], references: [id])
+  name              String
+  capacity          Int          @default(3)
+  hourlyPriceSatang Int
+  sortOrder         Int          @default(0)
+  isActive          Boolean      @default(true)
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  bookings Booking[]
+  blocks   LaneBlock[]
+
+  @@index([orgId, storeId])
+  @@map("lanes")
+}
+
+model Booking {
+  id             String        @id @default(cuid())
+  orgId          String
+  org            Organization  @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  laneId         String
+  lane           Lane          @relation(fields: [laneId], references: [id])
+  memberId       String?
+  member         Member?       @relation(fields: [memberId], references: [id], onDelete: SetNull)
+  guestName      String?
+  guestPhone     String?
+  startAt        DateTime
+  endAt          DateTime
+  partySize      Int
+  status         BookingStatus
+  heldUntil      DateTime?
+  source         BookingSource
+  priceSatang    Int
+  discountPct    Int           @default(0)
+  paidSatang     Int?
+  note           String?
+  reminderSentAt DateTime?
+  createdBy      String?
+  cancelledBy    String?
+  cancelReason   String?
+  checkedInAt    DateTime?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([orgId, startAt])
+  @@index([orgId, memberId, startAt])
+  @@index([laneId, startAt])
+  // One active booking per lane per hour — enforced by the partial unique
+  // index "booking_active_slot" in the migration SQL.
+  @@map("bookings")
+}
+
+enum BookingStatus {
+  HELD
+  CONFIRMED
+  CHECKED_IN
+  COMPLETED
+  NO_SHOW
+  CANCELLED
+}
+
+enum BookingSource {
+  LINE
+  WEB
+  WALKIN
+  PHONE
+}
+
+model LaneBlock {
+  id        String       @id @default(cuid())
+  orgId     String
+  org       Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  laneId    String
+  lane      Lane         @relation(fields: [laneId], references: [id], onDelete: Cascade)
+  startAt   DateTime
+  endAt     DateTime
+  reason    BlockReason
+  note      String?
+  createdBy String?
+  createdAt DateTime     @default(now())
+
+  @@index([orgId, laneId, startAt])
+  @@map("lane_blocks")
+}
+
+enum BlockReason {
+  MAINTENANCE
+  PRIVATE
+  EVENT
+}
+
+// ---------------------------------------------------------------------------
+// Notifications (LINE push outbox — every message the platform sends)
+// ---------------------------------------------------------------------------
+model Notification {
+  id        String             @id @default(cuid())
+  orgId     String
+  org       Organization       @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  memberId  String
+  member    Member             @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  kind      String // WELCOME · POINTS · TIER_UP · BOOKING_CONFIRMED · BOOKING_REMINDER · BOOKING_CANCELLED · BOOKING_MOVED
+  dedupeKey String // e.g. "POINTS:<batchId>:<memberId>" — the same message is never queued twice
+  payload   Json
+  status    NotificationStatus @default(PENDING)
+  attempts  Int                @default(0)
+  lastError String?
+  sentAt    DateTime?
+  createdAt DateTime           @default(now())
+
+  @@unique([orgId, dedupeKey])
+  @@index([status, createdAt])
+  @@index([orgId, createdAt])
+  @@map("notifications")
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  FAILED // gave up after retries
+  SKIPPED // no LINE identity, member unreachable, kind switched off, or LINE not configured
+}
+
+// ---------------------------------------------------------------------------
+// Website
+// ---------------------------------------------------------------------------
+model Post {
+  id          String       @id @default(cuid())
+  orgId       String
+  org         Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  slug        String
+  title       String
+  excerpt     String       @default("")
+  coverUrl    String?
+  body        String       @default("") // markdown
+  category    PostCategory @default(ARTICLE)
+  status      PostStatus   @default(DRAFT)
+  publishedAt DateTime?
+  authorId    String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@unique([orgId, slug])
+  @@index([orgId, status, publishedAt])
+  @@map("posts")
+}
+
+enum PostCategory {
+  ARTICLE
+  SERVICE
+  NEWS
+}
+
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+}
+
+// ---------------------------------------------------------------------------
+// Config-driven member fields and LINE credentials
 // ---------------------------------------------------------------------------
 model FieldDefinition {
   id        String       @id @default(cuid())
   orgId     String
   org       Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
   entity    FieldEntity  @default(MEMBER)
-  key       String // key inside Member.attributes, e.g. "handicap"
-  label     String // form label, e.g. "Handicap"
+  key       String
+  label     String
   type      FieldType
-  options   Json         @default("[]") // SELECT/MULTISELECT: [{ value, label }]
+  options   Json         @default("[]")
   required  Boolean      @default(false)
-  group     String? // e.g. "golf_profile"
+  group     String?
   order     Int          @default(0)
   isActive  Boolean      @default(true)
   createdAt DateTime     @default(now())
@@ -226,19 +722,17 @@ enum FieldType {
   DATE
 }
 
-// ---------------------------------------------------------------------------
-// LineChannel (per-org LINE credentials — secrets encrypted at rest)
-// Introduced early so the encryption pattern is established from day one.
-// ---------------------------------------------------------------------------
+// Messaging API credentials (sent by the LINE agency). Secrets are AES-256-GCM
+// ciphertext — see encrypt/decrypt in @mstgolf/shared.
 model LineChannel {
   id                    String       @id @default(cuid())
   orgId                 String
   org                   Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
   channelId             String
-  // The following are AES-256-GCM ciphertext (see encrypt/decrypt in @mstgolf/shared).
   channelSecretEnc      String
   channelAccessTokenEnc String
   liffId                String?
+  loginChannelId        String? // LINE Login channel (same provider) — audience for ID tokens
   isActive              Boolean      @default(true)
   createdAt             DateTime     @default(now())
   updatedAt             DateTime     @updatedAt
@@ -249,26 +743,7 @@ model LineChannel {
 }
 
 // ---------------------------------------------------------------------------
-// Consent (versioned PDPA consent history — right to audit / erasure)
-// ---------------------------------------------------------------------------
-model Consent {
-  id           String       @id @default(cuid())
-  orgId        String
-  org          Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
-  memberId     String
-  member       Member       @relation(fields: [memberId], references: [id], onDelete: Cascade)
-  purpose      String // e.g. "marketing", "data_processing"
-  version      String // consent text version, e.g. "v1"
-  granted      Boolean      @default(true)
-  textSnapshot String? // the exact consent wording shown at the time
-  createdAt    DateTime     @default(now())
-
-  @@index([orgId, memberId, createdAt])
-  @@map("consents")
-}
-
-// ---------------------------------------------------------------------------
-// Segment (dynamic, rule-based audience — rules evaluated by the segment engine)
+// Intelligence (out of the Phase 1 contract — kept, hidden per tenant)
 // ---------------------------------------------------------------------------
 model Segment {
   id          String       @id @default(cuid())
@@ -276,7 +751,7 @@ model Segment {
   org         Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
   name        String
   description String?
-  rules       Json         @default("{}") // SegmentRule from @mstgolf/analytics
+  rules       Json         @default("{}")
   isActive    Boolean      @default(true)
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
@@ -286,16 +761,13 @@ model Segment {
   @@map("segments")
 }
 
-// ---------------------------------------------------------------------------
-// Automation (behavioural/statistical trigger → action, run by workers/jobs)
-// ---------------------------------------------------------------------------
 model Automation {
   id        String       @id @default(cuid())
   orgId     String
   org       Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
   name      String
-  trigger   Json // AutomationTrigger from @mstgolf/analytics
-  action    Json // AutomationAction
+  trigger   Json
+  action    Json
   enabled   Boolean      @default(true)
   lastRunAt DateTime?
   createdAt DateTime     @default(now())
@@ -306,10 +778,6 @@ model Automation {
   @@map("automations")
 }
 
-// ---------------------------------------------------------------------------
-// RfmSnapshot (nightly per-member metric snapshot — powers trend & segment
-// migration; without history you cannot see how the base moves over time).
-// ---------------------------------------------------------------------------
 model RfmSnapshot {
   id               String       @id @default(cuid())
   orgId            String

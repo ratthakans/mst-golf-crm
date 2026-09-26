@@ -18,7 +18,7 @@ beforeAll(async () => {
 
   // A member belonging to org B only
   await forOrg(orgB).member.create({
-    data: { orgId: orgB, lineUserId: `U_b_${Date.now()}`, displayName: "B Member" },
+    data: { orgId: orgB, code: `MST9${Date.now().toString().slice(-7)}`, source: "COUNTER", displayName: "B Member" },
   });
 });
 
@@ -44,7 +44,7 @@ describe("tenant isolation via forOrg()", () => {
     // Caller is forOrg(orgA) but maliciously/mistakenly passes orgB — the
     // extension must correct it to orgA.
     const created = await forOrg(orgA).member.create({
-      data: { orgId: orgB, lineUserId: `U_a_${Date.now()}`, displayName: "A Member" },
+      data: { orgId: orgB, code: `MST8${Date.now().toString().slice(-7)}`, source: "COUNTER", displayName: "A Member" },
     });
     expect(created.orgId).toBe(orgA);
   });
