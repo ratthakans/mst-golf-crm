@@ -169,7 +169,9 @@ function CardPanel({ card, qrSrc, topTierName }: { card: CardData; qrSrc: string
           {perks.map((p) => (
             <li key={p}>{p}</li>
           ))}
-          <li>{card.birthday ? "แต้ม ×2 ทุกการซื้อในเดือนเกิด" : "ใส่วันเกิดในโปรไฟล์ เพื่อรับแต้ม ×2 ในเดือนเกิด"}</li>
+          {t.birthdayMultiplier > 1 && (
+            <li>{card.birthday ? `แต้ม ×${t.birthdayMultiplier} ทุกการซื้อในเดือนเกิด` : `ใส่วันเกิดในโปรไฟล์ เพื่อรับแต้ม ×${t.birthdayMultiplier} ในเดือนเกิด`}</li>
+          )}
         </ul>
         <p className="hint">ส่วนลดสินค้าใช้ที่หน้าร้าน แสดงบัตรนี้กับพนักงานตอนชำระเงิน</p>
       </section>

@@ -38,6 +38,7 @@ export default async function MemberPage({ searchParams }: { searchParams: { nex
         marketing={doc(marketing)}
         next={next}
         todayKey={localDateKey(new Date())}
+        birthdayMultiplier={org.settings.tiers[0]?.benefits.birthdayPointMultiplier ?? 1}
       />
     );
   }

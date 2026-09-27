@@ -13,7 +13,7 @@ export interface CardData {
   points: number;
   tierKey: string;
   tierName: string;
-  tier: { pointRate: number; discountPct: number; simDiscountPct: number; bookingDaysAhead: number };
+  tier: { pointRate: number; discountPct: number; simDiscountPct: number; bookingDaysAhead: number; birthdayMultiplier: number };
   next: { name: string; remainingBaht: number; pct: number } | null;
   spend12mBaht: number;
 }

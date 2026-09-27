@@ -31,6 +31,7 @@ export function toCardData(c: MemberCard): CardData {
       discountPct: c.tier.discountPct,
       simDiscountPct: c.tier.simDiscountPct,
       bookingDaysAhead: c.tier.bookingDaysAhead,
+      birthdayMultiplier: c.tier.birthdayMultiplier,
     },
     next: c.next,
     spend12mBaht: c.spend12mBaht,

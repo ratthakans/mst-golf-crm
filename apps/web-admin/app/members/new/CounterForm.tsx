@@ -6,7 +6,7 @@ import { useRef, useState } from "react";
 import { resizeToSquareJpeg } from "../../../lib/resize-image";
 import { api, ApiError, errorText } from "../../ui/api";
 
-export function CounterForm({ termsTitle, termsBody, marketingBody }: { termsTitle: string; termsBody: string; marketingBody: string }) {
+export function CounterForm({ termsTitle, termsBody, marketingBody, birthdayMultiplier }: { termsTitle: string; termsBody: string; marketingBody: string; birthdayMultiplier: number }) {
   const router = useRouter();
   const [form, setForm] = useState({ fullName: "", phone: "", birthday: "", email: "", consentConfirmed: false, marketing: false });
   const [photo, setPhoto] = useState<Blob | null>(null);
@@ -78,7 +78,7 @@ export function CounterForm({ termsTitle, termsBody, marketingBody }: { termsTit
           <input value={form.phone} onChange={(e) => set("phone", e.target.value)} required inputMode="tel" placeholder="0891112233" autoComplete="off" />
         </label>
         <label className="field">
-          <span>วันเกิด <span className="hint">— เดือนเกิดได้แต้ม ×2</span></span>
+          <span>วันเกิด {birthdayMultiplier > 1 && <span className="hint">— เดือนเกิดได้แต้ม ×{birthdayMultiplier}</span>}</span>
           <input type="date" value={form.birthday} onChange={(e) => set("birthday", e.target.value)} />
         </label>
         <label className="field">

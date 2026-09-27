@@ -26,6 +26,7 @@ export default async function NewMemberPage() {
           termsTitle={texts.terms?.title ?? "ข้อกำหนดสมาชิกและนโยบายความเป็นส่วนตัว"}
           termsBody={texts.terms?.body ?? ""}
           marketingBody={texts.marketing?.body ?? "รับข่าวสารและโปรโมชั่นผ่าน LINE"}
+          birthdayMultiplier={org.settings.tiers[0]?.benefits.birthdayPointMultiplier ?? 1}
         />
       </div>
     </>

@@ -41,6 +41,12 @@ describe("POS parsing", () => {
   it("reads member references from remarks", () => {
     expect(readMemberRef("ลูกค้า MSTMEMBER:089-111-2233 ok", undefined, "MSTMEMBER")).toMatchObject({ kind: "phone", value: "0891112233" });
     expect(readMemberRef("mstmember : mst00003821", undefined, "MSTMEMBER")).toMatchObject({ kind: "code", value: "MST00003821" });
+    // words typed after the reference
+    expect(readMemberRef("MSTMEMBER:MST00000001 VIP", undefined, "MSTMEMBER")).toMatchObject({ kind: "code", value: "MST00000001" });
+    expect(readMemberRef("MSTMEMBER:0891112233 Jan", undefined, "MSTMEMBER")).toMatchObject({ kind: "phone", value: "0891112233" });
+    expect(readMemberRef("MSTMEMBER:089-111-2233 A1", undefined, "MSTMEMBER")).toMatchObject({ kind: "phone", value: "0891112233" });
+    expect(readMemberRef("MSTMEMBER:MST000000012", undefined, "MSTMEMBER")).toMatchObject({ kind: "invalid" });
+    expect(readMemberRef("MSTMEMBER:12345 test", undefined, "MSTMEMBER")).toMatchObject({ kind: "invalid" });
     expect(readMemberRef("MSTMEMBER:12345", undefined, "MSTMEMBER")).toMatchObject({ kind: "invalid" });
     expect(readMemberRef("", "0812345678", "MSTMEMBER")).toMatchObject({ kind: "phone" });
     expect(readMemberRef("no tag", undefined, "MSTMEMBER")).toBeNull();

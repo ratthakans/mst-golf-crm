@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>MST Golf Platform — Database design</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  @page { size: A4 landscape; margin: 0; }
+  :root {
+    --ground: #ffffff; --soft: #f4f7f5; --ink: #14201b; --muted: #5d6e66; --faint: #8a9a92; --line: #dde6e1;
+    --brand: #0a5c36; --brand-deep: #0b3d29; --tint: #e5f2ea;
+    --m: #0a5c36; --m-bg: #eaf5ee;    /* members */
+    --s: #8a5a06; --s-bg: #fdf3d7;    /* sales / POS */
+    --b: #1d4f91; --b-bg: #e7f0fb;    /* booking */
+    --sans: "Anuphan", "Noto Sans Thai", sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  }
+  * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  html, body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--sans); font-size: 8.6pt; line-height: 1.45; }
+  h1, h2, h3, p { margin: 0; }
+  .page { width: 297mm; height: 210mm; padding: 10mm 12mm 8mm; display: grid; grid-template-rows: auto 1fr auto; gap: 4mm; page-break-after: always; overflow: hidden; position: relative; }
+  .page:last-child { page-break-after: auto; }
+  .kicker { font-size: 8pt; font-weight: 600; color: var(--brand); letter-spacing: 0.3px; }
+  .head { display: flex; justify-content: space-between; align-items: end; gap: 10mm; }
+  .head h2 { font-size: 17pt; line-height: 1.15; margin-top: 0.6mm; }
+  .head p { color: var(--muted); font-size: 8.8pt; max-width: 175mm; }
+  .legend { display: flex; gap: 4mm; font-size: 7.8pt; color: var(--muted); flex-wrap: wrap; justify-content: flex-end; }
+  .legend i { display: inline-block; width: 3mm; height: 3mm; border-radius: 0.8mm; margin-right: 1.2mm; vertical-align: -0.4mm; }
+  .ft { display: flex; justify-content: space-between; font-size: 7.2pt; color: var(--faint); border-top: 1px solid var(--line); padding-top: 2mm; }
+
+  /* diagram */
+  .dia { position: relative; }
+  .dia svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .ent { position: absolute; width: 38mm; background: #fff; border: 1px solid var(--line); border-radius: 2mm; overflow: hidden; z-index: 1; box-shadow: 0 0.4mm 1.2mm rgba(20, 32, 27, 0.06); }
+  .ent h4 { margin: 0; font-size: 8.2pt; padding: 1.2mm 2mm; display: flex; justify-content: space-between; align-items: baseline; }
+  .ent h4 span { font-size: 6.6pt; font-weight: 500; opacity: 0.8; }
+  .ent ul { list-style: none; margin: 0; padding: 1.2mm 2mm 1.4mm; font-family: var(--mono); font-size: 6.4pt; line-height: 1.55; color: #33413a; }
+  .ent li b { font-weight: 600; color: var(--ink); }
+  .ent li em { font-style: normal; color: var(--faint); }
+  .ent.m h4 { background: var(--m-bg); color: var(--m); }
+  .ent.s h4 { background: var(--s-bg); color: var(--s); }
+  .ent.b h4 { background: var(--b-bg); color: var(--b); }
+  .ent.core { border: 1.5px solid var(--m); }
+  .ent.core h4 { background: var(--m); color: #fff; }
+  .band { position: absolute; left: 0; right: 0; bottom: 0; display: grid; grid-template-columns: 1.25fr 1fr 1fr; gap: 3mm; }
+  .band > div { border: 1px dashed var(--line); border-radius: 2mm; padding: 1.8mm 2.4mm; background: var(--soft); }
+  .band h5 { margin: 0 0 1mm; font-size: 7.8pt; }
+  .band p { font-size: 7.2pt; color: var(--muted); line-height: 1.5; }
+  .band code { font-family: var(--mono); font-size: 6.8pt; color: var(--ink); }
+
+  /* page 2 */
+  .cols { display: grid; grid-template-columns: 1.35fr 1fr 1fr; gap: 4mm; align-content: start; align-items: start; }
+  .card { border: 1px solid var(--line); border-radius: 2.5mm; padding: 3mm 3.4mm; }
+  .card h3 { font-size: 9.6pt; margin-bottom: 1.6mm; }
+  .card ul { margin: 0; padding-left: 4mm; display: grid; gap: 1mm; font-size: 8pt; }
+  .card code, .mono { font-family: var(--mono); font-size: 7.2pt; }
+  .card.tint { background: var(--tint); border-color: var(--tint); }
+  table.t { width: 100%; border-collapse: collapse; font-size: 7.8pt; }
+  .t th { text-align: left; font-size: 7.2pt; color: var(--muted); font-weight: 600; padding: 1.2mm 1.6mm; border-bottom: 1.2px solid var(--ink); }
+  .t td { padding: 1.3mm 1.6mm; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .t td:first-child { font-family: var(--mono); font-size: 7pt; white-space: nowrap; }
+</style>
+</head>
+<body>
+
+<!-- ═════════ 1 · ER ═════════ -->
+<section class="page">
+  <div class="head">
+    <div>
+      <div class="kicker">MST Golf Platform · Database design</div>
+      <h2>แผนผังข้อมูล (ER) — schema v2</h2>
+      <p>สมาชิกเป็นศูนย์กลาง ยอดขายจาก POS และการจองซิมผูกกลับมาที่สมาชิกคนเดียว · ทุกตารางมี <span class="mono">orgId</span> → Organization (รองรับหลายร้าน) · เงินเก็บเป็นสตางค์</p>
+    </div>
+    <div class="legend">
+      <span><i style="background:var(--m)"></i>สมาชิก แต้ม PDPA</span>
+      <span><i style="background:#d9a441"></i>ยอดขาย POS</span>
+      <span><i style="background:#4a7fc1"></i>จองซิม</span>
+      <span>PK <b class="mono">id</b> · FK <span class="mono">→</span> · ◆ ห้ามซ้ำ</span>
+    </div>
+  </div>
+
+  <div class="dia" id="dia">
+    <svg id="lines" aria-hidden="true"></svg>
+
+    <!-- col 0 -->
+    <div class="ent m" id="ConsentText" style="left:0mm; top:34mm">
+      <h4>ConsentText <span>ข้อความ PDPA</span></h4>
+      <ul><li><b>id</b></li><li>purpose · version ◆</li><li>title · body</li><li>effectiveAt</li></ul>
+    </div>
+    <div class="ent" id="ReviewItem" style="left:0mm; top:70mm">
+      <h4>ReviewItem <span>คิวตรวจสอบ</span></h4>
+      <ul><li><b>id</b></li><li>memberId <em>→ Member</em></li><li>kind <em>เบอร์ซ้ำ รวม ลบ</em></li><li>status · resolvedBy</li></ul>
+    </div>
+    <div class="ent" id="MergeLog" style="left:0mm; top:103mm">
+      <h4>MergeLog <span>รวมบัญชี</span></h4>
+      <ul><li><b>id</b></li><li>survivorId · mergedId</li><li>movedCounts · reason</li></ul>
+    </div>
+
+    <!-- col 1 -->
+    <div class="ent m" id="MemberIdentity" style="left:46mm; top:0mm">
+      <h4>MemberIdentity <span>ตัวตน</span></h4>
+      <ul><li><b>id</b></li><li>memberId <em>→</em></li><li>type <em>LINE · PHONE</em></li><li>value ◆ · verifiedAt</li></ul>
+    </div>
+    <div class="ent m" id="Consent" style="left:46mm; top:34mm">
+      <h4>Consent <span>ความยินยอม</span></h4>
+      <ul><li><b>id</b></li><li>memberId <em>→</em></li><li>purpose · version</li><li>granted · textSnapshot</li><li>channel · createdAt</li></ul>
+    </div>
+    <div class="ent m" id="Event" style="left:46mm; top:72mm">
+      <h4>Event <span>พฤติกรรม</span></h4>
+      <ul><li><b>id</b></li><li>memberId <em>→</em></li><li>type <em>SIGNUP PURCHASE …</em></li><li>payload · occurredAt</li></ul>
+    </div>
+    <div class="ent m" id="Notification" style="left:46mm; top:103mm">
+      <h4>Notification <span>outbox LINE</span></h4>
+      <ul><li><b>id</b></li><li>memberId <em>→</em></li><li>kind · dedupeKey ◆</li><li>status · attempts · sentAt</li></ul>
+    </div>
+
+    <!-- col 2 -->
+    <div class="ent core" id="Member" style="left:92mm; top:0mm">
+      <h4>Member <span>สมาชิก</span></h4>
+      <ul>
+        <li><b>id</b></li>
+        <li>code ◆ <em>MST00000001</em></li>
+        <li>displayName · birthday · email</li>
+        <li>points <em>cache ของ ledger</em></li>
+        <li>tier · spend12mSatang</li>
+        <li>lifetimeSatang · lastPurchaseAt</li>
+        <li>source · status</li>
+        <li>lineReachable · noShowCount</li>
+        <li>consentAt · mergedIntoId</li>
+        <li>attributes <em>JSON ฟิลด์เพิ่ม</em></li>
+      </ul>
+    </div>
+    <div class="ent m" id="PointTransaction" style="left:92mm; top:72mm">
+      <h4>PointTransaction <span>ledger</span></h4>
+      <ul><li><b>id</b></li><li>memberId <em>→</em></li><li>saleId <em>→ Sale</em> · batchId</li><li>type · delta · reason</li><li>note · createdById</li></ul>
+    </div>
+
+    <!-- col 3 -->
+    <div class="ent b" id="Booking" style="left:138mm; top:0mm">
+      <h4>Booking <span>การจอง</span></h4>
+      <ul><li><b>id</b></li><li>laneId <em>→</em> · memberId <em>→</em></li><li>guestName · guestPhone</li><li>startAt · endAt · partySize</li><li>status · heldUntil · source</li><li>priceSatang · paidSatang</li><li>checkedInAt · reminderSentAt</li></ul>
+    </div>
+    <div class="ent s" id="Sale" style="left:138mm; top:66mm">
+      <h4>Sale <span>บิล</span></h4>
+      <ul><li><b>id</b></li><li>storeId · invoiceNo · type ◆</li><li>memberId <em>→</em> · batchId <em>→</em></li><li>refInvoiceNo <em>บิลคืน/ยกเลิก</em></li><li>net · pointEligible (สตางค์)</li><li>historyOnly · status</li></ul>
+    </div>
+    <div class="ent s" id="SaleLine" style="left:138mm; top:108mm">
+      <h4>SaleLine <span>รายการสินค้า</span></h4>
+      <ul><li><b>id</b> · saleId <em>→</em></li><li>sku · name · brand · category</li><li>qty · netSatang · pointExcluded</li></ul>
+    </div>
+
+    <!-- col 4 -->
+    <div class="ent b" id="Lane" style="left:184mm; top:0mm">
+      <h4>Lane <span>ช่องซิม</span></h4>
+      <ul><li><b>id</b></li><li>storeId <em>→</em></li><li>name · capacity</li><li>hourlyPriceSatang · isActive</li></ul>
+    </div>
+    <div class="ent b" id="LaneBlock" style="left:184mm; top:32mm">
+      <h4>LaneBlock <span>ปิด lane</span></h4>
+      <ul><li><b>id</b></li><li>laneId <em>→</em></li><li>startAt · endAt · reason</li></ul>
+    </div>
+    <div class="ent s" id="ImportBatch" style="left:184mm; top:66mm">
+      <h4>ImportBatch <span>รอบนำเข้า</span></h4>
+      <ul><li><b>id</b></li><li>storeId <em>→</em></li><li>fileHash ◆ · fileName</li><li>mode · status · counts</li><li>committedAt · rolledBackAt</li></ul>
+    </div>
+
+    <!-- col 5 -->
+    <div class="ent" id="Store" style="left:230mm; top:0mm">
+      <h4>Store <span>สาขา</span></h4>
+      <ul><li><b>id</b></li><li>code ◆ <em>CIT1</em></li><li>name · address</li><li>openHours <em>JSON รายวัน</em></li></ul>
+    </div>
+    <div class="ent s" id="ImportRow" style="left:230mm; top:66mm">
+      <h4>ImportRow <span>แถวในไฟล์</span></h4>
+      <ul><li><b>id</b></li><li>batchId <em>→</em></li><li>rowNumber · invoiceNo</li><li>raw · status · errorCode</li></ul>
+    </div>
+
+    <div class="band">
+      <div>
+        <h5>ระบบ หลังบ้าน และเว็บไซต์</h5>
+        <p><code>Organization</code> ตั้งค่าทั้งหมดใน settings (JSON) · <code>User</code> พนักงาน 5 ตำแหน่ง → <code>AuditLog</code> ใครทำอะไร ก่อน/หลัง · <code>Post</code> บทความเว็บ · <code>LineChannel</code> credentials เข้ารหัส · <code>JobRun</code> ผลงานตั้งเวลา · <code>Counter</code> เลขรหัสสมาชิก · <code>FieldDefinition</code> ฟิลด์สมาชิกเพิ่มเติม</p>
+      </div>
+      <div>
+        <h5>ข้อมูลเงินและเวลา</h5>
+        <p>เงินเป็นจำนวนเต็ม <b>สตางค์</b> ในคอลัมน์ที่ลงท้าย <code>Satang</code> · เวลาเก็บเป็น UTC แสดงเป็นเวลากรุงเทพฯ · แต้มเปลี่ยนได้ทาง <code>PointTransaction</code> เท่านั้น</p>
+      </div>
+      <div>
+        <h5>มีในฐานข้อมูล ยังไม่เปิดใช้ (Phase 2–3)</h5>
+        <p><code>Segment</code> · <code>Automation</code> · <code>RfmSnapshot</code> — กลุ่มลูกค้า ระบบอัตโนมัติ และคะแนน RFM/CLV สำหรับหน้าวิเคราะห์ที่ซ่อนไว้</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="ft"><span>MST Golf Platform · Database design · schema v2 (migration 20260926 + 20260927)</span><span>1 / 2</span></div>
+</section>
+
+<!-- ═════════ 2 · RULES ═════════ -->
+<section class="page">
+  <div class="head">
+    <div>
+      <div class="kicker">MST Golf Platform · Database design</div>
+      <h2>กติกาที่ฐานข้อมูลบังคับเอง</h2>
+      <p>กฎสำคัญไม่ได้ฝากไว้กับโปรแกรมอย่างเดียว — ฐานข้อมูลปฏิเสธข้อมูลที่ผิดเอง แม้มีคำขอพร้อมกันหลายรายการ</p>
+    </div>
+  </div>
+  <div class="cols">
+    <div class="card">
+      <h3>ห้ามซ้ำ (unique)</h3>
+      <table class="t">
+        <thead><tr><th>ตาราง · คอลัมน์</th><th>กันอะไร</th></tr></thead>
+        <tbody>
+          <tr><td>Member(orgId, code)</td><td>รหัสสมาชิกไม่ซ้ำ ไม่ถูกใช้ซ้ำ</td></tr>
+          <tr><td>MemberIdentity(orgId, type, value)</td><td>เบอร์หรือ LINE เดียวเป็นของสมาชิกได้คนเดียว</td></tr>
+          <tr><td>Sale(orgId, storeId, invoiceNo, type)</td><td>บิลเดียวนำเข้าซ้ำไม่ได้</td></tr>
+          <tr><td>ImportBatch(orgId, fileHash)</td><td>ไฟล์เดิมนำเข้าซ้ำไม่ได้</td></tr>
+          <tr><td>Notification(orgId, dedupeKey)</td><td>ข้อความเดียวกันไม่ถูกส่งสองครั้ง</td></tr>
+          <tr><td>ConsentText(orgId, purpose, version)</td><td>ข้อความ PDPA แต่ละฉบับมีเลขเดียว</td></tr>
+          <tr><td>Store · Post · User</td><td>รหัสสาขา · slug บทความ · อีเมลพนักงาน</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <h3>ดัชนีเงื่อนไข (เขียนเองใน migration)</h3>
+      <table class="t">
+        <thead><tr><th>ชื่อ</th><th>กันอะไร</th></tr></thead>
+        <tbody>
+          <tr><td>booking_active_slot</td><td>lane เดียว ช่องเวลาเดียว มีการจองที่ยังใช้งาน (ถือช่อง ยืนยัน เช็กอิน) ได้รายการเดียว — ทดสอบยิงพร้อมกัน 20 คำขอ ได้ 1</td></tr>
+          <tr><td>point_tx_welcome_once</td><td>แต้มต้อนรับจ่ายครั้งเดียวต่อสมาชิก ไม่ว่าจะสมัครกี่ช่องทาง</td></tr>
+          <tr><td>point_tx_sale_once</td><td>บิลหนึ่งให้แต้ม (หรือหักคืน) ได้ครั้งเดียว</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <h3>แต้มและระดับ</h3>
+      <ul>
+        <li>แต้มเปลี่ยนผ่าน <code>PointTransaction</code> เท่านั้น · <code>Member.points</code> เป็นค่าสรุปที่อัปเดตใน transaction เดียวกัน</li>
+        <li>งานกลางคืนตรวจว่าผลรวม ledger = ค่าสรุป ทุกคืน</li>
+        <li>ระดับคิดจากยอดซื้อสุทธิ 12 เดือน (<code>spend12mSatang</code>) ไม่ใช่แต้มคงเหลือ · ขึ้นทันที ลงเฉพาะรอบทบทวนวันที่ 1</li>
+        <li>บิลคืน/ยกเลิกหักแต้มตามสัดส่วนของบิลเดิม</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>ตัวตนสมาชิก</h3>
+      <ul>
+        <li><code>Member.code</code> คือตัวตน — เบอร์และ LINE เป็นตัวตนที่ผูกเข้ามา ไม่ใช่กุญแจ</li>
+        <li>รวมบัญชีซ้ำ: ย้ายตัวตน แต้ม ยอดซื้อ การจอง ไปบัญชีหลัก แล้วบันทึก <code>MergeLog</code></li>
+        <li>ลบข้อมูลตาม PDPA: ล้างข้อมูลส่วนตัว เก็บยอดและ ledger ไว้โดยไม่ระบุตัวตน (<code>erasedAt</code>)</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>หลายร้าน (multi-tenant)</h3>
+      <ul>
+        <li>ทุกตารางมี <code>orgId</code> · โปรแกรมเข้าถึงข้อมูลผ่าน <code>forOrg(orgId)</code> ที่ใส่ orgId ให้ทุกคำสั่งอัตโนมัติ</li>
+        <li>ค่าตั้งของแต่ละร้านอยู่ใน <code>Organization.settings</code> — ไม่เพิ่มคอลัมน์ต่อร้าน</li>
+        <li>ทดสอบแล้วว่าร้านหนึ่งอ่าน/แก้ข้อมูลอีกร้านไม่ได้</li>
+      </ul>
+    </div>
+    <div class="card tint">
+      <h3>สภาพแวดล้อมและการสำรอง</h3>
+      <ul>
+        <li>Neon Postgres (Singapore) ฐานเดียว แยก schema: <code>public</code> production · <code>preview</code> · <code>dev</code> · <code>test_core</code></li>
+        <li>สคริปต์ Prisma ปฏิเสธ <code>public</code> ถ้าไม่ได้สั่งชัดเจน</li>
+        <li>สำรอง production ทุกคืน 03:00 เข้ารหัส AES-256 เก็บ 30 วัน · ผลรายงานที่ ตั้งค่า › สถานะระบบ</li>
+      </ul>
+    </div>
+  </div>
+  <div class="ft"><span>MST Golf Platform · Database design · รายละเอียดเต็มใน docs/PRODUCT.md §4</span><span>2 / 2</span></div>
+</section>
+
+<script>
+// Connectors between entity boxes, drawn after layout: a straight line where
+// the boxes overlap on one axis, otherwise an elbow through the gap between them.
+(function () {
+  const rels = [
+    ["Member", "MemberIdentity"], ["Member", "Consent"], ["Member", "Event"], ["Member", "Notification"],
+    ["Member", "PointTransaction"], ["Member", "Booking"], ["Member", "Sale"], ["Consent", "ConsentText", "dash"],
+    ["PointTransaction", "Sale"], ["Sale", "SaleLine"], ["Sale", "ImportBatch"], ["ImportBatch", "ImportRow"],
+    ["Booking", "Lane"], ["Lane", "LaneBlock"], ["Lane", "Store"], ["ImportBatch", "Store"],
+  ];
+  const dia = document.getElementById("dia");
+  const svg = document.getElementById("lines");
+  const base = dia.getBoundingClientRect();
+  const box = (id) => { const r = document.getElementById(id).getBoundingClientRect(); return { l: r.left - base.left, r: r.right - base.left, t: r.top - base.top, b: r.bottom - base.top }; };
+  const NS = "http://www.w3.org/2000/svg";
+  const path = (d, dash) => { const p = document.createElementNS(NS, "path"); p.setAttribute("d", d); p.setAttribute("fill", "none"); p.setAttribute("stroke", "#9fb3a9"); p.setAttribute("stroke-width", "1.1"); if (dash) p.setAttribute("stroke-dasharray", "3 2"); svg.appendChild(p); };
+  const dot = (x, y) => { const c = document.createElementNS(NS, "circle"); c.setAttribute("cx", x); c.setAttribute("cy", y); c.setAttribute("r", 2.2); c.setAttribute("fill", "#9fb3a9"); svg.appendChild(c); };
+  for (const [from, to, dash] of rels) {
+    const a = box(from), b = box(to); // a = the "one" side; b = the "many" side (dot)
+    const yo = [Math.max(a.t, b.t), Math.min(a.b, b.b)];
+    const xo = [Math.max(a.l, b.l), Math.min(a.r, b.r)];
+    if (yo[1] - yo[0] > 10) {
+      const y = (yo[0] + yo[1]) / 2, x1 = a.r < b.l ? a.r : a.l, x2 = a.r < b.l ? b.l : b.r;
+      path(`M${x1},${y} L${x2},${y}`, dash); dot(x2, y);
+    } else if (xo[1] - xo[0] > 10) {
+      const x = (xo[0] + xo[1]) / 2, y1 = a.b < b.t ? a.b : a.t, y2 = a.b < b.t ? b.t : b.b;
+      path(`M${x},${y1} L${x},${y2}`, dash); dot(x, y2);
+    } else {
+      const right = a.r < b.l;
+      const x1 = right ? a.r : a.l, gx = right ? (a.r + b.l) / 2 : (a.l + b.r) / 2, x2 = right ? b.l : b.r;
+      const y1 = Math.min(a.b - 8, Math.max(a.t + 8, (b.t + b.b) / 2)), y2 = (b.t + b.b) / 2;
+      path(`M${x1},${y1} L${gx},${y1} L${gx},${y2} L${x2},${y2}`, dash); dot(x2, y2);
+    }
+  }
+})();
+</script>
+</body>
+</html>

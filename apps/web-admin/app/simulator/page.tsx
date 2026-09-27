@@ -32,6 +32,7 @@ export default async function SimulatorPage({ searchParams }: { searchParams: { 
       can={{ manage: user.permissions.includes("booking.manage"), block: user.permissions.includes("booking.block"), money: user.permissions.includes("dashboard.revenue") }}
       presetMember={preset && preset.status === "ACTIVE" ? { id: preset.id, code: preset.code, name: preset.displayName, phone: preset.phone, tier: preset.tier, points: preset.points, hasLine: preset.hasLine } : null}
       noShowGraceMinutes={org.settings.booking.noShowGraceMinutes}
+      holdMinutes={org.settings.booking.holdMinutes}
     />
   );
 }

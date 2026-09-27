@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>MST Golf Platform — UAT</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+  @page { size: A4 portrait; margin: 0; }
+  :root {
+    --ink: #14201b; --muted: #5d6e66; --faint: #8a9a92; --line: #dde6e1; --soft: #f4f7f5;
+    --brand: #0a5c36; --brand-deep: #0b3d29; --tint: #e5f2ea; --amber-bg: #fdf3d7; --amber-ink: #8a5a06;
+    --sans: "Anuphan", "Noto Sans Thai", sans-serif; --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  }
+  * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  html, body { margin: 0; background: #fff; color: var(--ink); font-family: var(--sans); font-size: 8.6pt; line-height: 1.45; }
+  h1, h2, h3, p { margin: 0; }
+  ul, ol { margin: 0; padding-left: 4.6mm; display: grid; gap: 0.8mm; }
+  .page { width: 210mm; height: 297mm; padding: 12mm 12mm 9mm; display: grid; grid-template-rows: auto 1fr auto; gap: 4mm; page-break-after: always; overflow: hidden; }
+  .page:last-child { page-break-after: auto; }
+  .kicker { font-size: 8pt; font-weight: 600; color: var(--brand); letter-spacing: 0.3px; }
+  .head h2 { font-size: 17pt; line-height: 1.18; margin-top: 0.8mm; }
+  .head p { color: var(--muted); font-size: 9pt; margin-top: 1.2mm; }
+  .body { display: grid; gap: 3.4mm; align-content: start; min-height: 0; }
+  .ft { display: flex; justify-content: space-between; font-size: 7.2pt; color: var(--faint); border-top: 1px solid var(--line); padding-top: 2.2mm; }
+  .card { border: 1px solid var(--line); border-radius: 2.6mm; padding: 3mm 3.4mm; }
+  .card h3 { font-size: 10pt; margin-bottom: 1.4mm; }
+  .card.tint { background: var(--tint); border-color: var(--tint); }
+  .card.warn { background: var(--amber-bg); border-color: var(--amber-bg); }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 3.4mm; }
+  .small { font-size: 8pt; }
+  .muted { color: var(--muted); }
+  h3.sec { font-size: 10.4pt; display: flex; align-items: baseline; gap: 2mm; }
+  h3.sec span { font-size: 7.6pt; font-weight: 600; color: var(--brand); background: var(--tint); border-radius: 99px; padding: 0.2mm 2mm; }
+  table.u { width: 100%; border-collapse: collapse; font-size: 7.9pt; }
+  .u th { text-align: left; font-size: 7pt; color: var(--muted); font-weight: 600; padding: 1.2mm 1.4mm; border-bottom: 1.2px solid var(--ink); }
+  .u td { padding: 1.4mm 1.4mm; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .u td.id { font-family: var(--mono); font-size: 7pt; color: var(--muted); width: 9mm; white-space: nowrap; }
+  .u td.what { font-weight: 600; width: 32mm; }
+  .u td.box { width: 18mm; white-space: nowrap; color: var(--faint); font-size: 7.4pt; }
+  .u td.note { width: 22mm; }
+  .u tr.later td { background: #fafbf9; }
+  .ui { font-weight: 600; color: var(--brand-deep); background: var(--tint); border-radius: 1mm; padding: 0 1mm; white-space: nowrap; }
+  .code { font-family: var(--mono); font-size: 7.6pt; background: var(--soft); border: 1px solid var(--line); border-radius: 1mm; padding: 0 1mm; white-space: nowrap; }
+  .sign { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4mm; }
+  .sign div { border-top: 1px solid var(--ink); padding-top: 1.6mm; font-size: 8pt; color: var(--muted); margin-top: 16mm; }
+</style>
+</head>
+<body>
+
+<!-- ═══════ 1 ═══════ -->
+<section class="page">
+  <div class="head">
+    <div class="kicker">MST Golf Platform · UAT</div>
+    <h2>แบบทดสอบก่อนเปิดใช้ (UAT)</h2>
+    <p>MST ทดลองใช้งานจริงบนระบบทดสอบ (preview) ตามตำแหน่งของตัวเอง ทำเครื่องหมายผ่าน/ไม่ผ่าน · ข้อที่ไม่ผ่าน ORIONS แก้แล้วทดสอบซ้ำ · ลงนามหน้าสุดท้ายเมื่อผ่านครบ</p>
+  </div>
+  <div class="body">
+    <div class="grid2">
+      <div class="card tint">
+        <h3>เตรียมก่อนทดสอบ</h3>
+        <ol class="small">
+          <li>ORIONS ส่งลิงก์หลังบ้านและเว็บไซต์ของระบบทดสอบ + สร้างบัญชีผู้ดูแลระบบให้ MST</li>
+          <li>ผู้ดูแลระบบของ MST สร้างบัญชีทดสอบ 1 บัญชีต่อตำแหน่งที่ใช้จริง (ข้อ A2)</li>
+          <li>ไฟล์ export POS จริง 1–7 วัน และบิลคืน/ยกเลิกอย่างน้อย 1 ใบ</li>
+          <li>มือถือ iPhone และ Android อย่างละ 1 เครื่อง (สำหรับหน้าลูกค้า)</li>
+          <li>ข้อมูลในระบบทดสอบเป็นข้อมูลทดลอง ล้างได้ทั้งหมดก่อนเปิดจริง</li>
+        </ol>
+      </div>
+      <div class="card">
+        <h3>วิธีบันทึกผล</h3>
+        <ul class="small">
+          <li>ทำตามคอลัมน์ <b>ขั้นตอน</b> แล้วดูว่าได้ตาม <b>ผลที่ควรได้</b> หรือไม่</li>
+          <li>ติ๊ก ☐ ผ่าน หรือ ☐ ไม่ผ่าน · ไม่ผ่านให้จดสิ่งที่เห็นจริงและถ่ายภาพหน้าจอ</li>
+          <li>ข้อที่พื้นสีเทา (<b>หลัง LINE</b>) ทดสอบได้เมื่อทีม LINE ส่ง credentials แล้ว</li>
+          <li>ส่งผลให้ ORIONS รอบเดียวหรือทีละส่วนก็ได้</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3 class="sec">A · เข้าสู่ระบบและสิทธิ์ <span>ผู้ดูแลระบบ</span></h3>
+    <table class="u">
+      <thead><tr><th>#</th><th>ทดสอบ</th><th>ขั้นตอน</th><th>ผลที่ควรได้</th><th>ผล</th><th>หมายเหตุ</th></tr></thead>
+      <tbody>
+        <tr><td class="id">A1</td><td class="what">เข้าครั้งแรก</td><td>เข้าด้วยรหัสชั่วคราวจาก ORIONS</td><td>ระบบบังคับตั้งรหัสใหม่ (≥ 10 ตัว) ก่อนใช้งาน</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+        <tr><td class="id">A2</td><td class="what">สร้างบัญชีพนักงาน</td><td><span class="ui">ตั้งค่า › ผู้ใช้และสิทธิ์</span> สร้างบัญชีทุกตำแหน่งที่ใช้</td><td>ได้รหัสชั่วคราวครั้งเดียว · สถานะ "รอตั้งรหัส"</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+        <tr><td class="id">A3</td><td class="what">เมนูตามตำแหน่ง</td><td>เข้าด้วยบัญชีพนักงานหน้าร้าน</td><td>ไม่เห็นยอดเงิน · ไม่มีเมนูนำเข้า POS เว็บไซต์ ตั้งค่า · ไม่มีปุ่มปรับแต้ม</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+        <tr><td class="id">A4</td><td class="what">ปิดบัญชี</td><td>ผู้ดูแลระบบกด <span class="ui">ปิดใช้งาน</span> บัญชีที่กำลังใช้อยู่</td><td>บัญชีนั้นถูกออกจากระบบทันทีเมื่อเปิดหน้าใหม่</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+        <tr><td class="id">A5</td><td class="what">รหัสผิดหลายครั้ง</td><td>ใส่รหัสผิดติดกันหลายครั้ง</td><td>ขึ้น "ใส่รหัสผิดหลายครั้ง ลองใหม่ใน 15 นาที"</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+      </tbody>
+    </table>
+
+    <h3 class="sec">B · สมาชิกที่เคาน์เตอร์ <span>หน้าร้าน · บริการลูกค้า</span></h3>
+    <table class="u">
+      <thead><tr><th>#</th><th>ทดสอบ</th><th>ขั้นตอน</th><th>ผลที่ควรได้</th><th>ผล</th><th>หมายเหตุ</th></tr></thead>
+      <tbody>
+        <tr><td class="id">B1</td><td class="what">สมัครที่เคาน์เตอร์</td><td><span class="ui">+ เพิ่มสมาชิก</span> ใส่ชื่อ เบอร์ ติ๊กยินยอม</td><td>ได้รหัส MST… และแต้มต้อนรับตามตั้งค่า</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+        <tr><td class="id">B2</td><td class="what">เบอร์ซ้ำ</td><td>สมัครด้วยเบอร์เดียวกับ B1 อีกครั้ง</td><td>ขึ้น "เบอร์นี้เป็นสมาชิกอยู่แล้ว" พร้อมลิงก์ไปสมาชิกเดิม</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+        <tr><td class="id">B3</td><td class="what">ค้นหา</td><td>ค้นด้วยชื่อ · 4 ตัวท้ายของเบอร์ · รหัส MST · <span class="code">⌘K</span></td><td>พบสมาชิก B1 ทุกวิธี</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+        <tr><td class="id">B4</td><td class="what">แก้ข้อมูล</td><td><span class="ui">แก้ไขข้อมูล</span> เปลี่ยนวันเกิดและอีเมล</td><td>บันทึกได้ · ปรากฏในแท็บ บันทึกการแก้ไข (ผู้ดูแลระบบ)</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+        <tr><td class="id">B5</td><td class="what">ปรับแต้มตามเพดาน</td><td>บริการลูกค้าเพิ่ม 500 แต้มพร้อมเหตุผล แล้วลอง 1,500</td><td>500 ผ่าน · 1,500 ถูกปฏิเสธ "ไม่เกิน ±1,000 แต้ม" · ไม่ใส่เหตุผลบันทึกไม่ได้</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+        <tr><td class="id">B6</td><td class="what">ส่งคำขอรวมบัญชี</td><td>สร้างสมาชิกอีกคน แล้ว <span class="ui">ขอรวมบัญชี / ขอลบข้อมูล</span></td><td>เรื่องไปอยู่ใน คิวตรวจสอบ ของผู้ดูแลระบบ</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="ft"><span>MST Golf Platform · UAT</span><span>1 / 4</span></div>
+</section>
+
+<!-- ═══════ 2 ═══════ -->
+<section class="page">
+  <div class="head">
+    <div class="kicker">MST Golf Platform · UAT</div>
+    <h2>นำเข้ายอดขายและซิมกอล์ฟ</h2>
+  </div>
+  <div class="body">
+    <h3 class="sec">C · นำเข้า POS <span>ผู้จัดการสาขา</span></h3>
+    <table class="u">
+      <thead><tr><th>#</th><th>ทดสอบ</th><th>ขั้นตอน</th><th>ผลที่ควรได้</th><th>ผล</th><th>หมายเหตุ</th></tr></thead>
+      <tbody>
+        <tr><td class="id">C1</td><td class="what">เตรียมบิล</td><td>ที่ POS ออกบิล 3 ใบ: ใบ 1 หมายเหตุ <span class="code">MSTMEMBER:&lt;เบอร์ B1&gt;</span> · ใบ 2 <span class="code">MSTMEMBER:&lt;รหัส B1&gt; ลูกค้าประจำ</span> · ใบ 3 ไม่ใส่</td><td>—</td><td class="box"></td><td class="note"></td></tr>
+        <tr><td class="id">C2</td><td class="what">อ่านไฟล์จริง</td><td>export CSV วันนั้น แล้ววางในหน้า นำเข้า POS</td><td>จับคู่คอลัมน์ถูก (เลขบิล วันที่ ยอด หมายเหตุ) · ถ้าไม่ถูก แก้ใน <span class="ui">ตรวจการจับคู่คอลัมน์</span> ได้</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+        <tr><td class="id">C3</td><td class="what">ตัวเลขตรวจ</td><td>ดูหน้าตรวจก่อนยืนยัน</td><td>ใบ 1–2 จับคู่ B1 ได้ · ใบ 3 "ไม่มีเจ้าของ" · ยอดรวมตรงกับรายงานปิดวันของ POS</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+        <tr><td class="id">C4</td><td class="what">ยืนยันนำเข้า</td><td><span class="ui">ยืนยันนำเข้า</span> แล้วเปิดสมาชิก B1</td><td>แต้มเพิ่มตามยอด × อัตราระดับ · แท็บบิลมีทั้ง 2 ใบ</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+        <tr><td class="id">C5</td><td class="what">ไฟล์ซ้ำ</td><td>วางไฟล์เดิมอีกครั้ง</td><td>ถูกปฏิเสธ "ไฟล์นี้นำเข้าแล้ว" · แต้มไม่เพิ่ม</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+        <tr><td class="id">C6</td><td class="what">บิลคืน</td><td>คืนสินค้าบางส่วนของใบ 1 ที่ POS แล้วนำเข้าไฟล์วันถัดไป</td><td>แต้มของ B1 ถูกหักตามสัดส่วน · ยอด 12 เดือนลดลง</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+        <tr><td class="id">C7</td><td class="what">ยกเลิกรอบ</td><td>นำเข้าไฟล์ทดลอง แล้ว <span class="ui">ยกเลิกรอบนี้</span> พร้อมเหตุผล</td><td>บิลหาย แต้มกลับเท่าเดิม · นำเข้าไฟล์นั้นใหม่ได้</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+        <tr><td class="id">C8</td><td class="what">ขึ้นระดับ</td><td>นำเข้าบิลที่ทำให้ยอด 12 เดือนของสมาชิกถึงเกณฑ์ Silver</td><td>ระดับเปลี่ยนทันที · บิลนั้นได้แต้มอัตราเดิม บิลถัดไปอัตราใหม่</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+      </tbody>
+    </table>
+
+    <h3 class="sec">D · ซิมกอล์ฟ <span>หน้าร้าน · ผู้จัดการ</span></h3>
+    <table class="u">
+      <thead><tr><th>#</th><th>ทดสอบ</th><th>ขั้นตอน</th><th>ผลที่ควรได้</th><th>ผล</th><th>หมายเหตุ</th></tr></thead>
+      <tbody>
+        <tr><td class="id">D1</td><td class="what">เวลาและราคา</td><td>ดูตารางวันนี้และวันเสาร์</td><td>ช่องเวลาตรงเวลาเปิดร้านจริง · ราคาตรงราคาจริง</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+        <tr><td class="id">D2</td><td class="what">walk-in</td><td>กดช่องว่าง › Walk-in › สมาชิก B1 › ติ๊กเช็กอินเลย</td><td>การ์ดสีน้ำเงิน "เช็กอินแล้ว" · ยอดรับเป็นราคาหลังส่วนลดระดับ</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+        <tr><td class="id">D3</td><td class="what">โทรจองคนไม่ใช่สมาชิก</td><td>โทรจอง › ไม่ใช่สมาชิก ใส่ชื่อ เวลาพรุ่งนี้</td><td>การ์ดสีเขียว · ช่องนั้นขึ้น "เต็ม" ในหน้าจองของลูกค้า</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+        <tr><td class="id">D4</td><td class="what">จองซ้อน</td><td>พนักงาน 2 คนกดจองช่องเดียวกันพร้อมกัน</td><td>สำเร็จคนเดียว อีกคนขึ้นว่าช่องถูกจองแล้ว</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+        <tr><td class="id">D5</td><td class="what">ย้าย</td><td>ลากการ์ด D3 ไป lane อื่น</td><td>ย้ายได้ · ลากไปช่องที่มีคนจองแล้วไม่ได้</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+        <tr><td class="id">D6</td><td class="what">ยกเลิก · ไม่มา</td><td>ยกเลิก D3 พร้อมเหตุผล · จองอีกช่องที่เริ่มแล้ว รอเกินเวลาที่ตั้ง กด ไม่มาตามนัด</td><td>ช่องว่างทันที · ไม่มาตามนัดกดได้หลังเวลาที่ตั้งเท่านั้น และนับในหน้าสมาชิก</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+        <tr><td class="id">D7</td><td class="what">ปิด lane</td><td>ผู้จัดการปิด lane 1 ช่วง 1 ชม. เหตุผล ปิดซ่อม</td><td>ช่วงนั้นเป็นลายเทา จองไม่ได้ทั้งหลังบ้านและหน้าลูกค้า · เปิดคืนได้</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="ft"><span>MST Golf Platform · UAT</span><span>2 / 4</span></div>
+</section>
+
+<!-- ═══════ 3 ═══════ -->
+<section class="page">
+  <div class="head">
+    <div class="kicker">MST Golf Platform · UAT</div>
+    <h2>เว็บไซต์ ผู้ดูแลระบบ และ LINE</h2>
+  </div>
+  <div class="body">
+    <h3 class="sec">E · เว็บไซต์ <span>การตลาด · ลูกค้า</span></h3>
+    <table class="u">
+      <thead><tr><th>#</th><th>ทดสอบ</th><th>ขั้นตอน</th><th>ผลที่ควรได้</th><th>ผล</th><th>หมายเหตุ</th></tr></thead>
+      <tbody>
+        <tr><td class="id">E1</td><td class="what">รูปและข้อความ</td><td><span class="ui">เว็บไซต์ › เนื้อหาหน้าเว็บ</span> เปลี่ยนภาพหลักเป็นรูปร้านจริง และแก้หัวข้อหลัก</td><td>ภายใน 5 นาที หน้าแรกแสดงรูปและข้อความใหม่</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+        <tr><td class="id">E2</td><td class="what">บทความ</td><td>เขียนบทความพร้อมรูปปก บันทึกร่าง แล้วเผยแพร่</td><td>ร่างไม่ขึ้นเว็บ · เผยแพร่แล้วขึ้นในหน้าบทความพร้อมรูปปก</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+        <tr><td class="id">E3</td><td class="what">ข้อมูลจากตั้งค่า</td><td>เปิดหน้า Golf Simulator และหน้าแรกบนมือถือ</td><td>ราคา ส่วนลดระดับ กติกา เวลาเปิด ตรงกับตั้งค่า · ไม่มีตัวอักษรล้นจอ</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+        <tr><td class="id">E4</td><td class="what">ข้อความ PDPA</td><td>เปิดหน้าข้อกำหนดและนโยบายความเป็นส่วนตัว</td><td>เป็นฉบับที่ฝ่ายกฎหมาย MST อนุมัติ</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+        <tr class="later"><td class="id">E5</td><td class="what">สมัครผ่าน LINE <b>หลัง LINE</b></td><td>มือถือ: ปุ่มสมัครใน Rich Menu › กรอก › ยินยอม</td><td>ได้บัตรสมาชิก QR · แต้มต้อนรับ · ข้อความต้อนรับใน LINE</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+        <tr class="later"><td class="id">E6</td><td class="what">ผูกกับบัญชีเคาน์เตอร์ <b>หลัง LINE</b></td><td>สมัครใน LINE ด้วยเบอร์ของ B1</td><td>ผูกกับ B1 · ไม่ได้แต้มต้อนรับซ้ำ · แต้มเดิมอยู่ครบ</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+        <tr class="later"><td class="id">E7</td><td class="what">ลูกค้าจองเอง <b>หลัง LINE</b></td><td>ปุ่มจองใน Rich Menu › เลือกช่อง › ยืนยัน · แล้วยกเลิกเอง</td><td>ได้ข้อความยืนยัน · ช่องขึ้นในตารางหลังบ้าน · ยกเลิกได้ก่อนเวลาที่ตั้งเท่านั้น</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+      </tbody>
+    </table>
+
+    <h3 class="sec">F · ผู้ดูแลระบบ <span>ผู้ดูแลระบบ</span></h3>
+    <table class="u">
+      <thead><tr><th>#</th><th>ทดสอบ</th><th>ขั้นตอน</th><th>ผลที่ควรได้</th><th>ผล</th><th>หมายเหตุ</th></tr></thead>
+      <tbody>
+        <tr><td class="id">F1</td><td class="what">ตั้งค่าจริง</td><td>ตรวจ ระดับสมาชิก · แต้ม · การจองซิม · สินค้าที่ไม่ได้แต้ม ให้ตรงนโยบายร้าน</td><td>แก้ได้ทุกค่า · ทุกการแก้อยู่ในบันทึกการใช้งาน</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+        <tr><td class="id">F2</td><td class="what">ยืนยันความพร้อม</td><td><span class="ui">ตั้งค่า › ความพร้อมเปิดใช้</span> กดยืนยันรายการที่ตรวจแล้ว</td><td>สถานะเปลี่ยนเป็น "พร้อม" พร้อมชื่อผู้ยืนยัน</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+        <tr><td class="id">F3</td><td class="what">รวมบัญชี</td><td>จากคิวตรวจสอบ (B6) › รวมบัญชีซ้ำ</td><td>บัญชีเดียวเหลือ แต้มและบิลรวมกัน · ไม่ได้แต้มต้อนรับซ้ำ</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+        <tr><td class="id">F4</td><td class="what">ลบข้อมูล PDPA</td><td>สมาชิกทดสอบ › ลบข้อมูล (PDPA) › พิมพ์ "ลบข้อมูล"</td><td>ชื่อ เบอร์ LINE ถูกล้าง · ยอดขายยังนับในภาพรวม</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+        <tr><td class="id">F5</td><td class="what">ภาพรวม</td><td>ดูภาพรวม 7 วัน หลังทดสอบ C และ D</td><td>สมาชิกใหม่ ยอดซื้อ % บิลที่ระบุสมาชิกได้ การใช้ซิม ตรงกับที่ทดสอบ</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+        <tr><td class="id">F6</td><td class="what">สถานะระบบ</td><td><span class="ui">ตั้งค่า › สถานะระบบ</span></td><td>งานกลางคืน งานทุก 15 นาที และสำรองข้อมูล ขึ้น "ปกติ"</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+      </tbody>
+    </table>
+
+    <h3 class="sec">G · ข้อความ LINE <span>หลัง LINE</span></h3>
+    <table class="u">
+      <thead><tr><th>#</th><th>ทดสอบ</th><th>ขั้นตอน</th><th>ผลที่ควรได้</th><th>ผล</th><th>หมายเหตุ</th></tr></thead>
+      <tbody>
+        <tr class="later"><td class="id">G1</td><td class="what">แจ้งแต้ม</td><td>นำเข้าบิลของสมาชิกที่ผูก LINE</td><td>ได้ข้อความยอดซื้อ แต้มที่ได้ แต้มคงเหลือ</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+        <tr class="later"><td class="id">G2</td><td class="what">ขึ้นระดับ</td><td>ทำ C8 กับสมาชิกที่ผูก LINE</td><td>ได้ข้อความยินดีขึ้นระดับพร้อมสิทธิ์ใหม่</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+        <tr class="later"><td class="id">G3</td><td class="what">การจอง</td><td>จอง · ย้าย · ยกเลิก ให้สมาชิกที่ผูก LINE · จองไว้ล่วงหน้าเกินเวลาเตือน</td><td>ได้ข้อความทุกครั้ง · ข้อความเตือนก่อนเวลาครั้งเดียว</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="ft"><span>MST Golf Platform · UAT</span><span>3 / 4</span></div>
+</section>
+
+<!-- ═══════ 4 ═══════ -->
+<section class="page">
+  <div class="head">
+    <div class="kicker">MST Golf Platform · UAT</div>
+    <h2>สรุปผลและลงนาม</h2>
+  </div>
+  <div class="body">
+    <div class="card">
+      <h3>สรุปผล</h3>
+      <table class="u">
+        <thead><tr><th>ส่วน</th><th>จำนวนข้อ</th><th>ผ่าน</th><th>ไม่ผ่าน</th><th>หมายเหตุ</th></tr></thead>
+        <tbody>
+          <tr><td class="what">A · เข้าสู่ระบบและสิทธิ์</td><td>5</td><td></td><td></td><td></td></tr>
+          <tr><td class="what">B · สมาชิกที่เคาน์เตอร์</td><td>6</td><td></td><td></td><td></td></tr>
+          <tr><td class="what">C · นำเข้า POS</td><td>8</td><td></td><td></td><td></td></tr>
+          <tr><td class="what">D · ซิมกอล์ฟ</td><td>7</td><td></td><td></td><td></td></tr>
+          <tr><td class="what">E · เว็บไซต์</td><td>7 (3 หลัง LINE)</td><td></td><td></td><td></td></tr>
+          <tr><td class="what">F · ผู้ดูแลระบบ</td><td>6</td><td></td><td></td><td></td></tr>
+          <tr><td class="what">G · ข้อความ LINE</td><td>3 (หลัง LINE)</td><td></td><td></td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <h3>รายการที่ต้องแก้</h3>
+      <table class="u">
+        <thead><tr><th>#</th><th>ข้อที่ไม่ผ่าน</th><th>สิ่งที่เห็นจริง</th><th>แก้แล้ว (วันที่)</th><th>ทดสอบซ้ำผ่าน</th></tr></thead>
+        <tbody>
+          <tr><td class="id">1</td><td style="height:9mm"></td><td></td><td></td><td></td></tr>
+          <tr><td class="id">2</td><td style="height:9mm"></td><td></td><td></td><td></td></tr>
+          <tr><td class="id">3</td><td style="height:9mm"></td><td></td><td></td><td></td></tr>
+          <tr><td class="id">4</td><td style="height:9mm"></td><td></td><td></td><td></td></tr>
+          <tr><td class="id">5</td><td style="height:9mm"></td><td></td><td></td><td></td></tr>
+          <tr><td class="id">6</td><td style="height:9mm"></td><td></td><td></td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card warn">
+      <h3>เงื่อนไขเปิดใช้จริง</h3>
+      <ul class="small">
+        <li>ส่วน A–F ผ่านครบ · ส่วนที่ต้องใช้ LINE (E5–E7, G) ผ่านเมื่อได้ credentials จากทีม LINE</li>
+        <li>หน้า <b>ตั้งค่า › ความพร้อมเปิดใช้</b> ครบทุกรายการของ MST</li>
+        <li>ข้อมูลทดสอบทั้งหมดอยู่ในระบบทดสอบ — ระบบจริงเริ่มจากข้อมูลว่าง (หรือข้อมูลเดิมที่ย้ายมา)</li>
+      </ul>
+    </div>
+    <div class="sign">
+      <div>ผู้ทดสอบ MST Golf Thailand<br>ชื่อ / วันที่</div>
+      <div>ผู้อนุมัติ MST Golf Thailand<br>ชื่อ / วันที่</div>
+      <div>ORIONS<br>ชื่อ / วันที่</div>
+    </div>
+  </div>
+  <div class="ft"><span>MST Golf Platform · UAT</span><span>4 / 4</span></div>
+</section>
+
+</body>
+</html>

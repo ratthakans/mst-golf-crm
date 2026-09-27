@@ -73,6 +73,13 @@ export function readMemberRef(remark: string | undefined, column: string | undef
   if (/^MST\d{8}$/.test(code)) return { raw, kind: "code", value: code };
   const phone = normalizeThaiMobile(raw);
   if (phone) return { raw, kind: "phone", value: phone };
+  // Staff often type more after the reference ("MSTMEMBER:MST00000001 VIP",
+  // "MSTMEMBER:0891112233 ลูกค้าประจำ"): read the code or number at the start.
+  const leadCode = /^MST\d{8}(?![0-9])/i.exec(raw.trim());
+  if (leadCode) return { raw, kind: "code", value: leadCode[0].toUpperCase() };
+  const leadDigits = /^\+?[\d][\d\s-]{8,15}/.exec(raw.trim());
+  const leadPhone = leadDigits ? normalizeThaiMobile(leadDigits[0]) ?? normalizeThaiMobile(leadDigits[0].trim().split(/\s+/)[0]) : null;
+  if (leadPhone) return { raw, kind: "phone", value: leadPhone };
   return { raw, kind: "invalid", value: raw };
 }
 

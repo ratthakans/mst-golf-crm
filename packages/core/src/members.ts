@@ -352,7 +352,7 @@ export async function getMember(orgId: string, memberId: string): Promise<Member
 
 export interface MemberCard {
   member: MemberSummary;
-  tier: { key: string; name: string; pointRate: number; discountPct: number; simDiscountPct: number; bookingDaysAhead: number };
+  tier: { key: string; name: string; pointRate: number; discountPct: number; simDiscountPct: number; bookingDaysAhead: number; birthdayMultiplier: number };
   next: { name: string; remainingBaht: number; pct: number } | null;
   spend12mBaht: number;
 }
@@ -376,6 +376,7 @@ export async function memberCard(orgId: string, memberId: string): Promise<Membe
       discountPct: held.benefits.discountPct,
       simDiscountPct: held.benefits.simDiscountPct,
       bookingDaysAhead: held.benefits.simBookingDaysAhead,
+      birthdayMultiplier: held.benefits.birthdayPointMultiplier,
     },
     next: next
       ? {

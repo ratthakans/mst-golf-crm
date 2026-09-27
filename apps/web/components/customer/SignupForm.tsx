@@ -18,11 +18,12 @@ interface Props {
   marketing: ConsentDoc | null;
   next: "booking" | null;
   todayKey: string;
+  birthdayMultiplier: number; // entry tier's birthday-month points multiplier
 }
 
 // Flow page 03 step 02: name, mobile, optional birthday and email, PDPA
 // consent. The LINE account comes from the session cookie on the server.
-export function SignupForm({ lineName, welcomePoints, terms, marketing, next, todayKey }: Props) {
+export function SignupForm({ lineName, welcomePoints, terms, marketing, next, todayKey, birthdayMultiplier }: Props) {
   const router = useRouter();
   const [fullName, setFullName] = useState(lineName.length >= 2 ? lineName : "");
   const [phone, setPhone] = useState("");
@@ -220,7 +221,7 @@ export function SignupForm({ lineName, welcomePoints, terms, marketing, next, to
             <p className="field-error">{errors.birthday}</p>
           ) : (
             <p id="su-birthday-hint" className="hint">
-              ใส่ไว้เพื่อรับแต้ม ×2 ทุกการซื้อในเดือนเกิด · ตั้งได้ครั้งเดียว
+              {birthdayMultiplier > 1 ? `ใส่ไว้เพื่อรับแต้ม ×${birthdayMultiplier} ทุกการซื้อในเดือนเกิด · ` : ""}ตั้งได้ครั้งเดียว
             </p>
           )}
         </div>

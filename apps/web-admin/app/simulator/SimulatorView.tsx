@@ -75,6 +75,7 @@ export function SimulatorView({
   can,
   presetMember,
   noShowGraceMinutes,
+  holdMinutes,
 }: {
   today: string;
   initialDate: string;
@@ -82,6 +83,7 @@ export function SimulatorView({
   can: { manage: boolean; block: boolean; money: boolean };
   presetMember: MemberHit | null;
   noShowGraceMinutes: number;
+  holdMinutes: number;
 }) {
   const [date, setDate] = useState(initialDate);
   const [view, setView] = useState<"day" | "week">("day");
@@ -259,7 +261,7 @@ export function SimulatorView({
           )}
           <div className="legend">
             <span style={{ ["--c" as string]: "var(--brand)" }}>ยืนยันแล้ว</span>
-            <span style={{ ["--c" as string]: "#f59e0b" }}>ลูกค้ากำลังยืนยัน (ถือช่อง 5 นาที)</span>
+            <span style={{ ["--c" as string]: "#f59e0b" }}>ลูกค้ากำลังยืนยัน (ถือช่อง {holdMinutes} นาที)</span>
             <span style={{ ["--c" as string]: "#2563eb" }}>เช็กอินแล้ว</span>
             <span style={{ ["--c" as string]: "#ef4444" }}>ไม่มาตามนัด</span>
           </div>
@@ -679,7 +681,7 @@ function BookingDialog({
       )}
 
       {error && <p className="form-error" style={{ marginTop: 10 }}>{error}</p>}
-      {b.status === "HELD" && <p className="muted small" style={{ marginTop: 12 }}>ลูกค้ามีเวลา 5 นาทีในการยืนยัน ถ้าไม่ยืนยันช่องจะว่างเอง</p>}
+      {b.status === "HELD" && <p className="muted small" style={{ marginTop: 12 }}>{b.heldUntil ? `ลูกค้ากำลังยืนยัน — ถ้าไม่ยืนยันภายใน ${formatHm(new Date(b.heldUntil))} น. ช่องจะว่างเอง` : "ลูกค้ากำลังยืนยัน ถ้าไม่ยืนยันภายในเวลาถือช่อง ช่องจะว่างเอง"}</p>}
     </Modal>
   );
 }
