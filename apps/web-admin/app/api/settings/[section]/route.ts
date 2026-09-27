@@ -7,6 +7,7 @@ import {
   saveNotificationToggles,
   savePointRules,
   savePosRules,
+  saveShopifyConnection,
   saveSite,
   saveStore,
   saveTiers,
@@ -78,6 +79,14 @@ export async function PUT(req: Request, { params }: { params: { section: string 
           purpose: b.purpose === "MARKETING" ? "MARKETING" : "TERMS",
           title: str(b.title),
           body: str(b.body),
+        });
+        break;
+      case "shopify":
+        await saveShopifyConnection(org.id, actor, {
+          shopDomain: str(b.shopDomain),
+          accessToken: optStr(b.accessToken) ?? undefined,
+          windowDays: Number(b.windowDays),
+          isActive: b.isActive === true,
         });
         break;
       case "line":

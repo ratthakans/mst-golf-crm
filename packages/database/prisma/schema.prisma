@@ -39,6 +39,7 @@ model Organization {
   pointTransactions PointTransaction[]
   fieldDefinitions  FieldDefinition[]
   lineChannels      LineChannel[]
+  shopifyShops      ShopifyConnection[]
   consents          Consent[]
   consentTexts      ConsentText[]
   segments          Segment[]
@@ -146,6 +147,7 @@ model Store {
   sales         Sale[]
   lanes         Lane[]
   importBatches ImportBatch[]
+  shopifyShops  ShopifyConnection[]
 
   @@unique([orgId, code])
   @@map("stores")
@@ -745,6 +747,31 @@ model LineChannel {
 // ---------------------------------------------------------------------------
 // Intelligence (out of the Phase 1 contract — kept, hidden per tenant)
 // ---------------------------------------------------------------------------
+// The online shop (mstgolf.co.th, the MST Golf Group's Shopify store for
+// Thailand). Orders are pulled nightly into Sales of `store` once their return
+// window has passed — docs/th-commerce/INTEGRATION.md.
+model ShopifyConnection {
+  id             String       @id @default(cuid())
+  orgId          String
+  org            Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  shopDomain     String // "mst-golf-thailand.myshopify.com"
+  accessTokenEnc String // Admin API token of the custom app, encrypt() from @mstgolf/shared
+  storeId        String // the Store online sales are booked to (code ONLINE)
+  store          Store        @relation(fields: [storeId], references: [id])
+  windowDays     Int          @default(14) // return window: an order earns points after it
+  isActive       Boolean      @default(false)
+  syncedTo       DateTime? // orders processed up to (syncedTo − windowDays) are in
+  lastSyncAt     DateTime?
+  lastResult     Json         @default("{}") // SyncResult in @mstgolf/core
+  lastError      String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@unique([orgId, shopDomain])
+  @@index([orgId])
+  @@map("shopify_connections")
+}
+
 model Segment {
   id          String       @id @default(cuid())
   orgId       String

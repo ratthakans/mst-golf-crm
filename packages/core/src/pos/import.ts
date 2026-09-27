@@ -107,22 +107,62 @@ export async function previewImport(
     ? { bills: [], errors: [] as RowError[], lineCount: table.length - 1 }
     : parseBills(headers, table.slice(1), mapping, settings.pos);
 
-  const classified = await classifyBills(client, store.id, parsed.bills);
-  const counts = await summarize(client, settings, parsed.lineCount, classified, parsed.errors);
+  const staged = await stageBatch(orgId, actor, {
+    storeId: store.id,
+    fileName: input.fileName,
+    fileHash: hash,
+    mode: input.mode ?? "DAILY",
+    bills: parsed.bills,
+    errors: parsed.errors,
+    lineCount: parsed.lineCount,
+    extra: { mapping, encoding },
+    replaceBatchId: previous?.id ?? null,
+  });
+  return { batchId: staged.batchId, counts: staged.counts, headers, mapping, mappingProblems: problemsWithMapping, encoding, problems: staged.problems };
+}
+
+export interface StageInput {
+  storeId: string;
+  fileName: string;
+  fileHash: string;
+  mode: ImportMode;
+  bills: ParsedBill[];
+  errors: RowError[];
+  lineCount: number;
+  extra?: Record<string, unknown>; // stored beside the counts (mapping, source …)
+  replaceBatchId?: string | null; // an earlier PREVIEW of the same file
+}
+
+export interface StagedBatch {
+  batchId: string;
+  counts: ImportCounts;
+  problems: PreviewResult["problems"];
+}
+
+/**
+ * Classifies bills against the database and writes them as a PREVIEW batch.
+ * The CSV upload and the online-order sync (../shopify/sync.ts) both land here,
+ * so every bill goes through the same duplicate, member and return checks.
+ */
+export async function stageBatch(orgId: string, actor: Actor, input: StageInput): Promise<StagedBatch> {
+  const { settings } = await getOrg(orgId);
+  const client = db(orgId);
+  const classified = await classifyBills(client, input.storeId, input.bills);
+  const counts = await summarize(client, settings, input.lineCount, classified, input.errors);
 
   const batchId = await inTx(orgId, async (tx) => {
-    if (previous) await tx.importBatch.deleteMany({ where: { id: previous.id, status: "PREVIEW" } });
+    if (input.replaceBatchId) await tx.importBatch.deleteMany({ where: { id: input.replaceBatchId, status: "PREVIEW" } });
     // Abandoned previews of other files are cleared after a day.
     await tx.importBatch.deleteMany({ where: { status: "PREVIEW", createdAt: { lt: new Date(Date.now() - 24 * 3600_000) } } });
     const batch = await tx.importBatch.create({
       data: {
         orgId,
-        storeId: store.id,
+        storeId: input.storeId,
         fileName: input.fileName.slice(0, 200),
-        fileHash: hash,
-        mode: input.mode ?? "DAILY",
+        fileHash: input.fileHash,
+        mode: input.mode,
         uploadedBy: actor.kind === "staff" ? actor.userId : null,
-        counts: { ...counts, mapping, encoding } as unknown as Prisma.InputJsonValue,
+        counts: { ...counts, ...(input.extra ?? {}) } as unknown as Prisma.InputJsonValue,
       },
     });
     const rows: Prisma.ImportRowCreateManyInput[] = [
@@ -135,7 +175,7 @@ export async function previewImport(
         status: c.status,
         errorCode: c.code ?? null,
       })),
-      ...parsed.errors.map((e) => ({
+      ...input.errors.map((e) => ({
         orgId,
         batchId: batch.id,
         rowNumber: e.rowNumber,
@@ -153,10 +193,10 @@ export async function previewImport(
     ...classified
       .filter((c) => c.status !== "OK")
       .map((c) => ({ rowNumber: c.bill.rowNumbers[0] ?? 0, invoiceNo: c.bill.invoiceNo, status: c.status, message: c.note ?? "" })),
-    ...parsed.errors.map((e) => ({ rowNumber: e.rowNumber, invoiceNo: e.invoiceNo, status: "INVALID" as const, message: e.message })),
+    ...input.errors.map((e) => ({ rowNumber: e.rowNumber, invoiceNo: e.invoiceNo, status: "INVALID" as const, message: e.message })),
   ].sort((a, b) => a.rowNumber - b.rowNumber);
 
-  return { batchId, counts, headers, mapping, mappingProblems: problemsWithMapping, encoding, problems: problems.slice(0, 500) };
+  return { batchId, counts, problems: problems.slice(0, 500) };
 }
 
 interface Classified {
@@ -308,6 +348,7 @@ export async function commitImport(orgId: string, actor: Actor, batchId: string)
       });
       if (claimed.count !== 1) throw new CoreError("IMPORT_STATE", "รอบนี้นำเข้าไปแล้วหรือถูกยกเลิก");
       const history = batch.mode === "HISTORY";
+      const store = await tx.store.findFirst({ where: { id: batch.storeId }, select: { name: true } });
       const now = new Date();
 
       const rows = await tx.importRow.findMany({ where: { batchId: batch.id, status: { in: ["OK", "UNMATCHED"] } } });
@@ -574,6 +615,7 @@ export async function commitImport(orgId: string, actor: Actor, batchId: string)
               nextTierName: next?.name ?? null,
               remainingBaht: next ? Math.max(0, next.minSpend12m - spendNow / 100) : null,
               pct: progress.pct,
+              storeName: store?.name,
             },
           });
         }

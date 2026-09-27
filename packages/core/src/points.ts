@@ -33,7 +33,7 @@ export type PointReason =
 
 export const POINT_REASON_LABEL: Record<PointReason, string> = {
   WELCOME: "แต้มต้อนรับสมาชิกใหม่",
-  PURCHASE: "ซื้อสินค้าที่ร้าน",
+  PURCHASE: "ซื้อสินค้า",
   BIRTHDAY: "โบนัสเดือนเกิด",
   RETURN: "คืนสินค้า",
   VOID: "ยกเลิกบิล",

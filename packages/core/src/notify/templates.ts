@@ -26,6 +26,7 @@ export interface PointsPayload {
   tierName: string;
   nextTierName: string | null;
   remainingBaht: number | null;
+  storeName?: string; // the batch's store — the online shop for online orders
 }
 export interface TierUpPayload {
   tierName: string;
@@ -122,7 +123,7 @@ export function renderNotification(kind: NotificationKind, payload: unknown, ctx
     case "POINTS": {
       const p = payload as PointsPayload;
       const rows: Row[] = [
-        { label: "ร้าน", value: ctx.storeName },
+        { label: "ร้าน", value: p.storeName ?? ctx.storeName },
         { label: p.bills > 1 ? `ยอดซื้อ (${p.bills} บิล)` : "ยอดซื้อ", value: formatBaht(p.spentSatang) },
         { label: "แต้มที่ได้", value: `${p.earned >= 0 ? "+" : ""}${n(p.earned)}`, strong: true },
         { label: "แต้มคงเหลือ", value: n(p.balance) },
