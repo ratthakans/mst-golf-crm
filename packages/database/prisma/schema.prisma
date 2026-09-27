@@ -57,6 +57,7 @@ model Organization {
   laneBlocks        LaneBlock[]
   notifications     Notification[]
   posts             Post[]
+  jobRuns           JobRun[]
 
   @@map("organizations")
 }
@@ -745,6 +746,24 @@ model LineChannel {
 // ---------------------------------------------------------------------------
 // Intelligence (out of the Phase 1 contract — kept, hidden per tenant)
 // ---------------------------------------------------------------------------
+// One row per scheduled job run, per org — what Settings › สถานะระบบ shows.
+// kind: nightly (Vercel Cron) · frequent (GitHub Actions, 15 min) · backup
+// (GitHub Actions reports after uploading). Old rows are pruned by the nightly job.
+model JobRun {
+  id         String       @id @default(cuid())
+  orgId      String
+  org        Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  kind       String
+  ok         Boolean
+  startedAt  DateTime
+  finishedAt DateTime
+  detail     Json         @default("{}")
+  error      String?
+
+  @@index([orgId, kind, startedAt])
+  @@map("job_runs")
+}
+
 model Segment {
   id          String       @id @default(cuid())
   orgId       String

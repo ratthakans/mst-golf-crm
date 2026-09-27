@@ -16,6 +16,7 @@ export * from "./dashboard";
 export * from "./posts";
 export * from "./config";
 export * from "./jobs";
+export * from "./ops";
 export * from "./pos/csv";
 export * from "./pos/mapping";
 export * from "./pos/parse";

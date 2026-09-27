@@ -71,6 +71,11 @@ export function BookingApp(props: Props) {
   const [skew, setSkew] = useState(0);
   const [done, setDone] = useState<BookingRow | null>(null);
   const [mine, setMine] = useState(props.bookings);
+  // The customer's own upcoming bookings, so their slots read "ของคุณ" rather than "เต็ม".
+  const mineKeys = useMemo(
+    () => new Set(mine.upcoming.filter((b) => b.status !== "CANCELLED").map((b) => `${b.laneId}|${new Date(b.startAt).getTime()}`)),
+    [mine],
+  );
   const [cancelTarget, setCancelTarget] = useState<BookingRow | null>(null);
   const [cancelError, setCancelError] = useState<string | null>(null);
   const reqId = useRef(0);
@@ -380,7 +385,7 @@ export function BookingApp(props: Props) {
                 </span>
               ))}
               {avail.slots.map((s) => (
-                <SlotRow key={s.startAt} slot={s} avail={avail} onPick={openPick} />
+                <SlotRow key={s.startAt} slot={s} avail={avail} mine={mineKeys} onPick={openPick} />
               ))}
             </div>
             {allPast && <p className="hint center">ช่วงเวลาของวันนี้ผ่านไปหมดแล้ว เลือกวันถัดไปได้เลย</p>}
@@ -391,6 +396,11 @@ export function BookingApp(props: Props) {
               <li>
                 <i className="lg-taken" /> เต็ม
               </li>
+              {mineKeys.size > 0 && (
+                <li>
+                  <i className="lg-mine" /> ของคุณ
+                </li>
+              )}
               <li>
                 <i className="lg-blocked" /> ปิด
               </li>
@@ -545,7 +555,7 @@ export function BookingApp(props: Props) {
   );
 }
 
-function SlotRow({ slot, avail, onPick }: { slot: AvailabilityData["slots"][number]; avail: AvailabilityData; onPick: (p: Pick) => void }) {
+function SlotRow({ slot, avail, mine, onPick }: { slot: AvailabilityData["slots"][number]; avail: AvailabilityData; mine: Set<string>; onPick: (p: Pick) => void }) {
   return (
     <>
       <span className="slots-time num">{slot.label}</span>
@@ -553,13 +563,15 @@ function SlotRow({ slot, avail, onPick }: { slot: AvailabilityData["slots"][numb
         const lane = avail.lanes.find((l) => l.id === cell.laneId);
         if (!lane) return <span key={cell.laneId} />;
         const free = cell.state === "free";
+        const own = cell.state === "taken" && mine.has(`${cell.laneId}|${new Date(slot.startAt).getTime()}`);
+        const text = own ? "ของคุณ" : STATE_TEXT[cell.state];
         return (
           <button
             key={cell.laneId}
             type="button"
-            className={`slot slot-${cell.state}`}
+            className={`slot slot-${own ? "mine" : cell.state}`}
             disabled={!free}
-            aria-label={`${lane.name} ${slot.label} น. ${STATE_TEXT[cell.state]}`}
+            aria-label={`${lane.name} ${slot.label} น. ${text}`}
             onClick={() =>
               onPick({
                 laneId: lane.id,
@@ -571,7 +583,7 @@ function SlotRow({ slot, avail, onPick }: { slot: AvailabilityData["slots"][numb
               })
             }
           >
-            {cell.state === "past" ? "—" : STATE_TEXT[cell.state]}
+            {cell.state === "past" ? "—" : text}
           </button>
         );
       })}

@@ -659,6 +659,13 @@
   color: var(--color-faint);
   cursor: not-allowed;
 }
+.slot-mine {
+  background: var(--color-brand);
+  border-color: var(--color-brand);
+  color: #fff;
+  font-weight: 600;
+  cursor: default;
+}
 .slot-blocked,
 .slot-closed {
   background: repeating-linear-gradient(135deg, var(--color-paper-2) 0 6px, var(--color-surface) 6px 12px);
@@ -699,6 +706,9 @@
 }
 .lg-taken {
   background: var(--color-paper-2);
+}
+.lg-mine {
+  background: var(--color-brand);
 }
 .lg-blocked {
   background: repeating-linear-gradient(135deg, var(--color-paper-2) 0 3px, var(--color-surface) 3px 6px);

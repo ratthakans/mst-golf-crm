@@ -9,7 +9,8 @@
     ".": "./src/index.ts",
     "./tiers": "./src/tiers.ts",
     "./phone": "./src/phone.ts",
-    "./password": "./src/password.ts"
+    "./password": "./src/password.ts",
+    "./site": "./src/site.ts"
   },
   "typesVersions": {
     "*": {
@@ -21,6 +22,9 @@
       ],
       "password": [
         "src/password.ts"
+      ],
+      "site": [
+        "src/site.ts"
       ]
     }
   },

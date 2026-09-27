@@ -1,6 +1,6 @@
 import { Fragment } from "react";
 import Link from "next/link";
-import { addDays, dashboardSummary, localDateKey, startOfLocalDay, type PeriodMetrics } from "@mstgolf/core";
+import { addDays, dashboardSummary, localDateKey, startOfLocalDay, type PeriodMetrics, readiness } from "@mstgolf/core";
 import { allowPage } from "../lib/auth";
 import { currentOrg } from "../lib/org";
 import { Forbidden } from "./Forbidden";
@@ -86,7 +86,7 @@ function Kpis({ c, p, showMoney }: { c: PeriodMetrics; p: PeriodMetrics; showMon
       <div className="card kpi">
         <div className="label">ใช้ lane ซิม</div>
         <div className="value">
-          {pct(c.occupancyPct)}
+          {pct(c.occupancyPct, c.occupancyPct !== null && c.occupancyPct > 0 && c.occupancyPct < 0.1 ? 1 : 0)}
           {c.occupancyPct !== null && p.occupancyPct !== null && <Delta now={c.occupancyPct} before={p.occupancyPct} />}
         </div>
         <div className="sub">
@@ -105,7 +105,11 @@ export default async function DashboardPage({ searchParams }: { searchParams: { 
   const to = searchParams.to && /^\d{4}-\d{2}-\d{2}$/.test(searchParams.to) ? searchParams.to : localDateKey(today);
   const from = searchParams.from && /^\d{4}-\d{2}-\d{2}$/.test(searchParams.from) ? searchParams.from : localDateKey(addDays(today, -29));
   const showMoney = user.permissions.includes("dashboard.revenue");
-  const s = await dashboardSummary(org.id, from, to);
+  const [s, ready] = await Promise.all([
+    dashboardSummary(org.id, from, to),
+    user.permissions.includes("settings.manage") ? readiness(org.id) : Promise.resolve(null),
+  ]);
+  const readyOpen = ready ? ready.filter((i) => i.state !== "ok").length : 0;
   const maxNew = Math.max(1, ...s.weekly.map((w) => w.newMembers));
   const maxSpend = Math.max(1, ...s.weekly.map((w) => w.memberSpendSatang));
   const maxHeat = Math.max(1, ...s.heatmap.rows.flatMap((r) => r.counts));
@@ -130,6 +134,16 @@ export default async function DashboardPage({ searchParams }: { searchParams: { 
             <span className="muted small"> — เบอร์ซ้ำ คำขอรวมบัญชี หรือคำขอลบข้อมูล</span>
           </span>
           <span className="btn btn-ghost btn-sm">เปิดคิว →</span>
+        </Link>
+      )}
+
+      {ready && readyOpen > 0 && (
+        <Link href="/settings/readiness" className="card row between">
+          <span>
+            <b>ก่อนเปิดใช้จริง: พร้อม {num(ready.length - readyOpen)} จาก {num(ready.length)} รายการ</b>
+            <span className="muted small"> — รอ MST ยืนยันค่า {num(ready.filter((i) => i.state === "confirm").length)} · รอข้อมูล {num(ready.filter((i) => i.state === "waiting").length)}</span>
+          </span>
+          <span className="btn btn-ghost btn-sm">ดูรายการ →</span>
         </Link>
       )}
 

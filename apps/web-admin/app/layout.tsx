@@ -19,6 +19,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title: org.settings.productName,
     description: `ระบบสมาชิก แต้ม และจองซิมกอล์ฟของ ${org.name}`,
     robots: { index: false, follow: false },
+    icons: { icon: "/icon.svg" },
   };
 }
 

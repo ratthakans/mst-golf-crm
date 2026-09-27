@@ -5,6 +5,8 @@ const { PrismaPlugin } = require("@prisma/nextjs-monorepo-workaround-plugin");
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  // Photos MST uploads in the back office live in the public Blob store.
+  images: { remotePatterns: [{ protocol: "https", hostname: "*.public.blob.vercel-storage.com" }] },
   // Workspace packages are shipped as TypeScript source — let Next transpile them.
   transpilePackages: ["@mstgolf/core", "@mstgolf/shared", "@mstgolf/database"],
   experimental: {

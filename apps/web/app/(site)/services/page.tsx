@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { IconCheck } from "@/components/icons";
 import { Photo } from "@/components/Photo";
-import { SERVICES } from "@/lib/content";
-import { SERVICE_PHOTO } from "@/lib/images";
+import { siteServices } from "@/lib/content";
+import { servicePhotos, sitePhotos } from "@/lib/images";
 import { getOrg } from "@/lib/org";
 
 export const revalidate = 300;
@@ -18,6 +18,8 @@ export const metadata: Metadata = {
 export default async function ServicesPage() {
   const org = await getOrg();
   const lineOa = org.settings.site.lineOaUrl;
+  const SERVICES = siteServices(org.settings.site.copy);
+  const SERVICE_PHOTO = servicePhotos(sitePhotos(org.settings.site));
 
   return (
     <>

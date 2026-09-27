@@ -1,7 +1,8 @@
 # Daily encrypted pg_dump of the production schema into a private Vercel Blob
 # store, 30 days kept (docs/PRODUCT.md §4.4).
 # Repo secrets: DATABASE_URL_UNPOOLED, BACKUP_BLOB_TOKEN (read-write token of a
-# PRIVATE Blob store used only for backups), BACKUP_PASSPHRASE.
+# PRIVATE Blob store used only for backups), BACKUP_PASSPHRASE; ADMIN_URL and
+# CRON_SECRET to report the result to Settings › สถานะระบบ.
 # Restore: download, `openssl enc -d -aes-256-cbc -pbkdf2 -in f.sql.gz.enc | gunzip | psql <url>`.
 name: backup
 on:
@@ -30,6 +31,7 @@ jobs:
           echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
           sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client-17
       - name: Dump, encrypt, upload
+        id: dump
         if: steps.check.outputs.skip != '1'
         env:
           DATABASE_URL_UNPOOLED: ${{ secrets.DATABASE_URL_UNPOOLED }}
@@ -38,8 +40,21 @@ jobs:
         run: |
           set -euo pipefail
           FILE="mst-golf-$(date -u +%Y%m%dT%H%M%SZ).sql.gz.enc"
+          echo "file=$FILE" >> "$GITHUB_OUTPUT"
           /usr/lib/postgresql/17/bin/pg_dump "$DATABASE_URL_UNPOOLED" --schema=public --no-owner --no-privileges \
             | gzip -9 | openssl enc -aes-256-cbc -pbkdf2 -salt -pass env:BACKUP_PASSPHRASE -out "$FILE"
           ls -lh "$FILE"
           npm i --no-save @vercel/blob@2.8.0 >/dev/null
           node scripts/backup-upload.mjs "$FILE"
+      - name: Report to the back office
+        if: always() && steps.check.outputs.skip != '1'
+        env:
+          ADMIN_URL: ${{ secrets.ADMIN_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          OK: ${{ steps.dump.outcome == 'success' }}
+          FILE: ${{ steps.dump.outputs.file }}
+        run: |
+          if [ -z "$ADMIN_URL" ] || [ -z "$CRON_SECRET" ]; then echo "ADMIN_URL / CRON_SECRET not set — not reporting"; exit 0; fi
+          BYTES=$( [ -n "$FILE" ] && [ -f "$FILE" ] && stat -c %s "$FILE" || echo 0 )
+          curl -sS -m 30 -X POST -H "Authorization: Bearer $CRON_SECRET" -H "Content-Type: application/json" \
+            -d "{\"ok\": $OK, \"file\": \"$FILE\", \"bytes\": $BYTES}" "$ADMIN_URL/api/cron/report?job=backup" || true

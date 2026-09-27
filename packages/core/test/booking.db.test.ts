@@ -102,7 +102,9 @@ describe("booking", () => {
     expect(w.memberId).toBe(counter.member.id);
     expect(w.status).toBe("CHECKED_IN");
     const phone = await staffCreateBooking(t.orgId, t.actor, { laneId: t.lanes[0]!.id, startAt: at(1, 19), partySize: 1, source: "PHONE", guestName: "โทรจอง" }, now);
-    await expect(moveBooking(t.orgId, t.actor, phone.id, { laneId: t.lanes[1]!.id, startAt: at(1, 18) }, now)).rejects.toMatchObject({ code: "SLOT_TAKEN" });
+    // Its own blocker: the race test's winner is random and may be released by a later test.
+    await staffCreateBooking(t.orgId, t.actor, { laneId: t.lanes[1]!.id, startAt: at(1, 20), partySize: 1, source: "PHONE", guestName: "จองไว้ก่อน" }, now);
+    await expect(moveBooking(t.orgId, t.actor, phone.id, { laneId: t.lanes[1]!.id, startAt: at(1, 20) }, now)).rejects.toMatchObject({ code: "SLOT_TAKEN" });
     const moved = await moveBooking(t.orgId, t.actor, phone.id, { laneId: t.lanes[2]!.id, startAt: at(1, 18) }, now);
     expect(moved.laneName).toBe("Lane 3");
     await expect(markNoShow(t.orgId, t.actor, moved.id, fromLocal(2026, 10, 1, 18, 5))).rejects.toMatchObject({ code: "BOOKING_RULE" });

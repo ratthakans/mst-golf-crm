@@ -113,7 +113,7 @@ export function PostEditor({ post, siteUrl, uploadsEnabled }: { post: Post | nul
           <div style={{ width: 240, maxWidth: "100%" }}>
             {f.coverUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={f.coverUrl} alt="" className="cover-preview" />
+              <img src={f.coverUrl.startsWith("/") && siteUrl ? `${siteUrl}${f.coverUrl}` : f.coverUrl} alt="" className="cover-preview" />
             ) : (
               <div className="cover-preview" style={{ display: "grid", placeItems: "center", color: "var(--muted)", fontSize: 13 }}>ไม่มีรูปปก</div>
             )}

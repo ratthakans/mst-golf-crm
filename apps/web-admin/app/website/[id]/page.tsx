@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getPost } from "@mstgolf/core";
 import { allowPage } from "../../../lib/auth";
 import { currentOrg } from "../../../lib/org";
+import { webOrigin } from "../../../lib/web-origin";
 import { Forbidden } from "../../Forbidden";
 import { PostEditor } from "./PostEditor";
 
@@ -22,7 +23,7 @@ export default async function PostPage({ params }: { params: { id: string } }) {
       </div>
       <PostEditor
         post={post ? { ...post, publishedAt: post.publishedAt?.toISOString() ?? null, updatedAt: post.updatedAt.toISOString() } : null}
-        siteUrl={org.settings.site.siteUrl ?? null}
+        siteUrl={webOrigin(org.settings.site.siteUrl)}
         uploadsEnabled={!!process.env.PUBLIC_BLOB_READ_WRITE_TOKEN}
       />
     </>

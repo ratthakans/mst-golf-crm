@@ -6,6 +6,7 @@ import { recordEvent } from "./events";
 import { refreshMemberSpend } from "./members";
 import { processOutbox, type OutboxRun } from "./notify/sender";
 import { ledgerDrift } from "./points";
+import { pruneJobRuns } from "./ops";
 import { getOrg } from "./settings";
 
 // Scheduled work. The cron routes call these; each is safe to run twice.
@@ -47,6 +48,7 @@ export async function runNightly(orgId: string, now = new Date()): Promise<Night
   }
   const bookings = await closeFinishedBookings(orgId, now);
   const cleared = await client.importBatch.deleteMany({ where: { status: "PREVIEW", createdAt: { lt: new Date(now.getTime() - 24 * 3600_000) } } });
+  await pruneJobRuns(orgId, now);
   const drift = await ledgerDrift(orgId);
   if (drift.length) console.error(`[nightly] points cache drift for ${drift.length} member(s) in org ${orgId}`, drift.slice(0, 5));
   return {

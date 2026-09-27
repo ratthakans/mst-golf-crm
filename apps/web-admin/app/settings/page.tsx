@@ -19,6 +19,8 @@ export default async function SettingsPage() {
     { href: "/settings/line", title: "LINE", desc: line ? `เชื่อมแล้ว · Messaging API ${line.channelId}${line.liffId ? " · LIFF พร้อม" : " · ยังไม่มี LIFF"}` : "ยังไม่ได้เชื่อม — รอข้อมูลจากทีม LINE" },
     { href: "/settings/site", title: "เว็บไซต์และร้าน", desc: "โดเมนเว็บ ลิงก์ LINE OA แผนที่ เบอร์ร้าน ที่อยู่" },
     { href: "/settings/users", title: "ผู้ใช้และสิทธิ์", desc: "บัญชีพนักงาน 5 ตำแหน่ง รีเซ็ตรหัสผ่าน ปิดบัญชี" },
+    { href: "/settings/readiness", title: "ความพร้อมเปิดใช้", desc: "รายการที่ต้องครบก่อนเปิดจริง ตรวจจากระบบ · MST กดยืนยันค่าที่ตรวจแล้ว" },
+    { href: "/settings/system", title: "สถานะระบบ", desc: "งานตั้งเวลา สำรองข้อมูล ข้อความ LINE การนำเข้า และค่าระบบ" },
     { href: "/settings/audit", title: "บันทึกการใช้งาน", desc: "ใครทำอะไรเมื่อไร — ทุกการแก้แต้ม สมาชิก การจอง และการตั้งค่า" },
   ];
   return (

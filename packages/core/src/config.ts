@@ -1,6 +1,6 @@
 import type { BlockReason, ConsentPurpose } from "@mstgolf/database";
-import type { BookingSettings, NotificationSettings, OpenHours, OrgSettings, PosSettings, SiteSettings, TierSettings, Weekday } from "@mstgolf/shared";
-import { encrypt } from "@mstgolf/shared";
+import type { BookingSettings, NotificationSettings, OpenHours, OrgSettings, PosSettings, SiteCopy, SitePhotoKey, SiteSettings, TierSettings, Weekday } from "@mstgolf/shared";
+import { encrypt, SITE_PHOTO_KEYS, SITE_SERVICE_SLUGS } from "@mstgolf/shared";
 import { writeAudit } from "./audit";
 import type { Actor } from "./context";
 import { db, inTx } from "./db";
@@ -122,6 +122,7 @@ export async function saveSite(orgId: string, actor: Actor, input: SiteSettings)
     return s.replace(/\/$/, "");
   };
   const site: SiteSettings = {
+    ...settings.site, // photos and copy are saved by saveSiteContent
     lineOaUrl: url(input.lineOaUrl, "ลิงก์ LINE OA"),
     mapsUrl: url(input.mapsUrl, "ลิงก์ Google Maps"),
     siteUrl: url(input.siteUrl, "โดเมนเว็บไซต์"),
@@ -130,6 +131,51 @@ export async function saveSite(orgId: string, actor: Actor, input: SiteSettings)
   };
   const next = await updateSettings(orgId, { site });
   await audited(orgId, actor, "settings.site", settings.site, site);
+  return next;
+}
+
+export interface SiteContentInput {
+  photos?: Partial<Record<string, string | null>>;
+  copy?: SiteCopy;
+}
+
+const clip = (v: unknown, max: number): string | undefined => {
+  const s = typeof v === "string" ? v.replace(/\r\n/g, "\n").trim() : "";
+  return s ? s.slice(0, max) : undefined;
+};
+
+/**
+ * Website photos and text (Settings live in Organization.settings.site). A blank
+ * field means "use the built-in placeholder", so MST can fill the site in any
+ * order. Editable by whoever manages the website (posts.manage).
+ */
+export async function saveSiteContent(orgId: string, actor: Actor, input: SiteContentInput): Promise<ResolvedSettings> {
+  const { settings } = await getOrg(orgId);
+  const photos: Partial<Record<SitePhotoKey, string>> = {};
+  for (const key of SITE_PHOTO_KEYS) {
+    const v = input.photos?.[key]?.trim();
+    if (!v) continue;
+    if (!/^https:\/\/\S+$/.test(v) && !/^\/[\w\-./]+$/.test(v)) throw new CoreError("INVALID_INPUT", "ลิงก์รูปต้องขึ้นต้นด้วย https://");
+    photos[key] = v.slice(0, 500);
+  }
+  const c = input.copy ?? {};
+  const services: SiteCopy["services"] = {};
+  for (const slug of SITE_SERVICE_SLUGS) {
+    const sv = c.services?.[slug];
+    const out = { short: clip(sv?.short, 200), body: clip(sv?.body, 2000), points: clip(sv?.points, 600) };
+    if (out.short || out.body || out.points) services[slug] = out;
+  }
+  const copy: SiteCopy = {
+    heroTitle: clip(c.heroTitle, 60),
+    heroHighlight: clip(c.heroHighlight, 60),
+    heroLede: clip(c.heroLede, 300),
+    servicesTitle: clip(c.servicesTitle, 80),
+    servicesLede: clip(c.servicesLede, 300),
+    services,
+  };
+  const site: SiteSettings = { ...settings.site, photos, copy };
+  const next = await updateSettings(orgId, { site });
+  await audited(orgId, actor, "settings.site_content", { photos: settings.site.photos ?? {}, copy: settings.site.copy ?? {} }, { photos, copy });
   return next;
 }
 

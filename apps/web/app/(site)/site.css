@@ -530,6 +530,38 @@
   color: var(--color-ink);
   text-decoration: none;
 }
+.post-text {
+  display: grid;
+  gap: var(--space-1);
+  align-content: start;
+}
+.post-link.has-cover {
+  grid-template-columns: minmax(0, 1fr) 200px;
+  gap: var(--space-5);
+  align-items: center;
+}
+.post-thumb {
+  aspect-ratio: 16 / 10;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--color-paper-2);
+}
+.post-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.4s ease;
+}
+.post-link:hover .post-thumb img {
+  transform: scale(1.03);
+}
+@media (max-width: 640px) {
+  .post-link.has-cover {
+    grid-template-columns: minmax(0, 1fr) 104px;
+    gap: var(--space-4);
+  }
+}
 .post-link:hover .post-title {
   color: var(--color-brand);
   text-decoration: underline;

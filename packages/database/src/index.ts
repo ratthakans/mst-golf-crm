@@ -72,6 +72,7 @@ const TENANT_MODELS = new Set<string>([
   "LaneBlock",
   "Notification",
   "Post",
+  "JobRun",
 ]);
 
 // Operations whose `where` clause should be constrained to the tenant.

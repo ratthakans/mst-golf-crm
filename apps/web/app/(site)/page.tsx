@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Photo } from "@/components/Photo";
-import { PHOTOS, SERVICE_PHOTO } from "@/lib/images";
+import { servicePhotos, sitePhotos } from "@/lib/images";
 import { IconArrow, IconClock, IconPhone, IconPin } from "@/components/icons";
 import { MyStatus } from "@/components/MyStatus";
 import { PostList } from "@/components/PostList";
 import { TierCards } from "@/components/TierCards";
-import { SERVICES } from "@/lib/content";
+import { homeCopy, siteServices } from "@/lib/content";
 import { formatBaht, formatPoints, hoursLines, openingSpec } from "@/lib/format";
 import { getLanes, getOrg, getStore, siteOrigin } from "@/lib/org";
 import { publishedPosts } from "@/lib/posts";
@@ -24,6 +24,10 @@ export const metadata: Metadata = {
 export default async function HomePage() {
   const [org, store, lanes, posts, origin] = await Promise.all([getOrg(), getStore(), getLanes(), publishedPosts(3), siteOrigin()]);
   const s = org.settings;
+  const photos = sitePhotos(s.site);
+  const svcPhoto = servicePhotos(photos);
+  const services = siteServices(s.site.copy);
+  const copy = homeCopy(s.site.copy, lanes.length || 3);
   const address = s.site.address ?? store?.address ?? null;
   const hours = store ? hoursLines(store.openHours) : [];
   const prices = Array.from(new Set(lanes.map((l) => l.hourlyPriceSatang))).sort((a, b) => a - b);
@@ -58,13 +62,15 @@ export default async function HomePage() {
               <span>{store?.name ?? org.name}</span>
             </p>
             <h1 className="hero-title">
-              ร้านกอล์ฟที่ให้คุณ
-              <br />
-              <span className="accent-line">ลองก่อนเลือก</span>
+              {copy.heroTitle}
+              {copy.heroHighlight && (
+                <>
+                  <br />
+                  <span className="accent-line">{copy.heroHighlight}</span>
+                </>
+              )}
             </h1>
-            <p className="lede">
-              อุปกรณ์กอล์ฟ ฟิตติ้งไม้ให้เข้ากับวงสวิง คลาสกับโปร และ Golf Simulator {lanes.length || 3} lane — อยู่ในร้านเดียว ใจกลางถนนพระราม 4
-            </p>
+            <p className="lede">{copy.heroLede}</p>
             <div className="cta-row">
               <Link href="/app/booking" className="btn btn-primary">
                 จองซิม
@@ -75,7 +81,7 @@ export default async function HomePage() {
             </div>
           </div>
           <div className="hero-visual">
-            <Photo photo={PHOTOS.hero} priority className="hero-photo" />
+            <Photo photo={photos.hero} priority className="hero-photo" />
             <MyStatus welcomePoints={s.welcomeBonus} />
           </div>
         </div>
@@ -84,13 +90,13 @@ export default async function HomePage() {
       <section className="section" aria-labelledby="services-h">
         <div className="wrap">
           <div className="section-head">
-            <h2 id="services-h">ครบตั้งแต่เลือกไม้ จนถึงวันออกรอบ</h2>
-            <p>สี่บริการที่ต่อกันเป็นเส้นเดียว ลองไม้บนซิม ฟิตติ้งให้เข้ากับวงสวิง แล้วซ้อมต่อกับโปรได้ในที่เดียว</p>
+            <h2 id="services-h">{copy.servicesTitle}</h2>
+            <p>{copy.servicesLede}</p>
           </div>
           <ul className="svc-list">
-            {SERVICES.map((svc) => (
+            {services.map((svc) => (
               <li key={svc.slug} className="svc-row">
-                {SERVICE_PHOTO[svc.slug] && <Photo photo={SERVICE_PHOTO[svc.slug]!} className="svc-thumb" sizes="(min-width: 900px) 180px, 100vw" />}
+                {svcPhoto[svc.slug] && <Photo photo={svcPhoto[svc.slug]!} className="svc-thumb" sizes="(min-width: 900px) 180px, 100vw" />}
                 <div className="svc-name">
                   <h3>{svc.name}</h3>
                   <span>{svc.thai}</span>
@@ -153,7 +159,7 @@ export default async function HomePage() {
             </div>
           </div>
           <div className="sim-visual">
-            <Photo photo={PHOTOS.simBays} ratio="16 / 10" className="sim-photo" />
+            <Photo photo={photos.simBays} ratio="16 / 10" className="sim-photo" />
           </div>
         </div>
       </section>
@@ -194,7 +200,7 @@ export default async function HomePage() {
           <div>
             <h2 id="visit-h">แวะมาที่ร้าน</h2>
             <p className="visit-place">{store?.name ?? org.name}</p>
-            <Photo photo={PHOTOS.store} ratio="16 / 9" className="visit-photo" />
+            <Photo photo={photos.store} ratio="16 / 9" className="visit-photo" />
           </div>
           <div className="visit-facts">
             <ul className="facts">

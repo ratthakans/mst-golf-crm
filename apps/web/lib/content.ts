@@ -1,59 +1,33 @@
-// Placeholder copy (docs/PRODUCT.md §7.3): MST supplies the final text and photos;
-// until then these describe the store plainly — no prices beyond the lane
-// price in settings, no invented numbers or brand claims.
+// Website copy (docs/PRODUCT.md §7.3). Placeholders live in @mstgolf/shared/site; MST writes the final text in the back
+// office (เว็บไซต์ › เนื้อหาหน้าเว็บ → settings.site.copy); any field left blank
+// falls back to the placeholder.
 
-export interface Service {
-  slug: string;
-  name: string;
-  thai: string;
-  short: string;
-  body: string[];
-  points: string[];
+import type { SiteCopy } from "@mstgolf/shared";
+import { DEFAULT_HOME_COPY, DEFAULT_SERVICES, type Service } from "@mstgolf/shared/site";
+
+export type { Service };
+export const SERVICES = DEFAULT_SERVICES;
+export const HOME_COPY = DEFAULT_HOME_COPY;
+
+const lines = (v: string | undefined, sep: RegExp) => (v ? v.split(sep).map((x) => x.trim()).filter(Boolean) : []);
+
+/** Services with MST's text over the placeholders, field by field. */
+export function siteServices(copy: SiteCopy | undefined): Service[] {
+  return SERVICES.map((svc) => {
+    const c = copy?.services?.[svc.slug as keyof NonNullable<SiteCopy["services"]>];
+    const body = lines(c?.body, /\n\s*\n/);
+    const points = lines(c?.points, /\n/);
+    return { ...svc, short: c?.short || svc.short, body: body.length ? body : svc.body, points: points.length ? points : svc.points };
+  });
 }
 
-export const SERVICES: Service[] = [
-  {
-    slug: "pro-shop",
-    name: "Pro shop",
-    thai: "ร้านอุปกรณ์กอล์ฟ",
-    short: "ไม้กอล์ฟ ลูก ถุงมือ รองเท้า และเครื่องแต่งกาย จับของจริงได้ก่อนตัดสินใจ",
-    body: [
-      "หน้าร้านจัดวางไม้กอล์ฟตามประเภทและระดับผู้เล่น ตั้งแต่ชุดเริ่มต้นไปจนถึงไม้สำหรับนักกอล์ฟที่ซ้อมสม่ำเสมอ พร้อมอุปกรณ์และเครื่องแต่งกายสำหรับออกรอบ",
-      "ไม่แน่ใจว่าไม้รุ่นไหนเหมาะ ลองตีบน Golf Simulator ในร้านก่อนได้ พนักงานช่วยเทียบให้เห็นความต่างจากตัวเลขจริงของวงสวิงคุณ",
-    ],
-    points: ["ไม้กอล์ฟครบชุดและแยกชิ้น", "ลูก ถุงมือ กระเป๋า และรองเท้า", "เครื่องแต่งกายสำหรับออกรอบ", "สะสมแต้มทุกการซื้อเมื่อแจ้งเบอร์สมาชิก"],
-  },
-  {
-    slug: "club-fitting",
-    name: "Club fitting",
-    thai: "ฟิตติ้งไม้กอล์ฟ",
-    short: "วัดวงสวิงแล้วเลือกก้าน หัวไม้ และสเปกที่เข้ากับคุณ แทนการเดา",
-    body: [
-      "ฟิตเตอร์ดูตัวเลขวงสวิงจากเครื่องวัดในห้องซิม เช่น ความเร็วหัวไม้ มุมยิง และอัตราการหมุนของลูก แล้วเทียบหัวไม้และก้านหลายแบบให้เห็นผลกันตรงหน้า",
-      "ผลลัพธ์คือสเปกไม้ที่อธิบายได้ว่าทำไมถึงเหมาะกับคุณ จะสั่งทำชุดใหม่หรือปรับไม้เดิมก็ได้",
-    ],
-    points: ["วิเคราะห์วงสวิงบนเครื่องวัด", "เทียบหัวไม้และก้านหลายรุ่น", "สรุปสเปกที่แนะนำ", "นัดล่วงหน้าผ่าน LINE OA"],
-  },
-  {
-    slug: "academy",
-    name: "Academy",
-    thai: "คลาสเรียนกอล์ฟ",
-    short: "เรียนกับโปรทั้งพื้นฐานและปรับวงสวิง ในห้องที่เห็นตัวเลขทุกช็อต",
-    body: [
-      "คลาสสำหรับผู้เริ่มต้นที่อยากจับไม้ให้ถูกตั้งแต่แรก และคลาสสำหรับคนที่ออกรอบแล้วแต่อยากแก้จุดที่ค้างอยู่ เช่น ลูกเฟด ลูกสไลซ์ หรือระยะที่ไม่คงที่",
-      "การสอนในห้องซิมทำให้เห็นผลของการปรับแต่ละครั้งทันที ไม่ต้องรอออกรอบถึงจะรู้",
-    ],
-    points: ["คลาสพื้นฐานสำหรับผู้เริ่มต้น", "คลาสปรับวงสวิงรายบุคคล", "ฝึกในห้องซิมพร้อมตัวเลขทุกช็อต", "สอบถามตารางคลาสทาง LINE OA"],
-  },
-  {
-    slug: "golf-simulator",
-    name: "Golf Simulator",
-    thai: "ซิมกอล์ฟ",
-    short: "ซ้อมหรือเล่นสนามจำลองได้ทุกวัน ไม่ต้องห่วงแดดหรือฝน จองออนไลน์ได้ทันที",
-    body: [
-      "ห้องซิมแยกเป็น lane ใช้ซ้อมไดรฟ์ ซ้อมเหล็ก หรือเล่นสนามจำลองกับเพื่อน จองเป็นรายชั่วโมงผ่าน LINE หรือหน้าเว็บ และชำระเงินที่ร้านตอนเช็กอิน",
-      "สมาชิก Silver และ Gold ได้ส่วนลดตามระดับ ระบบแสดงราคาหลังส่วนลดก่อนยืนยันทุกครั้ง",
-    ],
-    points: ["จองรายชั่วโมงผ่าน LINE หรือเว็บไซต์", "ชำระเงินที่ร้านตอนเช็กอิน", "ส่วนลดตามระดับสมาชิก", "ข้อความยืนยันและเตือนก่อนเวลาใน LINE"],
-  },
-];
+/** Home page headline and intro with MST's text over the placeholders. */
+export function homeCopy(copy: SiteCopy | undefined, lanes: number) {
+  return {
+    heroTitle: copy?.heroTitle || HOME_COPY.heroTitle,
+    heroHighlight: copy?.heroHighlight ?? (copy?.heroTitle ? "" : HOME_COPY.heroHighlight),
+    heroLede: copy?.heroLede || HOME_COPY.heroLede(lanes),
+    servicesTitle: copy?.servicesTitle || HOME_COPY.servicesTitle,
+    servicesLede: copy?.servicesLede || HOME_COPY.servicesLede,
+  };
+}

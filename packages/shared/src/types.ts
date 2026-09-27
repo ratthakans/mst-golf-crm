@@ -1,3 +1,5 @@
+import type { SitePhotoKey, SiteServiceSlug } from "./site";
+
 // Shared domain types for MST Golf Platform. Framework-agnostic: imported by
 // both Next.js apps, packages/core and the jobs.
 
@@ -187,6 +189,23 @@ export interface SiteSettings {
   phone?: string;
   address?: string;
   siteUrl?: string; // public website origin, e.g. https://mstgolf.co.th
+  photos?: Partial<Record<SitePhotoKey, string>>; // replaces the mockup of that slot (https:// or a /path on the website)
+  copy?: SiteCopy; // website text edited in the back office; blank = the built-in placeholder
+}
+
+export interface SiteServiceCopy {
+  short?: string; // one line on the home page
+  body?: string; // paragraphs separated by a blank line
+  points?: string; // one bullet per line
+}
+
+export interface SiteCopy {
+  heroTitle?: string;
+  heroHighlight?: string; // second line of the headline, in the accent colour
+  heroLede?: string;
+  servicesTitle?: string;
+  servicesLede?: string;
+  services?: Partial<Record<SiteServiceSlug, SiteServiceCopy>>;
 }
 
 export interface OrgSettings {
@@ -208,6 +227,7 @@ export interface OrgSettings {
   notifications?: Partial<NotificationSettings>;
   pos?: PosSettings;
   site?: SiteSettings;
+  readiness?: Record<string, { at: string; by: string }>; // go-live items MST has confirmed (Settings › ความพร้อมเปิดใช้)
 }
 
 // ---------------------------------------------------------------------------
