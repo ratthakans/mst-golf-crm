@@ -11,13 +11,13 @@ export type SitePhotoKey = (typeof SITE_PHOTO_KEYS)[number];
 
 /** Where each photo shows, and the mockup it replaces (apps/web/public/mock). */
 export const SITE_PHOTO_LABEL: Record<SitePhotoKey, { label: string; where: string; mock: string }> = {
-  hero: { label: "ภาพหลัก", where: "หน้าแรก ด้านบนสุด", mock: "/mock/hero.jpg" },
+  hero: { label: "ภาพหลัก", where: "หน้าบริการ ด้านบน", mock: "/mock/hero.jpg" },
   proShop: { label: "Pro shop", where: "บริการ · หน้าแรกและหน้าบริการ", mock: "/mock/proshop.jpg" },
   fitting: { label: "Club fitting", where: "บริการ · หน้าแรกและหน้าบริการ", mock: "/mock/fitting.jpg" },
   academy: { label: "Academy", where: "บริการ · หน้าแรกและหน้าบริการ", mock: "/mock/academy.jpg" },
   simulator: { label: "Golf Simulator (บริการ)", where: "บริการ · หน้าแรกและหน้าบริการ", mock: "/mock/simulator.jpg" },
-  simBays: { label: "ห้องซิม", where: "แถบ Golf Simulator หน้าแรก · หน้า Golf Simulator", mock: "/mock/sim-bays.jpg" },
-  store: { label: "หน้าร้าน", where: "ส่วน แวะมาที่ร้าน หน้าแรก", mock: "/mock/store.jpg" },
+  simBays: { label: "ห้องซิม", where: "หน้า Golf Simulator", mock: "/mock/sim-bays.jpg" },
+  store: { label: "หน้าร้าน", where: "หน้าแรก · แวะมาที่ร้าน", mock: "/mock/store.jpg" },
 };
 
 /** Services on the website. */

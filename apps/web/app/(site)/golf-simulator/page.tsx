@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { priceFor } from "@mstgolf/core";
+import { availability, formatThaiDate, localDateKey, priceFor } from "@mstgolf/core";
+import { SimScorecard } from "@/components/SimScorecard";
 import { Photo } from "@/components/Photo";
 import { sitePhotos } from "@/lib/images";
 import { tierClass } from "@/components/TierCards";
@@ -25,6 +26,8 @@ export default async function SimulatorPage() {
   const base = lanes[0]?.hourlyPriceSatang ?? null;
   const samePrice = lanes.every((l) => l.hourlyPriceSatang === base);
   const hours = store ? hoursLines(store.openHours) : [];
+  const now = new Date();
+  const today = lanes.length ? await availability(org.id, localDateKey(now), now).catch(() => null) : null;
 
   const rules: Array<[string, string]> = [
     ["ช่องเวลา", `ครั้งละ ${b.slotMinutes} นาที ตรงชั่วโมง ตามเวลาเปิดร้าน จองติดกันได้`],
@@ -58,7 +61,19 @@ export default async function SimulatorPage() {
         </div>
       </section>
 
-      <section className="section" aria-labelledby="lanes-h">
+      {today && (
+        <section className="section" aria-labelledby="today-h">
+          <div className="wrap two-col">
+            <div>
+              <h2 id="today-h">ช่องว่างวันนี้</h2>
+              <p className="muted">อัปเดตทุก 5 นาที · ช่องล่าสุดดูได้ที่หน้าจอง</p>
+            </div>
+            <SimScorecard avail={today} dateLabel={formatThaiDate(now, { weekday: true, year: false })} />
+          </div>
+        </section>
+      )}
+
+      <section className="section section-rule" aria-labelledby="lanes-h">
         <div className="wrap two-col">
           <div>
             <h2 id="lanes-h">Lane และราคา</h2>
@@ -88,7 +103,7 @@ export default async function SimulatorPage() {
       </section>
 
       {base !== null && (
-        <section className="section section-tint" aria-labelledby="disc-h">
+        <section className="section section-rule" aria-labelledby="disc-h">
           <div className="wrap two-col">
             <div>
               <h2 id="disc-h">ส่วนลดตามระดับสมาชิก</h2>
@@ -125,7 +140,7 @@ export default async function SimulatorPage() {
         </section>
       )}
 
-      <section className="section" aria-labelledby="rules-h">
+      <section className="section section-rule" aria-labelledby="rules-h">
         <div className="wrap two-col">
           <div>
             <h2 id="rules-h">กติกาการจอง</h2>
@@ -142,16 +157,18 @@ export default async function SimulatorPage() {
         </div>
       </section>
 
-      <section className="cta-band">
-        <div className="wrap cta-band-inner">
-          <h2>ดูช่องว่างและจองได้เลย</h2>
-          <div className="cta-row">
-            <Link href="/app/booking" className="btn btn-on-dark">
-              จองซิม
-            </Link>
-            <Link href="/app/member" className="btn btn-quiet-dark">
-              ยังไม่เป็นสมาชิก? สมัครฟรี
-            </Link>
+      <section className="closing">
+        <div className="wrap">
+          <div className="closing-row">
+            <p>ดูช่องว่างและจองได้เลย — ชำระที่ร้านตอนเช็กอิน</p>
+            <div className="cta-row">
+              <Link href="/app/booking" className="btn btn-primary">
+                จองซิม
+              </Link>
+              <Link href="/app/member" className="text-link">
+                ยังไม่เป็นสมาชิก? สมัครฟรี
+              </Link>
+            </div>
           </div>
         </div>
       </section>

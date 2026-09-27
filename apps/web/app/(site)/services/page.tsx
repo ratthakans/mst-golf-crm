@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { IconCheck } from "@/components/icons";
 import { Photo } from "@/components/Photo";
 import { siteServices } from "@/lib/content";
 import { servicePhotos, sitePhotos } from "@/lib/images";
@@ -19,42 +18,55 @@ export default async function ServicesPage() {
   const org = await getOrg();
   const lineOa = org.settings.site.lineOaUrl;
   const SERVICES = siteServices(org.settings.site.copy);
-  const SERVICE_PHOTO = servicePhotos(sitePhotos(org.settings.site));
+  const photos = sitePhotos(org.settings.site);
+  const SERVICE_PHOTO = servicePhotos(photos);
 
   return (
     <>
-      <section className="page-head">
+      <section className="page-head book-head">
         <div className="wrap">
           <h1>บริการ</h1>
           <p className="lede">ทุกบริการใช้ห้องซิมเป็นเครื่องมือเดียวกัน คุณจึงเห็นตัวเลขวงสวิงของตัวเองตั้งแต่ลองไม้ ฟิตติ้ง ไปจนถึงเรียนกับโปร</p>
-          <nav className="jump" aria-label="ไปยังบริการ">
-            {SERVICES.map((s) => (
-              <a key={s.slug} href={`#${s.slug}`} className="jump-link">
+          <nav className="stops" aria-label="ไปยังบริการ">
+            {SERVICES.map((s, i) => (
+              <a key={s.slug} href={`#${s.slug}`} className="stop-link">
+                <span className="y-dot mono" aria-hidden="true">
+                  {i + 1}
+                </span>
                 {s.name}
               </a>
             ))}
           </nav>
+          <figure className="book-hero">
+            <Photo photo={photos.hero} ratio="21 / 9" priority sizes="(min-width: 1120px) 1120px, 100vw" />
+          </figure>
         </div>
       </section>
 
       {SERVICES.map((svc, i) => (
-        <section key={svc.slug} id={svc.slug} className={`svc-detail${i % 2 ? " alt" : ""}`} aria-labelledby={`${svc.slug}-h`}>
-          <div className="wrap svc-detail-grid">
-            <div className="svc-detail-head">
-              <h2 id={`${svc.slug}-h`}>{svc.name}</h2>
-              <p className="svc-thai">{svc.thai}</p>
-              {SERVICE_PHOTO[svc.slug] && <Photo photo={SERVICE_PHOTO[svc.slug]!} className="svc-detail-photo" sizes="(min-width: 900px) 40vw, 100vw" />}
+        <section key={svc.slug} id={svc.slug} className="book-page" aria-labelledby={`${svc.slug}-h`}>
+          <div className="wrap book-grid">
+            <div className="book-side">
+              <h2 id={`${svc.slug}-h`}>
+                <span className="y-dot mono" aria-hidden="true">
+                  {i + 1}
+                </span>
+                {svc.name}
+              </h2>
+              <p className="book-thai">{svc.thai}</p>
+              {SERVICE_PHOTO[svc.slug] && (
+                <figure className="book-figure">
+                  <Photo photo={SERVICE_PHOTO[svc.slug]!} ratio="4 / 3" sizes="(min-width: 900px) 34vw, 100vw" />
+                </figure>
+              )}
             </div>
-            <div className="svc-detail-body">
+            <div className="book-body">
               {svc.body.map((p) => (
                 <p key={p.slice(0, 24)}>{p}</p>
               ))}
-              <ul className="ticks">
+              <ul className="book-points">
                 {svc.points.map((p) => (
-                  <li key={p}>
-                    <IconCheck size={18} />
-                    <span>{p}</span>
-                  </li>
+                  <li key={p}>{p}</li>
                 ))}
               </ul>
               <div className="cta-row">
@@ -63,7 +75,7 @@ export default async function ServicesPage() {
                     <Link href="/app/booking" className="btn btn-primary">
                       จองซิม
                     </Link>
-                    <Link href="/golf-simulator" className="btn btn-secondary">
+                    <Link href="/golf-simulator" className="text-link">
                       ราคาและกติกา
                     </Link>
                   </>

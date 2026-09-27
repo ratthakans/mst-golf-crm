@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { availability, formatThaiDate, localDateKey } from "@mstgolf/core";
 import { Photo } from "@/components/Photo";
-import { servicePhotos, sitePhotos } from "@/lib/images";
-import { IconArrow, IconClock, IconPhone, IconPin } from "@/components/icons";
-import { MyStatus } from "@/components/MyStatus";
 import { PostList } from "@/components/PostList";
-import { TierCards } from "@/components/TierCards";
+import { SimScorecard } from "@/components/SimScorecard";
+import { TierTable } from "@/components/TierTable";
+import { YardageMap } from "@/components/YardageMap";
+import { sitePhotos } from "@/lib/images";
 import { homeCopy, siteServices } from "@/lib/content";
 import { formatBaht, formatPoints, hoursLines, openingSpec } from "@/lib/format";
 import { getLanes, getOrg, getStore, siteOrigin } from "@/lib/org";
@@ -25,15 +26,16 @@ export default async function HomePage() {
   const [org, store, lanes, posts, origin] = await Promise.all([getOrg(), getStore(), getLanes(), publishedPosts(3), siteOrigin()]);
   const s = org.settings;
   const photos = sitePhotos(s.site);
-  const svcPhoto = servicePhotos(photos);
   const services = siteServices(s.site.copy);
   const copy = homeCopy(s.site.copy, lanes.length || 3);
   const address = s.site.address ?? store?.address ?? null;
   const hours = store ? hoursLines(store.openHours) : [];
-  const prices = Array.from(new Set(lanes.map((l) => l.hourlyPriceSatang))).sort((a, b) => a - b);
+  const prices = Array.from(new Set(lanes.map((l) => l.hourlyPriceSatang))).sort((x, y) => x - y);
   const maxCap = lanes.reduce((m, l) => Math.max(m, l.capacity), 0);
   const maxDaysAhead = Math.max(...s.tiers.map((t) => t.benefits.simBookingDaysAhead));
   const minDaysAhead = Math.min(...s.tiers.map((t) => t.benefits.simBookingDaysAhead));
+  const now = new Date();
+  const today = s.features.booking && lanes.length ? await availability(org.id, localDateKey(now), now).catch(() => null) : null;
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -54,178 +56,122 @@ export default async function HomePage() {
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
 
-      <section className="hero">
-        <div className="wrap hero-grid">
-          <div className="hero-copy">
-            <p className="hero-place">
-              <IconPin size={18} />
-              <span>{store?.name ?? org.name}</span>
-            </p>
-            <h1 className="hero-title">
+      <section className="hole" aria-labelledby="hero-h">
+        <div className="wrap hole-grid">
+          <div className="hole-copy">
+            <p className="hole-place">{store?.name ?? org.name}</p>
+            <h1 id="hero-h" className="hole-title">
               {copy.heroTitle}
               {copy.heroHighlight && (
                 <>
-                  <br />
-                  <span className="accent-line">{copy.heroHighlight}</span>
+                  {" "}
+                  <span className="hole-title-strong">{copy.heroHighlight}</span>
                 </>
               )}
             </h1>
-            <p className="lede">{copy.heroLede}</p>
+            <p className="hole-lede">{copy.heroLede}</p>
             <div className="cta-row">
               <Link href="/app/booking" className="btn btn-primary">
                 จองซิม
               </Link>
-              <Link href="/app/member" className="btn btn-secondary">
+              <Link href="/app/member" className="btn btn-outline">
                 สมัครสมาชิก
               </Link>
             </div>
           </div>
-          <div className="hero-visual">
-            <Photo photo={photos.hero} priority className="hero-photo" />
-            <MyStatus welcomePoints={s.welcomeBonus} />
-          </div>
+          <YardageMap services={services} title={copy.servicesTitle} lede={copy.servicesLede} />
         </div>
       </section>
 
-      <section className="section" aria-labelledby="services-h">
-        <div className="wrap">
-          <div className="section-head">
-            <h2 id="services-h">{copy.servicesTitle}</h2>
-            <p>{copy.servicesLede}</p>
-          </div>
-          <ul className="svc-list">
-            {services.map((svc) => (
-              <li key={svc.slug} className="svc-row">
-                {svcPhoto[svc.slug] && <Photo photo={svcPhoto[svc.slug]!} className="svc-thumb" sizes="(min-width: 900px) 180px, 100vw" />}
-                <div className="svc-name">
-                  <h3>{svc.name}</h3>
-                  <span>{svc.thai}</span>
-                </div>
-                <p className="svc-short">{svc.short}</p>
-                <Link href={svc.slug === "golf-simulator" ? "/golf-simulator" : `/services#${svc.slug}`} className="link-arrow svc-more">
-                  <span>ดูรายละเอียด</span>
-                  <IconArrow size={18} />
-                  <span className="visually-hidden">{svc.name}</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
-
-      <section className="band-sim" aria-labelledby="sim-h">
-        <div className="wrap sim-grid">
-          <div className="sim-copy">
-            <h2 id="sim-h">Golf Simulator {lanes.length || 3} lane</h2>
-            <p>ซ้อมไดรฟ์ ซ้อมเหล็ก หรือเล่นสนามจำลองกับเพื่อน จองรายชั่วโมงผ่าน LINE หรือเว็บไซต์ ช่องว่างตรงกันทุกช่องทาง ไม่มีจองซ้อน</p>
-            <dl className="sim-facts">
+      <section className="card-section" aria-labelledby="today-h">
+        <div className="wrap card-grid">
+          <div className="card-copy">
+            <h2 id="today-h">Golf Simulator วันนี้</h2>
+            <p>{services.find((x) => x.slug === "golf-simulator")?.short}</p>
+            <dl className="card-facts">
               {prices.length > 0 && (
                 <div>
                   <dt>ราคา</dt>
-                  <dd className="num">
-                    {prices.map((p) => formatBaht(p)).join(" / ")}
-                    <small className="nowrap"> /ชม.</small>
-                  </dd>
+                  <dd className="mono">{prices.map((p) => formatBaht(p)).join(" / ")} /ชม.</dd>
                 </div>
               )}
               {maxCap > 0 && (
                 <div>
                   <dt>ต่อ lane</dt>
-                  <dd className="num">
-                    สูงสุด {maxCap} <small>คน</small>
+                  <dd>
+                    สูงสุด {maxCap} คน ราคาเดียว
                   </dd>
                 </div>
               )}
               <div>
                 <dt>จองล่วงหน้า</dt>
-                <dd className="num">
-                  {minDaysAhead === maxDaysAhead ? minDaysAhead : `${minDaysAhead}–${maxDaysAhead}`} <small>วัน</small>
+                <dd>
+                  {minDaysAhead === maxDaysAhead ? minDaysAhead : `${minDaysAhead}–${maxDaysAhead}`} วัน ตามระดับสมาชิก
                 </dd>
               </div>
               <div>
                 <dt>ชำระเงิน</dt>
-                <dd>
-                  ที่ร้าน <small>ตอนเช็กอิน</small>
-                </dd>
+                <dd>ที่ร้านตอนเช็กอิน</dd>
               </div>
             </dl>
-            <div className="cta-row">
-              <Link href="/app/booking" className="btn btn-on-dark">
-                จองซิม
-              </Link>
-              <Link href="/golf-simulator" className="btn btn-quiet-dark">
-                ราคาและกติกาการจอง
-              </Link>
-            </div>
+            <Link href="/golf-simulator" className="text-link">
+              ราคาหลังส่วนลดและกติกาการจอง
+            </Link>
           </div>
-          <div className="sim-visual">
-            <Photo photo={photos.simBays} ratio="16 / 10" className="sim-photo" />
-          </div>
+          {today ? <SimScorecard avail={today} dateLabel={formatThaiDate(now, { weekday: true, year: false })} /> : <Photo photo={photos.simBays} ratio="16 / 10" />}
         </div>
       </section>
 
-      <section className="section" aria-labelledby="tiers-h">
-        <div className="wrap">
-          <div className="section-head">
+      <section className="ledger-section" aria-labelledby="tiers-h">
+        <div className="wrap ledger-grid">
+          <div className="ledger-copy">
             <h2 id="tiers-h">สมาชิก MST Golf</h2>
             <p>
-              สมัครฟรีผ่าน LINE รับ <b className="num">{formatPoints(s.welcomeBonus)}</b> แต้มต้อนรับ ระดับสมาชิกคิดจากยอดซื้อสะสม 12 เดือนล่าสุด ไม่ใช่แต้มคงเหลือ
-              ใช้บัตรสมาชิกในมือถือแสดงที่เคาน์เตอร์ได้ทันที
+              สมัครฟรีด้วย LINE รับ <b className="num">{formatPoints(s.welcomeBonus)}</b> แต้มต้อนรับ แล้วใช้บัตรในมือถือที่เคาน์เตอร์ได้ทันที
             </p>
-          </div>
-          <TierCards tiers={s.tiers} />
-          <div className="cta-row center">
             <Link href="/app/member" className="btn btn-primary">
               สมัครสมาชิก
             </Link>
           </div>
+          <TierTable tiers={s.tiers} pointsPerBaht={s.pointsPerBaht} />
         </div>
       </section>
 
-      <section className="section section-rule" aria-labelledby="posts-h">
+      <section className="notes-section" aria-labelledby="posts-h">
         <div className="wrap">
-          <div className="section-head row">
-            <h2 id="posts-h">บทความล่าสุด</h2>
-            <Link href="/blog" className="link-arrow">
-              <span>ดูทั้งหมด</span>
-              <IconArrow size={18} />
+          <div className="notes-head">
+            <h2 id="posts-h">บทความ</h2>
+            <Link href="/blog" className="text-link">
+              ทั้งหมด
             </Link>
           </div>
           {posts.length ? <PostList posts={posts} /> : <p className="empty">บทความชุดแรกกำลังจะมา — ติดตามเทคนิคการซ้อมและข่าวจากร้านได้ที่นี่</p>}
         </div>
       </section>
 
-      <section className="section visit" aria-labelledby="visit-h">
+      <section className="visit-section" aria-labelledby="visit-h">
         <div className="wrap visit-grid">
-          <div>
+          <Photo photo={photos.store} ratio="4 / 3" className="visit-photo" sizes="(min-width: 900px) 40vw, 100vw" />
+          <div className="visit-copy">
             <h2 id="visit-h">แวะมาที่ร้าน</h2>
-            <p className="visit-place">{store?.name ?? org.name}</p>
-            <Photo photo={photos.store} ratio="16 / 9" className="visit-photo" />
-          </div>
-          <div className="visit-facts">
-            <ul className="facts">
-              {address && (
-                <li>
-                  <IconPin />
-                  <span>{address}</span>
-                </li>
-              )}
-              {hours.map((h) => (
-                <li key={h}>
-                  <IconClock />
-                  <span>{h}</span>
-                </li>
-              ))}
-              {s.site.phone && (
-                <li>
-                  <IconPhone />
-                  <a href={`tel:${s.site.phone.replace(/[^\d+]/g, "")}`}>{s.site.phone}</a>
-                </li>
-              )}
-            </ul>
+            <p className="visit-store">{store?.name ?? org.name}</p>
+            {address && <p>{address}</p>}
+            {hours.map((h) => (
+              <p key={h} className="visit-hours">
+                {h}
+              </p>
+            ))}
+            {s.site.phone && (
+              <p>
+                โทร{" "}
+                <a href={`tel:${s.site.phone.replace(/[^\d+]/g, "")}`} className="num">
+                  {s.site.phone}
+                </a>
+              </p>
+            )}
             <div className="cta-row">
               {s.site.mapsUrl && (
-                <a href={s.site.mapsUrl} className="btn btn-secondary" target="_blank" rel="noopener">
+                <a href={s.site.mapsUrl} className="btn btn-outline" target="_blank" rel="noopener">
                   เปิดใน Google Maps
                 </a>
               )}
