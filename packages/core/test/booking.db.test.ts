@@ -116,6 +116,8 @@ describe("booking", () => {
 
   it("queues one reminder 2 hours before, never twice", async () => {
     const reminderTime = fromLocal(2026, 10, 2, 15, 30); // booking at 17:00 on the 2nd was made on the 1st
+    // createdAt comes from the database clock; pin it to the test's "now" so the test doesn't depend on today's date.
+    await db(t.orgId).booking.updateMany({ data: { createdAt: now } });
     expect(await queueReminders(t.orgId, reminderTime)).toBe(1);
     expect(await queueReminders(t.orgId, reminderTime)).toBe(0);
   });

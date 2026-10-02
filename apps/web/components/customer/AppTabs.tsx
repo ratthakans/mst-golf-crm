@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 
 const LINKS = [
   { href: "/app/member", label: "บัตรสมาชิก" },
+  { href: "/app/rewards", label: "รางวัล" },
   { href: "/app/booking", label: "จองซิม" },
 ];
 

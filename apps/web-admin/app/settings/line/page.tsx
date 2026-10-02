@@ -49,6 +49,8 @@ export default async function LineSettingsPage() {
           <dd className="mono">{status?.liffId ? `https://liff.line.me/${status.liffId}/member` : "(ได้หลังใส่ LIFF ID)"}</dd>
           <dt>ปุ่ม D Booking Golf Sim</dt>
           <dd className="mono">{status?.liffId ? `https://liff.line.me/${status.liffId}/booking` : "(ได้หลังใส่ LIFF ID)"}</dd>
+          <dt>ปุ่ม Points &amp; Rewards</dt>
+          <dd className="mono">{status?.liffId ? `https://liff.line.me/${status.liffId}/rewards` : "(ได้หลังใส่ LIFF ID)"}</dd>
           <dt>LIFF endpoint URL</dt>
           <dd className="mono">{site}/app</dd>
           <dt>LINE Login callback URL</dt>

@@ -18,7 +18,7 @@ const RETRY_KEY = "mst_login_retry";
 // Signs the visitor in with LINE, the same way inside LINE (LIFF) and in a
 // normal browser (LINE Login via liff.login). On success the server sets the
 // session cookie and the page re-renders on the server with the member's data.
-export function LoginPanel({ setup, purpose }: { setup: LoginSetupProps; purpose: "member" | "booking" }) {
+export function LoginPanel({ setup, purpose }: { setup: LoginSetupProps; purpose: "member" | "booking" | "rewards" }) {
   const router = useRouter();
   const [phase, setPhase] = useState<Phase>(setup.lineReady ? "starting" : "idle");
   const [error, setError] = useState<string | null>(null);
@@ -68,10 +68,12 @@ export function LoginPanel({ setup, purpose }: { setup: LoginSetupProps; purpose
     }
   }, [setup.lineReady, signIn]);
 
-  const title = purpose === "booking" ? "เข้าสู่ระบบเพื่อจองซิมกอล์ฟ" : "บัตรสมาชิก MST Golf";
+  const title = purpose === "booking" ? "เข้าสู่ระบบเพื่อจองซิมกอล์ฟ" : purpose === "rewards" ? "เข้าสู่ระบบเพื่อแลกรางวัล" : "บัตรสมาชิก MST Golf";
   const lead =
     purpose === "booking"
       ? "ใช้บัญชี LINE ของคุณ ไม่ต้องตั้งรหัสผ่าน ระบบจะพากลับมาหน้าจองทันที"
+      : purpose === "rewards"
+        ? "ใช้บัญชี LINE ของคุณ ไม่ต้องตั้งรหัสผ่าน ระบบจะพากลับมาหน้ารางวัลทันที"
       : "สมัครหรือเปิดบัตรสมาชิกด้วยบัญชี LINE ไม่ต้องตั้งรหัสผ่าน ระหว่างเข้าสู่ระบบเพิ่มเพื่อน LINE OA ไว้ เพื่อรับข้อความแจ้งแต้มและยืนยันการจอง";
 
   if (!setup.lineReady && !setup.devLogin) {

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { lineChannelStatus, shopifyStatus } from "@mstgolf/core";
+import { earnRateText } from "@mstgolf/shared/tiers";
 import { allowPage } from "../../lib/auth";
 import { currentOrg } from "../../lib/org";
 import { Forbidden } from "../Forbidden";
@@ -13,7 +14,10 @@ export default async function SettingsPage() {
   const [line, shop] = await Promise.all([lineChannelStatus(org.id), shopifyStatus(org.id)]);
   const links = [
     { href: "/settings/tiers", title: "ระดับสมาชิก", desc: `${org.settings.tiers.map((t) => t.name).join(" · ")} — เกณฑ์ยอดซื้อ 12 เดือน อัตราแต้ม และสิทธิประโยชน์` },
-    { href: "/settings/points", title: "แต้ม · POS · ข้อความแจ้งเตือน", desc: `แต้มต้อนรับ ${org.settings.welcomeBonus.toLocaleString("en-US")} · ${org.settings.pos.memberTag}: ในหมายเหตุบิล · เปิด/ปิดข้อความ LINE แต่ละแบบ` },
+    { href: "/settings/points", title: "แต้ม · POS · ข้อความแจ้งเตือน", desc: `${earnRateText(org.settings.pointsPerBaht)} · แต้มต้อนรับ ${org.settings.welcomeBonus.toLocaleString("en-US")} · ${org.settings.pos.memberTag}: ในหมายเหตุบิล · เปิด/ปิดข้อความ LINE แต่ละแบบ` },
+    ...(org.settings.features.rewards
+      ? [{ href: "/settings/rewards", title: "การแลกรางวัล", desc: org.settings.redemption.alertEmails.length ? `แจ้งคำขอแลกของไปที่ ${org.settings.redemption.alertEmails.join(", ")}` : "ยังไม่ได้ใส่อีเมล Marketing ที่จะรับแจ้งคำขอแลกของ" }]
+      : []),
     { href: "/settings/booking", title: "การจองซิม", desc: "เวลาเปิดร้าน lane ราคา และกติกาการจอง/ยกเลิก/no-show" },
     { href: "/settings/consent", title: "ข้อความ PDPA", desc: "ข้อกำหนดสมาชิก นโยบายความเป็นส่วนตัว และการรับข่าวสาร (มีเวอร์ชัน)" },
     { href: "/settings/line", title: "LINE", desc: line ? `เชื่อมแล้ว · Messaging API ${line.channelId}${line.liffId ? " · LIFF พร้อม" : " · ยังไม่มี LIFF"}` : "ยังไม่ได้เชื่อม — รอข้อมูลจากทีม LINE" },

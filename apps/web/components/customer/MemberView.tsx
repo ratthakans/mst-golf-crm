@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { IconArrow, IconCalendar, IconClose, IconSun } from "@/components/icons";
+import { IconArrow, IconCalendar, IconClose, IconGift, IconSun } from "@/components/icons";
 import { api } from "@/lib/client";
 import { formatBahtWhole, formatPoints, formatThaiDate } from "@/lib/format";
 import type { CardData, PointRow } from "@/lib/types";
@@ -88,6 +88,11 @@ export function MemberView({ card: initialCard, points: initialPoints, qrSrc, to
       </div>
 
       <div className="member-foot">
+        <Link href="/app/rewards" className="row-link">
+          <IconGift />
+          <span>แลกรางวัลด้วยแต้ม · คูปองของฉัน</span>
+          <IconArrow size={18} />
+        </Link>
         <Link href="/app/booking" className="row-link">
           <IconCalendar />
           <span>การจองของฉัน · จองซิมกอล์ฟ</span>

@@ -31,6 +31,11 @@ export type Permission =
   | "settings.manage"
   | "users.manage"
   | "audit.view"
+  // Rewards (docs/PRODUCT.md §11) — hidden when settings.features.rewards is off.
+  | "rewards.view" // redemption queue, catalogue, report
+  | "rewards.manage" // catalogue, stock, alert emails
+  | "redemptions.process" // move a reward request through its statuses
+  | "coupons.use" // validate a coupon at the counter
   // Out of the Phase 1 contract — only when settings.features.intelligence is on.
   | "playbook.view"
   | "playbook.act"
@@ -59,6 +64,10 @@ const MATRIX: Record<Permission, readonly Role[]> = {
   "settings.manage": ["SUPER_ADMIN"],
   "users.manage": ["SUPER_ADMIN"],
   "audit.view": ["SUPER_ADMIN"],
+  "rewards.view": ALL,
+  "rewards.manage": ["SUPER_ADMIN", "MARKETING"],
+  "redemptions.process": ["SUPER_ADMIN", "MARKETING", "STORE_MANAGER", "CUSTOMER_SERVICE"],
+  "coupons.use": FRONT,
   "playbook.view": ["SUPER_ADMIN", "MARKETING"],
   "playbook.act": ["SUPER_ADMIN", "MARKETING"],
   "segments.view": ["SUPER_ADMIN", "MARKETING"],
@@ -66,6 +75,7 @@ const MATRIX: Record<Permission, readonly Role[]> = {
 };
 
 export const INTELLIGENCE_PERMISSIONS: Permission[] = ["playbook.view", "playbook.act", "segments.view", "automations.view"];
+export const REWARDS_PERMISSIONS: Permission[] = ["rewards.view", "rewards.manage", "redemptions.process", "coupons.use"];
 
 export function isRole(value: unknown): value is Role {
   return typeof value === "string" && (ROLES as readonly string[]).includes(value);
@@ -76,8 +86,11 @@ export function can(role: Role | null | undefined, permission: Permission): bool
 }
 
 /** Every permission a role holds — sent to the client so the nav can hide links. */
-export function permissionsOf(role: Role, opts: { intelligence?: boolean } = {}): Permission[] {
+export function permissionsOf(role: Role, opts: { intelligence?: boolean; rewards?: boolean } = {}): Permission[] {
   return (Object.keys(MATRIX) as Permission[]).filter(
-    (p) => MATRIX[p].includes(role) && (opts.intelligence || !INTELLIGENCE_PERMISSIONS.includes(p)),
+    (p) =>
+      MATRIX[p].includes(role) &&
+      (opts.intelligence || !INTELLIGENCE_PERMISSIONS.includes(p)) &&
+      (opts.rewards !== false || !REWARDS_PERMISSIONS.includes(p)),
   );
 }

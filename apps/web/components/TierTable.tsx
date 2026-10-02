@@ -1,4 +1,5 @@
 import type { TierSettings } from "@mstgolf/shared";
+import { earnRateText } from "@mstgolf/shared/tiers";
 import { formatBahtWhole } from "@/lib/format";
 
 // Tiers as a comparison sheet — every number comes from settings.tiers, which
@@ -42,7 +43,7 @@ export function TierTable({ tiers, pointsPerBaht }: { tiers: TierSettings[]; poi
         </tbody>
       </table>
       <p className="tier-sheet-note">
-        ฐานแต้ม ฿1 = <span className="mono">{pointsPerBaht}</span> แต้ม คูณอัตราของระดับ · ระดับคิดจากยอดซื้อสุทธิ 12 เดือนล่าสุด ไม่ใช่แต้มคงเหลือ
+        ฐานแต้ม {earnRateText(pointsPerBaht)} คูณอัตราของระดับ · ระดับคิดจากยอดซื้อสุทธิ 12 เดือนล่าสุด ไม่ใช่แต้มคงเหลือ
       </p>
     </div>
   );

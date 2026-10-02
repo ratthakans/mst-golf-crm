@@ -3,17 +3,35 @@
 import { useState } from "react";
 import { SaveBar, useSave } from "../useSave";
 
+// The earn rate is entered the way MST says it — "every ฿500 = 1 point" — and
+// stored as points per baht (1 ÷ 500 = 0.002).
+function toPair(perBaht: number): { baht: string; pts: string } {
+  if (perBaht >= 1) return { baht: "1", pts: String(Number(perBaht.toFixed(4))) };
+  return { baht: String(Number((1 / perBaht).toFixed(2))), pts: "1" };
+}
+
 export function PointsForm({ welcomeBonus, perBaht }: { welcomeBonus: number; perBaht: number }) {
-  const [f, setF] = useState({ welcomeBonus: String(welcomeBonus), perBaht: String(perBaht) });
+  const [f, setF] = useState({ welcomeBonus: String(welcomeBonus), ...toPair(perBaht) });
   const s = useSave("points");
+  const rate = Number(f.pts) / Number(f.baht);
+  const ok = Number.isFinite(rate) && rate > 0;
+  const example = ok ? Math.floor(2500 * rate + 1e-9) : 0;
+  const welcomeBaht = ok ? Math.round(Number(f.welcomeBonus) / rate) : 0;
   return (
-    <form className="card" onSubmit={(e) => { e.preventDefault(); void s.save(f); }}>
+    <form className="card" onSubmit={(e) => { e.preventDefault(); void s.save({ welcomeBonus: f.welcomeBonus, perBaht: rate }); }}>
       <h3>แต้ม</h3>
       <div className="form-grid">
+        <label className="field"><span>ยอดซื้อทุก (บาท)</span><input inputMode="decimal" value={f.baht} onChange={(e) => setF({ ...f, baht: e.target.value })} /></label>
+        <label className="field"><span>ได้แต้มฐาน <span className="hint">— คูณอัตราของระดับอีกครั้ง</span></span><input inputMode="decimal" value={f.pts} onChange={(e) => setF({ ...f, pts: e.target.value })} /></label>
         <label className="field"><span>แต้มต้อนรับสมาชิกใหม่</span><input inputMode="numeric" value={f.welcomeBonus} onChange={(e) => setF({ ...f, welcomeBonus: e.target.value })} /></label>
-        <label className="field"><span>แต้มฐานต่อ 1 บาท <span className="hint">— คูณอัตราของระดับอีกครั้ง</span></span><input inputMode="decimal" value={f.perBaht} onChange={(e) => setF({ ...f, perBaht: e.target.value })} /></label>
       </div>
-      <p className="muted small">เปลี่ยนแล้วมีผลกับบิลที่นำเข้าหลังจากนี้ ไม่ย้อนคิดบิลเก่า</p>
+      {ok && (
+        <p className="muted small">
+          ตัวอย่าง: ซื้อ ฿2,500 ได้ {example.toLocaleString("en-US")} แต้ม (ระดับแรก) · คิดต่อบิล ปัดเศษลง · แต้มต้อนรับ {Number(f.welcomeBonus).toLocaleString("en-US")} แต้ม เท่ากับยอดซื้อ ฿{welcomeBaht.toLocaleString("en-US")}
+          {welcomeBaht > 100_000 && <b className="danger-text"> — สูงมากเมื่อเทียบกับอัตราแต้ม ลองทบทวนแต้มต้อนรับ</b>}
+        </p>
+      )}
+      <p className="muted small">เปลี่ยนแล้วมีผลกับบิลที่นำเข้าหลังจากนี้ ไม่ย้อนคิดบิลเก่า · ราคารางวัลในแคตตาล็อกควรปรับตามอัตราใหม่</p>
       <SaveBar {...s} />
     </form>
   );
@@ -47,6 +65,8 @@ const NOTIFICATIONS: Array<{ key: string; label: string; desc: string }> = [
   { key: "BOOKING_REMINDER", label: "เตือนก่อนเวลาจอง", desc: "ตามชั่วโมงที่ตั้งในกติกาการจอง" },
   { key: "BOOKING_CANCELLED", label: "ยกเลิกการจอง", desc: "เมื่อลูกค้าหรือพนักงานยกเลิก" },
   { key: "BOOKING_MOVED", label: "ย้ายเวลาการจอง", desc: "เมื่อพนักงานย้ายเวลาหรือ lane" },
+  { key: "REDEMPTION_RECEIVED", label: "ได้รับคูปอง / รับคำขอแลกรางวัล", desc: "ทันทีที่สมาชิกแลก — คูปองพร้อมรหัส หรือ Redemption ID ของคำขอ" },
+  { key: "REDEMPTION_STATUS", label: "อัปเดตสถานะการแลกรางวัล", desc: "อนุมัติ จัดส่ง เสร็จสิ้น ไม่อนุมัติ (พร้อมคืนแต้ม) และเมื่อคูปองถูกใช้" },
 ];
 
 export function NotificationsForm({ values }: { values: Record<string, boolean> }) {

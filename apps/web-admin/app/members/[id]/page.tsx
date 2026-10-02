@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getMember, memberActivity, memberBookings, memberCard, pointHistory } from "@mstgolf/core";
+import { getMember, memberActivity, memberBookings, memberCard, memberRedemptions, pointHistory } from "@mstgolf/core";
 import { allowPage } from "../../../lib/auth";
 import { currentOrg } from "../../../lib/org";
 import { listAudit } from "../../../lib/users";
 import type { Permission } from "../../../lib/permissions";
 import { Forbidden } from "../../Forbidden";
-import { formatBaht, formatDate, formatPhone, num, SOURCE_LABEL } from "../../ui/format";
+import { formatBaht, formatDate, formatDateTime, formatPhone, num, REDEMPTION_STATUS, SOURCE_LABEL } from "../../ui/format";
 import { TierPill, tierInfo } from "../../ui/TierPill";
 import { MemberAvatar, photoVersion } from "../MemberAvatar";
 import { MemberActions } from "./MemberActions";
@@ -38,12 +38,13 @@ export default async function MemberPage({ params, searchParams }: { params: { i
     );
   }
 
-  const [card, activity, points, bookings, audit] = await Promise.all([
+  const [card, activity, points, bookings, audit, redemptions] = await Promise.all([
     memberCard(org.id, member.id),
     memberActivity(org.id, member.id),
     pointHistory(org.id, member.id, 200),
     memberBookings(org.id, member.id),
     can("audit.view") ? listAudit({ entity: "member", entityId: member.id, limit: 100 }) : Promise.resolve([]),
+    can("rewards.view") ? memberRedemptions(org.id, member.id) : Promise.resolve([]),
   ]);
   const t = tierInfo(member.tier, org.settings.tiers);
   const showMoney = can("dashboard.revenue");
@@ -145,6 +146,31 @@ export default async function MemberPage({ params, searchParams }: { params: { i
         showAudit={can("audit.view")}
         tierNames={Object.fromEntries(org.settings.tiers.map((x) => [x.key, x.name]))}
       />
+
+      {redemptions.length > 0 && (
+        <div className="card table-card table-scroll">
+          <h3 style={{ margin: "14px 16px 4px" }}>การแลกรางวัล</h3>
+          <table className="tbl">
+            <thead>
+              <tr><th>Redemption ID</th><th>รางวัล</th><th className="num">แต้ม</th><th>สถานะ</th><th>เมื่อ</th></tr>
+            </thead>
+            <tbody>
+              {redemptions.map((r) => {
+                const st = REDEMPTION_STATUS[r.status]!;
+                return (
+                  <tr key={r.id}>
+                    <td><Link href={`/rewards/redemptions/${r.id}`} className="mono">{r.code}</Link></td>
+                    <td>{r.rewardName}{r.couponCode && <div className="sub mono">{r.couponCode}</div>}</td>
+                    <td className="num">{num(r.costPoints)}</td>
+                    <td><span className={`pill ${st.tone}`}>{st.label}</span></td>
+                    <td className="dim nowrap">{formatDateTime(r.createdAt)}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }

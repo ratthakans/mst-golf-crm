@@ -40,6 +40,7 @@ export default async function SystemPage() {
     ["CRON_SECRET", s.env.CRON_SECRET, "ป้องกันงานตั้งเวลาไม่ให้คนนอกเรียก"],
     ["ENCRYPTION_KEY", s.env.ENCRYPTION_KEY, "เข้ารหัส credentials LINE — ต้องตรงกันทั้งสองโปรเจกต์ และเก็บสำรองไว้"],
     ["PUBLIC_BLOB_READ_WRITE_TOKEN", s.env.PUBLIC_BLOB_READ_WRITE_TOKEN, "อัปโหลดรูปเว็บไซต์และรูปปกบทความ"],
+    ["RESEND_API_KEY · EMAIL_FROM", s.env.EMAIL, "อีเมลแจ้ง Marketing เมื่อมีคำขอแลกรางวัล"],
   ];
   return (
     <div className="stack">

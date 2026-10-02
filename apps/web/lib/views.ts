@@ -1,12 +1,14 @@
 import {
   memberBookings,
+  memberRedemptions,
+  rewardCatalogue,
   memberCard,
   pointHistory,
   type BookingView,
   type MemberCard,
   type PointHistoryItem,
 } from "@mstgolf/core";
-import type { BookingRow, CardData, PointRow } from "./types";
+import type { BookingRow, CardData, PointRow, RedemptionRow, RewardsData } from "./types";
 
 // Core results → plain JSON for client components and API responses. Only
 // what the member's own screens need: no internal ids beyond the booking id,
@@ -79,5 +81,39 @@ export async function loadBookings(orgId: string, memberId: string): Promise<{ u
   return {
     upcoming: upcoming.filter((b) => b.status !== "HELD").map(toBookingRow),
     past: past.slice(0, 10).map(toBookingRow),
+  };
+}
+
+export async function loadRewards(orgId: string, memberId: string): Promise<RewardsData> {
+  const [cat, reds] = await Promise.all([rewardCatalogue(orgId, memberId), memberRedemptions(orgId, memberId)]);
+  return {
+    balance: cat.balance,
+    items: cat.items.map((i) => ({ ...i, endsAt: i.endsAt ? i.endsAt.toISOString() : null })),
+    redemptions: reds.map(
+      (r): RedemptionRow => ({
+        id: r.id,
+        code: r.code,
+        kind: r.kind,
+        rewardName: r.rewardName,
+        imageUrl: r.imageUrl,
+        costPoints: r.costPoints,
+        status: r.status,
+        statusLabel: r.statusLabel,
+        couponCode: r.couponCode,
+        valueSatang: r.valueSatang,
+        minSpendSatang: r.minSpendSatang,
+        terms: r.terms,
+        expiresAt: r.expiresAt ? r.expiresAt.toISOString() : null,
+        usedAt: r.usedAt ? r.usedAt.toISOString() : null,
+        fulfilment: r.fulfilment,
+        method: r.delivery?.method ?? null,
+        carrier: r.carrier,
+        trackingNo: r.trackingNo,
+        note: r.note,
+        steps: r.history.map((h) => ({ status: h.status, at: h.at })),
+        createdAt: r.createdAt.toISOString(),
+        canCancel: r.canCancel,
+      }),
+    ),
   };
 }

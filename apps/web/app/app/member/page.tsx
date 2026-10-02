@@ -20,7 +20,7 @@ export const metadata: Metadata = {
 // /app/member — the same page in LINE (LIFF, Rich Menu button A+B) and on the
 // web (LINE Login): sign-in → sign-up form or the member card.
 export default async function MemberPage({ searchParams }: { searchParams: { next?: string } }) {
-  const next = searchParams.next === "booking" ? "booking" : null;
+  const next = searchParams.next === "booking" || searchParams.next === "rewards" ? searchParams.next : null;
   const org = await getOrg();
   const [setup, user] = await Promise.all([loginSetup(org.id), currentLineUser()]);
 
@@ -43,7 +43,7 @@ export default async function MemberPage({ searchParams }: { searchParams: { nex
     );
   }
 
-  if (next === "booking") redirect("/app/booking");
+  if (next) redirect(`/app/${next}`);
 
   const [card, points] = await Promise.all([loadCard(org.id, member.id), loadPoints(org.id, member.id)]);
   const tiers = org.settings.tiers;

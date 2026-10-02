@@ -160,7 +160,7 @@ export function renderNotification(kind: NotificationKind, payload: unknown, ctx
     }
     case "TIER_UP": {
       const p = payload as TierUpPayload;
-      const rows: Row[] = [{ label: "แต้มต่อ 1 บาท", value: `${p.pointRate} แต้ม`, strong: true }];
+      const rows: Row[] = [{ label: "อัตราสะสมแต้ม", value: `×${p.pointRate}`, strong: true }];
       if (p.discountPct) rows.push({ label: "ส่วนลดร้าน", value: `${p.discountPct}%` });
       if (p.simDiscountPct) rows.push({ label: "ส่วนลดซิมกอล์ฟ", value: `${p.simDiscountPct}%` });
       return [bubble(ctx, `ยินดีด้วย คุณเป็นสมาชิก ${p.tierName} แล้ว`, "สิทธิประโยชน์ใหม่ใช้ได้ตั้งแต่วันนี้", rows, { label: "เปิดบัตรสมาชิก", url: ctx.memberUrl })];
@@ -184,7 +184,7 @@ export function renderNotification(kind: NotificationKind, payload: unknown, ctx
         { label: "แต้มที่ใช้", value: `−${n(p.points)}` },
         { label: "แต้มคงเหลือ", value: n(p.balance) },
       ];
-      const foot = `${p.fulfilment ? `ระยะเวลาโดยประมาณ ${p.fulfilment} ` : ""}ขึ้นอยู่กับสต็อกและการยืนยันการจัดส่ง · ถ้าคำขอไม่ผ่าน แต้มจะคืนเข้าบัญชีทั้งหมด`;
+      const foot = `${p.fulfilment ? `ระยะเวลาโดยประมาณ ${p.fulfilment} · ` : ""}ถ้าคำขอไม่ผ่าน แต้มจะคืนเข้าบัญชีทั้งหมด`;
       return [bubble(ctx, "ได้รับคำขอแลกรางวัลแล้ว", "ทีมงานจะตรวจสอบและแจ้งขั้นตอนถัดไปทาง LINE", rows, { label: "ติดตามสถานะ", url }, foot)];
     }
     case "REDEMPTION_STATUS": {

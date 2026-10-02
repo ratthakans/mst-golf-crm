@@ -45,3 +45,17 @@ export const BOOKING_STATUS: Record<string, { label: string; tone: string }> = {
 };
 
 export const CATEGORY_LABEL: Record<string, string> = { ARTICLE: "บทความ", SERVICE: "บริการ", NEWS: "ข่าวสาร" };
+
+export const REDEMPTION_STATUS: Record<string, { label: string; tone: string }> = {
+  ISSUED: { label: "พร้อมใช้", tone: "green" },
+  USED: { label: "ใช้แล้ว", tone: "gray" },
+  EXPIRED: { label: "หมดอายุ", tone: "gray" },
+  SUBMITTED: { label: "คำขอใหม่", tone: "amber" },
+  UNDER_REVIEW: { label: "กำลังตรวจสอบ", tone: "blue" },
+  APPROVED: { label: "อนุมัติแล้ว", tone: "violet" },
+  PROCESSING: { label: "กำลังเตรียมของ", tone: "violet" },
+  SHIPPED: { label: "จัดส่งแล้ว", tone: "blue" },
+  COMPLETED: { label: "เสร็จสิ้น", tone: "green" },
+  REJECTED: { label: "ไม่อนุมัติ", tone: "red" },
+  CANCELLED: { label: "ยกเลิก", tone: "gray" },
+};

@@ -63,3 +63,66 @@ export interface ApiErrorBody {
   error: string;
   code: string;
 }
+
+export interface RewardItem {
+  id: string;
+  kind: "COUPON" | "PHYSICAL";
+  name: string;
+  description: string;
+  terms: string;
+  imageUrl: string | null;
+  costPoints: number;
+  valueSatang: number | null;
+  minSpendSatang: number | null;
+  validDays: number | null;
+  fulfilment: string | null;
+  stockLeft: number | null;
+  minTierName: string | null;
+  endsAt: string | null;
+  blocked: string | null;
+  shortBy: number;
+}
+
+export type RedemptionStatus =
+  | "ISSUED"
+  | "USED"
+  | "EXPIRED"
+  | "SUBMITTED"
+  | "UNDER_REVIEW"
+  | "APPROVED"
+  | "PROCESSING"
+  | "SHIPPED"
+  | "COMPLETED"
+  | "REJECTED"
+  | "CANCELLED";
+
+export interface RedemptionRow {
+  id: string;
+  code: string;
+  kind: "COUPON" | "PHYSICAL";
+  rewardName: string;
+  imageUrl: string | null;
+  costPoints: number;
+  status: RedemptionStatus;
+  statusLabel: string;
+  couponCode: string | null;
+  valueSatang: number | null;
+  minSpendSatang: number | null;
+  terms: string;
+  expiresAt: string | null;
+  usedAt: string | null;
+  fulfilment: string | null;
+  method: "PICKUP" | "SHIP" | null;
+  carrier: string | null;
+  trackingNo: string | null;
+  note: string | null;
+  steps: Array<{ status: RedemptionStatus; at: string }>;
+  createdAt: string;
+  canCancel: boolean;
+}
+
+export interface RewardsData {
+  balance: number;
+  items: RewardItem[];
+  redemptions: RedemptionRow[];
+}

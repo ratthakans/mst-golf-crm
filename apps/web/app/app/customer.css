@@ -920,3 +920,239 @@
   font-weight: 500;
   color: var(--color-ink-2);
 }
+
+/* ------------------------------------------------------------- rewards */
+
+.rewards {
+  display: grid;
+  gap: var(--space-4);
+}
+.rw-balance {
+  display: grid;
+  gap: var(--space-2);
+}
+.rw-goal {
+  display: grid;
+  gap: var(--space-2);
+  padding: 0 var(--space-1);
+}
+.rewards .tabs {
+  margin-bottom: 0;
+}
+.rw-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-2);
+}
+.rw-item {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: var(--rule);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+.rw-item:hover {
+  border-color: var(--color-line-strong);
+}
+.rw-item:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+.rw-item.is-blocked .rw-thumb,
+.rw-item.is-blocked .rw-cost,
+.rw-item.is-done {
+  opacity: 0.55;
+}
+.rw-thumb {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-sm, 8px);
+  object-fit: cover;
+  background: var(--color-paper-2);
+}
+.rw-thumb-blank {
+  display: grid;
+  place-items: center;
+  font-family: var(--font-display, inherit);
+  font-size: var(--text-xl);
+  font-weight: 600;
+  color: var(--color-brand-deep);
+  background: var(--color-tint);
+}
+.rw-what {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.rw-name {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.rw-meta {
+  font-size: var(--text-xs);
+  color: var(--color-muted);
+}
+.rw-why {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--color-sand-ink);
+}
+.rw-cost {
+  display: grid;
+  justify-items: end;
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--color-brand-deep);
+  line-height: 1.1;
+}
+.rw-cost small {
+  font-size: var(--text-xs);
+  font-weight: 500;
+  color: var(--color-muted);
+}
+/* A coupon reads as a ticket stub: the value on a perforated tab. */
+.rw-ticket {
+  width: 64px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--color-brand);
+  color: var(--color-on-brand);
+  font-weight: 700;
+  font-size: var(--text-sm);
+  border-right: 2px dashed var(--color-on-brand-muted);
+}
+.rw-sheet {
+  display: grid;
+  gap: var(--space-4);
+}
+.rw-hero {
+  width: 100%;
+  max-height: 220px;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+}
+.rw-delivery {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-3);
+}
+.rw-delivery legend {
+  font-weight: 600;
+  margin-bottom: var(--space-2);
+}
+.rw-choice {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+}
+.rw-option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 48px;
+  padding: 0 var(--space-3);
+  border: var(--rule);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-weight: 600;
+}
+.rw-option.on {
+  border-color: var(--color-brand);
+  background: var(--color-tint);
+  color: var(--color-brand-deep);
+}
+.rw-option input {
+  accent-color: var(--color-brand);
+}
+.rw-terms h3 {
+  font-size: var(--text-sm);
+  margin-bottom: var(--space-1);
+}
+.rw-terms p {
+  font-size: var(--text-sm);
+  color: var(--color-ink-2);
+  white-space: pre-line;
+}
+.rw-accept {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+  font-size: var(--text-sm);
+  cursor: pointer;
+}
+.rw-accept input {
+  width: 22px;
+  height: 22px;
+  flex: none;
+  margin-top: 1px;
+  accent-color: var(--color-brand);
+}
+.rw-coupon-value {
+  font-size: var(--text-3xl);
+  font-weight: 700;
+  color: var(--color-brand-deep);
+  text-align: center;
+}
+.rw-coupon-terms {
+  max-width: 34ch;
+  margin: 0 auto;
+  white-space: pre-line;
+}
+.rw-qr-wait {
+  display: block;
+  width: 300px;
+  height: 300px;
+  max-width: 78vw;
+  max-height: 78vw;
+  background: var(--color-paper-2);
+  border-radius: var(--radius-md);
+}
+.rw-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-3);
+}
+.rw-steps li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--color-faint);
+}
+.rw-steps li.done {
+  color: var(--color-ink);
+  font-weight: 600;
+}
+.rw-steps small {
+  font-weight: 400;
+  color: var(--color-muted);
+}
+.rw-dot {
+  width: 24px;
+  height: 24px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 2px solid var(--color-line-strong);
+}
+.rw-steps li.done .rw-dot {
+  background: var(--color-brand);
+  border-color: var(--color-brand);
+  color: var(--color-on-brand);
+}

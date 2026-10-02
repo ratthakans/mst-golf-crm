@@ -12,6 +12,7 @@ const GROUPS: Array<{ key: ReadyItem["group"]; title: string }> = [
   { key: "website", title: "เว็บไซต์" },
   { key: "store", title: "ร้านและการจองซิม" },
   { key: "members", title: "สมาชิก แต้ม และ PDPA" },
+  { key: "rewards", title: "รางวัลและคูปอง" },
   { key: "pos", title: "ยอดขาย POS" },
   { key: "team", title: "ทีมงาน" },
   { key: "line", title: "LINE (ทีม LINE)" },

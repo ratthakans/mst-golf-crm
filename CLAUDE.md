@@ -62,15 +62,15 @@ One Neon database, one Postgres schema per environment: `public` = production, `
 Money is integer **satang** in columns ending `Satang`; convert only with `toSatang` / `formatBaht` from `@mstgolf/core/money`. Tier thresholds in settings are whole baht. Business time is Bangkok (UTC+7, no DST): use `@mstgolf/core/time` (`fromLocal`, `localDateKey`, `formatHm`…), never the server's local time. Client components import only the `/time` and `/money` subpaths (the root pulls in Prisma).
 
 ## LINE
-One Rich Menu owned by the LINE agency; only buttons A+B (`liff.line.me/<liffId>/member`) and D (`…/booking`) link to us. No webhook. The customer's LINE UID comes from verifying a LIFF / LINE Login ID token; messages go out through the Notification outbox (`enqueue` inside the same transaction, `processOutbox` delivers with retry keys). Credentials live encrypted in `LineChannel`, entered at Settings › LINE.
+One Rich Menu owned by the LINE agency; buttons A+B (`liff.line.me/<liffId>/member`), D (`…/booking`) and Points & Rewards (`…/rewards`) link to us. No webhook. The customer's LINE UID comes from verifying a LIFF / LINE Login ID token; messages go out through the Notification outbox (`enqueue` inside the same transaction, `processOutbox` delivers with retry keys). Credentials live encrypted in `LineChannel`, entered at Settings › LINE.
 
 ## Roadmap (detail in MST-DEV-PLAN.md §5)
-Phase 1 is the contracted scope (quote QT-20260923-01): member system · database design · simulator booking · POS import + Summary Dashboard · website. Rewards, campaigns and the intelligence pages are out of contract — keep their code, hide them per tenant with `settings.features`.
+Phase 1 is the contracted scope (quote QT-20260923-01): member system · database design · simulator booking · POS import + Summary Dashboard · website. Rewards and coupons (docs/PRODUCT.md §11) and online-order points (Shopify, `th-commerce`) were added on top in Oct 2026 and are on by default (`settings.features.rewards`). Campaigns and the intelligence pages remain out of contract — keep their code, hidden per tenant with `settings.features`.
 - **Built (Sep 2026, branch `phase1`):** all five parts, back office, website, LINE outbox, crons; previews on Vercel.
 - **Remaining:** LINE credentials (incl. LINE Login/LIFF in the OA's provider), real POS file, MST content/photos/domain, production env + GitHub secrets, UAT, go-live — checklist in MST-DEV-PLAN.md §4.
 - **Go-live:** everything at once, within ~3 weeks of MST's inputs, latest 11 Dec 2026.
 
-LINE: one Rich Menu owned by the LINE team (only buttons A+B and D link to us), no webhook, UID from LINE Login in the OA's provider, push via the Messaging API token.
+LINE: one Rich Menu owned by the LINE team (member, booking and rewards buttons link to us), no webhook, UID from LINE Login in the OA's provider, push via the Messaging API token.
 
 ## Commands
 See `README.md`. TL;DR: `pnpm install` → `pnpm db:generate` → `pnpm db:deploy` → `pnpm db:seed` → `pnpm demo` (optional) → `pnpm --filter @mstgolf/web-admin dev`. Tests: `pnpm --filter @mstgolf/core test` and `pnpm test:db`.

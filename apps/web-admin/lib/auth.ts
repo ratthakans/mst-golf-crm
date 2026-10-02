@@ -33,7 +33,7 @@ export async function getSessionUser(): Promise<SessionUser | null> {
     name: user.name ?? user.email,
     role: user.role,
     mustChangePassword: user.mustChangePassword,
-    permissions: permissionsOf(user.role, { intelligence: org.settings.features.intelligence }),
+    permissions: permissionsOf(user.role, { intelligence: org.settings.features.intelligence, rewards: org.settings.features.rewards }),
   };
 }
 

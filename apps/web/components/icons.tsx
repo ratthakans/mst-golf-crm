@@ -99,3 +99,9 @@ export const IconCalendar = (p: P) => (
     <path d="M3.5 10h17M8 3v4M16 3v4" />
   </Stroke>
 );
+export const IconGift = (p: P) => (
+  <Stroke {...p}>
+    <rect x="3.5" y="8.5" width="17" height="4" rx="1" />
+    <path d="M5 12.5v8h14v-8M12 8.5v12M12 8.5c-1.5-3.5-5.5-3.5-5.5-1.25S9.5 8.5 12 8.5zM12 8.5c1.5-3.5 5.5-3.5 5.5-1.25S14.5 8.5 12 8.5z" />
+  </Stroke>
+);

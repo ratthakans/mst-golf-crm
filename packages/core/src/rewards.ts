@@ -8,7 +8,7 @@ import { recordEvent } from "./events";
 import { enqueueEmail } from "./notify/email";
 import { enqueue } from "./notify/outbox";
 import { postPoints } from "./points";
-import { getOrg, type ResolvedSettings } from "./settings";
+import { getOrg, updateSettings, type ResolvedSettings } from "./settings";
 import { DAY_MS } from "./time";
 
 // Rewards (docs/PRODUCT.md §11). Members spend points on a catalogue MST keeps
@@ -832,4 +832,17 @@ export function cleanAlertEmails(raw: unknown): string[] {
   for (const e of list) if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) throw new CoreError("INVALID_INPUT", `อีเมลไม่ถูกต้อง: ${e}`);
   if (list.length > 10) throw new CoreError("INVALID_INPUT", "ใส่อีเมลได้ไม่เกิน 10 อีเมล");
   return [...new Set(list)];
+}
+
+export async function saveRedemptionSettings(orgId: string, actor: Actor, input: { alertEmails?: unknown; backofficeUrl?: string | null }): Promise<ResolvedSettings> {
+  const { settings } = await getOrg(orgId);
+  const url = input.backofficeUrl?.trim().replace(/\/$/, "");
+  if (url && !/^https?:\/\/[^\s/]+$/.test(url)) throw new CoreError("INVALID_INPUT", "ลิงก์หลังบ้านต้องเป็น https://โดเมน");
+  const next = {
+    alertEmails: input.alertEmails === undefined ? settings.redemption.alertEmails : cleanAlertEmails(input.alertEmails),
+    backofficeUrl: url || settings.redemption.backofficeUrl,
+  };
+  const resolved = await updateSettings(orgId, { redemption: next });
+  await inTx(orgId, (tx) => writeAudit(tx, orgId, actor, { action: "settings.redemption", entity: "settings", before: settings.redemption, after: next }));
+  return resolved;
 }

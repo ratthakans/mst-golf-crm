@@ -16,7 +16,7 @@ interface Props {
   welcomePoints: number;
   terms: ConsentDoc | null;
   marketing: ConsentDoc | null;
-  next: "booking" | null;
+  next: "booking" | "rewards" | null;
   todayKey: string;
   birthdayMultiplier: number; // entry tier's birthday-month points multiplier
 }
@@ -123,10 +123,10 @@ export function SignupForm({ lineName, welcomePoints, terms, marketing, next, to
             : `รหัสสมาชิกของคุณคือ ${done.member.code} แสดงบัตรหรือแจ้งเบอร์มือถือที่เคาน์เตอร์เพื่อสะสมแต้มทุกการซื้อ`}
         </p>
         <div className="stack">
-          {next === "booking" ? (
+          {next ? (
             <>
-              <Link href="/app/booking" className="btn btn-primary btn-block">
-                ไปจองซิมกอล์ฟต่อ
+              <Link href={next === "booking" ? "/app/booking" : "/app/rewards"} className="btn btn-primary btn-block">
+                {next === "booking" ? "ไปจองซิมกอล์ฟต่อ" : "ไปแลกรางวัลต่อ"}
               </Link>
               <button type="button" className="btn btn-secondary btn-block" onClick={openCard}>
                 ดูบัตรสมาชิก
@@ -144,10 +144,14 @@ export function SignupForm({ lineName, welcomePoints, terms, marketing, next, to
 
   return (
     <section className="panel">
-      {next === "booking" && (
+      {next && (
         <p className="notice" style={{ marginBottom: 20 }}>
           <span>
-            <b>ต้องเป็นสมาชิกก่อนจองซิม</b> สมัครฟรีด้านล่าง เสร็จแล้วกดไปจองซิมกอล์ฟต่อได้ทันที
+            {next === "booking" ? (
+              <><b>ต้องเป็นสมาชิกก่อนจองซิม</b> สมัครฟรีด้านล่าง เสร็จแล้วกดไปจองซิมกอล์ฟต่อได้ทันที</>
+            ) : (
+              <><b>ต้องเป็นสมาชิกก่อนแลกรางวัล</b> สมัครฟรีด้านล่าง รับแต้มต้อนรับแล้วไปดูรางวัลต่อได้ทันที</>
+            )}
           </span>
         </p>
       )}

@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { findMemberByLine, isCoreError, processOutbox, type MemberSummary } from "@mstgolf/core";
+import { findMemberByLine, isCoreError, processEmails, processOutbox, type MemberSummary } from "@mstgolf/core";
 import { waitUntil } from "@vercel/functions";
 import { getOrg } from "./org";
 import { currentLineUser, type LineUser } from "./session";
@@ -84,7 +84,7 @@ export function isLineClient(req: NextRequest): boolean {
  * On Vercel waitUntil keeps the function alive; locally the promise just runs.
  */
 export function kickOutbox(): void {
-  const run = processOutbox({ limit: 20 }).catch((e: unknown) => {
+  const run = Promise.all([processOutbox({ limit: 20 }), processEmails({ limit: 10 })]).catch((e: unknown) => {
     console.error("[outbox]", e instanceof Error ? e.message : e);
   });
   try {

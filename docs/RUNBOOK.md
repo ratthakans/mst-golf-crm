@@ -133,7 +133,15 @@ DATABASE_SCHEMA=public pnpm --filter @mstgolf/database admin:create <email>
 - Content pages update within **5 minutes**. Refresh after that.
 - Uploading a photo failed with "ยังไม่ได้ตั้งค่าที่เก็บรูปเว็บไซต์": `PUBLIC_BLOB_READ_WRITE_TOKEN` is not set on `mst-golf-crm`. Paste an https link instead for now.
 
-## 13. A deploy went wrong
+## 13. Rewards and coupons
+
+- **"The coupon says already used":** the counter screen shows when, at which branch and on which bill. Check that bill in the POS. If it really was a mistake, open the redemption (รางวัล › คูปอง) — a used coupon cannot be reopened; give the member a new one with **ปรับแต้ม** (reason: the Redemption ID) so they can redeem again.
+- **A member wants a coupon cancelled:** open the redemption › เปลี่ยนสถานะ › ยกเลิก with a reason. The points go back and the member is told in LINE. Only coupons not yet used.
+- **Reward out of stock after approval:** move the request to ไม่อนุมัติ with the reason (points and stock come back), or keep it and write the expected date in the message.
+- **Marketing got no email:** Settings › การแลกรางวัล (are the addresses there?) and Settings › สถานะระบบ (`RESEND_API_KEY · EMAIL_FROM`). Emails that could not go out stay SKIPPED/FAILED in `email_messages`; the request itself is always in รางวัล › คำขอที่ต้องดำเนินการ.
+- **Points and redemptions:** every redemption is a REDEEM row in the ledger and every refund a REDEEM_REFUND row, both linked to the redemption — the member's แต้ม tab shows them.
+
+## 14. A deploy went wrong
 
 - Vercel › project › Deployments › choose the last good deployment › **Promote to Production** (instant rollback).
 - If a database migration shipped with that deploy, rolling back the app does not roll back the schema. Tell ORIONS to check that the old code still works with the new schema.

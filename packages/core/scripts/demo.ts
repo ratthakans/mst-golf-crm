@@ -16,6 +16,10 @@ import {
   listLanes,
   localParts,
   previewImport,
+  redeemReward,
+  saveReward,
+  updateRedemption,
+  useCoupon,
   savePost,
   signUp,
   staffCreateBooking,
@@ -140,6 +144,22 @@ async function main() {
     status: "PUBLISHED",
     coverUrl: "/mock/store.jpg",
   }).catch((e) => console.warn("post", (e as Error).message));
+
+  // Rewards: a coupon and a physical reward, a few redemptions in different states.
+  const terms = "ใช้ได้ 1 ครั้งต่อ 1 บิล · ใช้ร่วมกับโปรโมชันอื่นไม่ได้ · ไม่สามารถแลกเป็นเงินสด";
+  const coupon = await saveReward(org.id, actor, null, { kind: "COUPON", name: "คูปองส่วนลด ฿1,000", description: "ส่วนลดสินค้าทุกหมวดที่ร้าน MST Golf", terms, costPoints: 1000, valueBaht: 1000, minSpendBaht: 5000, validDays: 30, sortOrder: 1 });
+  const small = await saveReward(org.id, actor, null, { kind: "COUPON", name: "คูปองส่วนลด ฿300", terms, costPoints: 300, valueBaht: 300, validDays: 30, sortOrder: 2 });
+  const ipad = await saveReward(org.id, actor, null, { kind: "PHYSICAL", name: "iPad 10.9 นิ้ว Wi-Fi 64GB", description: "สำหรับสมาชิกที่สะสมแต้มสูง", terms: "สินค้าตามสต็อก สีอาจแตกต่าง · ไม่สามารถเปลี่ยนเป็นเงินสด", costPoints: 3000, stock: 3, fulfilment: "7–14 วัน ขึ้นกับสต็อก", sortOrder: 3 });
+  const rich = await prisma.member.findMany({ where: { orgId: org.id, status: "ACTIVE", points: { gte: 3000 }, identities: { some: { type: "LINE" } } }, orderBy: { points: "desc" }, take: 4 });
+  for (const [i, m] of rich.entries()) {
+    const c = await redeemReward(org.id, m.id, { rewardId: i % 2 ? small.id : coupon.id, acceptTerms: true }).catch(() => null);
+    if (c?.couponCode && i === 0) await useCoupon(org.id, actor, { couponCode: c.couponCode, storeId: store.id, invoiceNo: "DEMO-0001" }).catch(() => undefined);
+    if (i < 2) {
+      const r = await redeemReward(org.id, m.id, { rewardId: ipad.id, acceptTerms: true, delivery: { method: i ? "SHIP" : "PICKUP", name: m.displayName, phone: "0891234567", address: "99/1 ถนนสุขุมวิท แขวงคลองเตย กรุงเทพฯ 10110", storeId: store.id } }).catch(() => null);
+      if (r && i === 1) await updateRedemption(org.id, actor, r.id, { status: "APPROVED", note: "ตรวจสอบแล้ว กำลังสั่งของ" });
+    }
+  }
+  console.log(`rewards: 3 in the catalogue, ${rich.length} members redeemed`);
 }
 
 main()

@@ -5,6 +5,7 @@ import {
   saveLane,
   saveLineChannel,
   saveNotificationToggles,
+  saveRedemptionSettings,
   savePointRules,
   savePosRules,
   saveShopifyConnection,
@@ -32,6 +33,9 @@ export async function PUT(req: Request, { params }: { params: { section: string 
         break;
       case "points":
         await savePointRules(org.id, actor, { welcomeBonus: Number(b.welcomeBonus), perBaht: Number(b.perBaht) });
+        break;
+      case "rewards":
+        await saveRedemptionSettings(org.id, actor, { alertEmails: b.alertEmails, backofficeUrl: new URL(req.url).origin }); // the email links back to wherever this was saved
         break;
       case "booking":
         await saveBookingRules(org.id, actor, b as never);
