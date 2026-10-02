@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<title>MST Golf — POS API Requirements</title>
+<title>MST Golf — POS API Specification</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <style>
   @page { size: A4 portrait; margin: 0; }
@@ -49,65 +49,26 @@
 </style>
 </head>
 <body>
-
-<!-- ═══════ 1 ═══════ -->
 <section class="page">
   <div class="head">
-    <div class="kicker">MST Golf Thailand · POS API Requirements · v1</div>
-    <h1 class="cover-title">ข้อกำหนดการเชื่อมต่อ POS<br>เพื่อดึงยอดขายเข้าระบบสมาชิก</h1>
-    <p>สำหรับผู้ให้บริการระบบ POS ของ MST Golf ชาญอิสสระ ทาวเวอร์ 1 · จัดทำโดย ORIONS (ผู้พัฒนา MST Golf Platform) · ตุลาคม 2026</p>
+    <div class="kicker">MST Golf Thailand · POS API Specification · v1 · ตุลาคม 2026</div>
+    <h2>ข้อกำหนด API สำหรับดึงข้อมูลบิลจาก POS</h2>
+    <p>MST Golf Platform (ระบบสมาชิกของร้าน) จะดึงบิลจาก POS เป็นรอบอัตโนมัติเพื่อคำนวณแต้มสมาชิก · ชื่อฟิลด์ไม่ต้องตรงตามเอกสารนี้ ขอให้มีข้อมูลเทียบเท่าและระบุชื่อจริงในเอกสาร API · <b class="must">จำเป็น</b> = ขาดไม่ได้ · <span class="nice">ควรมี</span> = ช่วยให้ข้อมูลครบขึ้น</p>
   </div>
   <div class="body">
-    <div class="card tint">
-      <h3>ภาพรวม</h3>
-      <p class="small">MST Golf Platform คือระบบสมาชิกของร้าน: ลูกค้าสะสมแต้มจากยอดซื้อ ระดับสมาชิกคิดจากยอดซื้อ 12 เดือน และได้ข้อความแจ้งแต้มทาง LINE · ตอนนี้ระบบรับยอดขายจากไฟล์ CSV ที่ export จาก POS วันละครั้ง เราต้องการเปลี่ยนเป็น <b>ดึงข้อมูลบิลผ่าน API ของ POS เป็นรอบอัตโนมัติ</b> เพื่อให้แต้มเข้าภายในไม่กี่นาทีหลังลูกค้าชำระเงิน</p>
-    </div>
-
-    <div class="card">
-      <h3>รูปแบบการเชื่อมต่อ: MST Golf Platform ดึงข้อมูลอย่างเดียว</h3>
-      <ul class="small">
-        <li><b>ทิศทางเดียว (pull):</b> ระบบของเราเรียก API ของ POS เพื่ออ่านบิล · POS <b>ไม่ต้อง</b> ส่ง webhook และ <b>ไม่ต้อง</b> เรียกระบบของเรา</li>
-        <li><b>อ่านอย่างเดียว (read-only):</b> เราไม่สร้าง แก้ หรือลบข้อมูลใด ๆ ใน POS · ขอ API key ที่มีสิทธิ์อ่านบิลอย่างเดียว เฉพาะสาขาของ MST</li>
-        <li><b>รอบการดึง:</b> ทุก 15 นาที และดึงย้อนทับช่วงเวลาของรอบก่อนเล็กน้อย บิลที่รับไปแล้วระบบข้ามเอง</li>
-        <li><b>ไฟล์ CSV ยังใช้ต่อ</b> เป็นทางสำรองเมื่อ API ไม่พร้อมใช้งาน</li>
-      </ul>
-    </div>
-
-    <div class="flow">
-      <div><i>1</i><b>ลูกค้าชำระเงิน</b>พนักงานใส่เบอร์หรือรหัสสมาชิกในบิล แล้วปิดบิลตามปกติ</div>
-      <div><i>2</i><b>POS เก็บบิล</b>บิลพร้อมให้อ่านผ่าน API (ระบุว่าช้ากว่าเวลาจริงเท่าไร)</div>
-      <div><i>3</i><b>เราดึงทุก 15 นาที</b>ขอบิลที่ <span class="code">updated_since</span> เวลาล่าสุดที่เคยดึง</div>
-      <div><i>4</i><b>ลูกค้าได้แต้ม</b>ระบบคำนวณแต้ม ระดับ และส่งข้อความ LINE</div>
-    </div>
-
-    <div class="card">
-      <h3>สิ่งที่ขอจากผู้ให้บริการ POS</h3>
-      <ol class="small">
-        <li>เอกสาร API ฉบับเต็ม (endpoint · การยืนยันตัวตน · โครงสร้างข้อมูล · error code)</li>
-        <li>ระบบทดสอบ (sandbox) หรือสาขาทดสอบ พร้อม API key สำหรับทดสอบ</li>
-        <li>คำตอบของคำถามในหน้า 3 (ช่อง "คำตอบ")</li>
-        <li>ตัวอย่าง response จริง (JSON) ตามรายการในหน้า 4 — ลบข้อมูลส่วนตัวลูกค้าออกได้</li>
-        <li>ค่าใช้จ่ายการเปิดใช้ API (ถ้ามี) และผู้ติดต่อด้านเทคนิค</li>
-      </ol>
-    </div>
-
-    <div class="card warn">
-      <h3>หลักการเรื่องข้อมูล</h3>
-      <p class="small">เราต้องการเฉพาะข้อมูลที่ใช้คำนวณแต้มและยอดซื้อ (หน้า 2) · ไม่ต้องการข้อมูลบัตรชำระเงิน ข้อมูลพนักงานเกินชื่อ/รหัส หรือข้อมูลลูกค้าอื่นนอกจากเบอร์/รหัสสมาชิกที่ร้านใส่ในบิล · ข้อมูลส่งผ่าน HTTPS เท่านั้น และ API key เก็บแบบเข้ารหัสในระบบของเรา</p>
-    </div>
-  </div>
-  <div class="ft"><span>MST Golf Thailand · POS API Requirements</span><span>1 / 4</span></div>
-</section>
-
-<!-- ═══════ 2 ═══════ -->
-<section class="page">
-  <div class="head">
-    <div class="kicker">POS API Requirements</div>
-    <h2>ข้อมูลที่ต้องอ่านได้จาก API</h2>
-    <p>ชื่อฟิลด์ไม่ต้องตรงตามตาราง — ขอให้มีข้อมูลเทียบเท่า และระบุชื่อฟิลด์จริงในเอกสาร API · <b class="must">จำเป็น</b> = ขาดไม่ได้ · <span class="nice">ควรมี</span> = ช่วยให้ข้อมูลครบขึ้น</p>
-  </div>
-  <div class="body">
-    <h3 class="sec">1. Endpoint ที่ต้องมี</h3>
+    <h3 class="sec">1. ข้อกำหนดทั่วไป</h3>
+    <table class="t">
+      <tbody>
+        <tr><td class="req" style="width:38mm">ทิศทาง</td><td>MST Golf Platform เรียก API ของ POS อย่างเดียว (pull) · ไม่ใช้ webhook · POS ไม่ต้องเรียกระบบของเรา</td></tr>
+        <tr><td class="req">สิทธิ์</td><td>API key หรือ OAuth 2.0 (client credentials) ที่ <b>อ่านอย่างเดียว</b> และจำกัดเฉพาะสาขาของ MST Golf · เราไม่สร้าง แก้ หรือลบข้อมูลใน POS</td></tr>
+        <tr><td class="req">รูปแบบ</td><td>HTTPS · JSON · เวลาเป็น ISO 8601 พร้อม timezone · จำนวนเงินเป็นตัวเลขทศนิยม 2 ตำแหน่ง</td></tr>
+        <tr><td class="req">เครือข่าย</td><td>ระบบของเราอยู่บน cloud ที่ IP ไม่คงที่ จึงขอไม่บังคับ IP whitelist</td></tr>
+        <tr><td class="req">ความถี่</td><td>ดึงทุก 15 นาที และดึงย้อนทับรอบก่อนเล็กน้อย · rate limit ต้องรองรับรอบนี้ และการดึงย้อนหลังครั้งแรก</td></tr>
+        <tr><td class="req">ข้อมูลย้อนหลัง</td><td>ดึงย้อนหลังได้อย่างน้อย 13 เดือน (ใช้ครั้งเดียวตอนเริ่มระบบ)</td></tr>
+        <tr><td class="req">ข้อมูลที่ไม่ต้องการ</td><td>เลขบัตรชำระเงิน และข้อมูลลูกค้าอื่นนอกจากเบอร์/รหัสสมาชิกที่ร้านใส่ในบิล</td></tr>
+      </tbody>
+    </table>
+    <h3 class="sec">2. Endpoint</h3>
     <table class="t">
       <thead><tr><th style="width:52mm">Endpoint</th><th>ใช้ทำอะไร</th><th style="width:16mm">ระดับ</th></tr></thead>
       <tbody>
@@ -119,7 +80,7 @@
       </tbody>
     </table>
 
-    <h3 class="sec">2. ข้อมูลระดับบิล</h3>
+    <h3 class="sec">3. ข้อมูลระดับบิล</h3>
     <table class="t">
       <thead><tr><th style="width:44mm">ข้อมูล</th><th>รายละเอียด</th><th style="width:16mm">ระดับ</th></tr></thead>
       <tbody>
@@ -137,7 +98,18 @@
       </tbody>
     </table>
 
-    <h3 class="sec">3. ข้อมูลรายการสินค้าในบิล (lines[])</h3>
+    
+  </div>
+  <div class="ft"><span>MST Golf Thailand · POS API Specification</span><span>1 / 2</span></div>
+</section>
+
+<section class="page">
+  <div class="head">
+    <div class="kicker">POS API Specification</div>
+    <h2>รายการสินค้าและตัวอย่างข้อมูล</h2>
+  </div>
+  <div class="body">
+    <h3 class="sec">4. ข้อมูลรายการสินค้า (lines[])</h3>
     <table class="t">
       <thead><tr><th style="width:44mm">ข้อมูล</th><th>รายละเอียด</th><th style="width:16mm">ระดับ</th></tr></thead>
       <tbody>
@@ -149,60 +121,10 @@
         <tr><td class="f">ref_line (บิลคืน)</td><td>คืนบางรายการ: ระบุรายการที่คืนและจำนวน</td><td class="req nice">ควรมี</td></tr>
       </tbody>
     </table>
-  </div>
-  <div class="ft"><span>MST Golf Thailand · POS API Requirements</span><span>2 / 4</span></div>
-</section>
 
-<!-- ═══════ 3 ═══════ -->
-<section class="page">
-  <div class="head">
-    <div class="kicker">POS API Requirements</div>
-    <h2>คำถามถึงผู้ให้บริการ POS</h2>
-    <p>กรุณาตอบในช่อง "คำตอบ" หรือแนบเอกสารอ้างอิง</p>
-  </div>
-  <div class="body">
-    <table class="t qa">
-      <thead><tr><th style="width:6mm">#</th><th>คำถาม</th><th style="width:72mm">คำตอบ</th></tr></thead>
-      <tbody>
-        <tr><td colspan="3" style="font-weight:700;padding-top:2mm">ระบบและการเข้าถึง</td></tr>
-        <tr><td>1</td><td>ยี่ห้อ รุ่น เวอร์ชันของ POS · เป็นระบบ cloud หรือติดตั้งในร้าน</td><td class="ans"></td></tr>
-        <tr><td>2</td><td>ยืนยันตัวตนแบบใด (API key / OAuth 2.0) · token มีอายุเท่าไร ต่ออายุอย่างไร</td><td class="ans"></td></tr>
-        <tr><td>3</td><td>ออก API key ที่ <b>อ่านอย่างเดียว</b> และจำกัดเฉพาะสาขา MST ได้ไหม</td><td class="ans"></td></tr>
-        <tr><td>4</td><td>บังคับ IP whitelist ไหม — ระบบเราอยู่บน cloud ที่ IP ไม่คงที่ ถ้าบังคับขอทางเลือกอื่น</td><td class="ans"></td></tr>
-        <tr><td>5</td><td>จำกัดจำนวนคำขอ (rate limit) ต่อนาที / ต่อวัน เท่าไร · ดึงได้หน้าละกี่บิล</td><td class="ans"></td></tr>
-        <tr><td>6</td><td>มีค่าใช้จ่ายการใช้ API ไหม · ใครเปิดสิทธิ์ · ใช้เวลาเปิดกี่วัน</td><td class="ans"></td></tr>
-        <tr><td colspan="3" style="font-weight:700;padding-top:2mm">ความครบถ้วนของข้อมูล</td></tr>
-        <tr><td>7</td><td>หลังปิดบิล บิลพร้อมให้อ่านผ่าน API ช้าสุดกี่นาที</td><td class="ans"></td></tr>
-        <tr><td>8</td><td>ถ้าอินเทอร์เน็ตในร้านล่ม บิลที่ส่งเข้าระบบทีหลังจะมี <span class="code">updated_at</span> เป็นเวลาที่ส่งเข้าระบบใช่ไหม (เพื่อไม่ให้ดึงตก)</td><td class="ans"></td></tr>
-        <tr><td>9</td><td>แก้บิลหลังปิดแล้วได้ไหม · ถ้าได้ เลขบิลเดิมหรือออกเลขใหม่ · <span class="code">updated_at</span> เปลี่ยนไหม</td><td class="ans"></td></tr>
-        <tr><td>10</td><td>บิลคืนสินค้า: คืนบางรายการได้ไหม · ระบุรายการที่คืนได้ไหม · เลขบิลคืนแยกจากบิลขายไหม</td><td class="ans"></td></tr>
-        <tr><td>11</td><td>ยกเลิกบิล: เป็นบิลใหม่ที่อ้างบิลเดิม หรือเปลี่ยนสถานะบิลเดิม</td><td class="ans"></td></tr>
-        <tr><td>12</td><td>ดึงข้อมูลย้อนหลังได้ไกลสุดกี่เดือน</td><td class="ans"></td></tr>
-        <tr><td colspan="3" style="font-weight:700;padding-top:2mm">สมาชิกและสินค้า</td></tr>
-        <tr><td>13</td><td>มีช่องเฉพาะสำหรับเบอร์หรือรหัสสมาชิกไหม · ช่องนี้สแกน QR / barcode ได้ไหม · ถ้าไม่มี ใช้หมายเหตุบิลได้ไหม</td><td class="ans"></td></tr>
-        <tr><td>14</td><td>ยอดในบิลรวม VAT แล้วหรือไม่ · ส่วนลดท้ายบิลกระจายลงแต่ละรายการไหม</td><td class="ans"></td></tr>
-        <tr><td>15</td><td>แยกบัตรกำนัล คูปอง และค่าบริการ ออกจากสินค้าได้ไหม (ไม่ควรได้แต้ม)</td><td class="ans"></td></tr>
-        <tr><td colspan="3" style="font-weight:700;padding-top:2mm">การดูแล</td></tr>
-        <tr><td>16</td><td>มีการแจ้งล่วงหน้าเมื่อเปลี่ยนเวอร์ชัน API ไหม · API เดิมใช้ได้อีกนานเท่าไร</td><td class="ans"></td></tr>
-        <tr><td>17</td><td>ช่องทางและเวลาตอบเมื่อ API มีปัญหา · หน้าแสดงสถานะระบบ (status page)</td><td class="ans"></td></tr>
-        <tr><td>18</td><td>ผู้ติดต่อด้านเทคนิค (ชื่อ · อีเมล · โทร)</td><td class="ans"></td></tr>
-      </tbody>
-    </table>
-  </div>
-  <div class="ft"><span>MST Golf Thailand · POS API Requirements</span><span>3 / 4</span></div>
-</section>
-
-<!-- ═══════ 4 ═══════ -->
-<section class="page">
-  <div class="head">
-    <div class="kicker">POS API Requirements</div>
-    <h2>ตัวอย่างข้อมูลและการทดสอบ</h2>
-    <p>ด้านล่างคือรูปแบบข้อมูลที่เราคาดหวัง (ตัวอย่างประกอบ ไม่ใช่รูปแบบบังคับ) · ขอ response จริงจาก POS ตามรายการด้านขวา</p>
-  </div>
-  <div class="body">
+    <h3 class="sec">5. ตัวอย่าง response (ประกอบความเข้าใจ ไม่ใช่รูปแบบบังคับ)</h3>
     <div class="grid2" style="align-items:start">
-      <div>
-        <p class="small muted" style="margin-bottom:1.4mm">ตัวอย่าง: บิลขายที่มีสมาชิก</p>
+      <div><p class="small muted" style="margin-bottom:1.4mm">ตัวอย่าง: บิลขายที่มีสมาชิก</p>
 <pre>{
   "bill_no": "CIT1-20261015-0042",
   "type": "SALE",
@@ -233,11 +155,9 @@
       "qty": 1, "unit_price": 900.00,
       "line_discount": 0, "line_net": 900.00 }
   ]
-}</pre>
-      </div>
+}</pre></div>
       <div style="display:grid; gap:3.4mm">
-        <div>
-          <p class="small muted" style="margin-bottom:1.4mm">ตัวอย่าง: คืนสินค้าบางรายการ</p>
+        <div><p class="small muted" style="margin-bottom:1.4mm">ตัวอย่าง: คืนสินค้าบางรายการ</p>
 <pre>{
   "bill_no": "CIT1-20261018-0007",
   "type": "RETURN",
@@ -250,48 +170,19 @@
     { "ref_line": 2, "sku": "PV1-12",
       "qty": 1, "line_net": 900.00 }
   ]
-}</pre>
-        </div>
+}</pre></div>
         <div class="card">
-          <h3>ขอ response จริงอย่างละ 1 บิล</h3>
+          <h3>สิ่งที่ขอเพื่อเริ่มเชื่อมต่อ</h3>
           <ul class="small">
-            <li>บิลขายที่มีสมาชิก · บิลที่ไม่มีสมาชิก</li>
-            <li>บิลที่มีส่วนลดท้ายบิล · บิลที่จ่ายหลายวิธี</li>
-            <li>บิลคืนบางรายการ · บิลยกเลิกทั้งใบ</li>
-            <li>บิลที่ถูกแก้ไขหลังปิดบิล (ถ้า POS อนุญาต)</li>
-            <li>บิลที่มีบัตรกำนัลหรือคูปอง</li>
+            <li>เอกสาร API ฉบับเต็ม</li>
+            <li>ระบบทดสอบ (sandbox) และ API key สำหรับทดสอบ</li>
+            <li>ตัวอย่าง response จริง: บิลขาย · บิลคืน · บิลยกเลิก</li>
           </ul>
         </div>
       </div>
     </div>
-
-    <div class="card">
-      <h3>ขั้นตอนทดสอบร่วมกัน</h3>
-      <ol class="small">
-        <li>ผู้ให้บริการ POS ส่งเอกสาร API · sandbox · API key ทดสอบ · คำตอบหน้า 3</li>
-        <li>ORIONS เชื่อมต่อกับ sandbox และดึงบิลตัวอย่างทุกประเภท</li>
-        <li>ทดสอบที่ร้านจริง 1 วัน: ออกบิลขาย คืน ยกเลิก แล้วเทียบยอดในระบบสมาชิกกับรายงานปิดวันของ POS ให้ตรงกันทุกบาท</li>
-        <li>เปิด API key จริง (อ่านอย่างเดียว) แล้วเปลี่ยนจากไฟล์ CSV เป็น API — CSV ยังเก็บไว้เป็นทางสำรอง</li>
-      </ol>
-    </div>
-
-    <div class="grid2">
-      <div class="card tint">
-        <h3>สิ่งที่ระบบเราทำเมื่อได้ข้อมูล</h3>
-        <ul class="small">
-          <li>บิลเดียวกันได้แต้มครั้งเดียว ไม่ว่าจะดึงซ้ำกี่รอบ</li>
-          <li>บิลคืน/ยกเลิก หักแต้มตามสัดส่วนของบิลเดิม</li>
-          <li>บิลที่ไม่มีสมาชิก นับเป็นยอดขายของร้าน ไม่มีใครได้แต้ม</li>
-          <li>บันทึกผลทุกรอบการดึง และแสดงสถานะในหลังบ้านของร้าน</li>
-        </ul>
-      </div>
-      <div class="card">
-        <h3>ติดต่อ</h3>
-        <p class="small">ORIONS — ผู้พัฒนา MST Golf Platform<br>คำถามด้านเทคนิคเรื่องการเชื่อมต่อ ส่งผ่าน MST Golf Thailand หรือติดต่อ ORIONS โดยตรง<br><span class="muted">【ชื่อ · อีเมล · โทร ของผู้ติดต่อฝั่ง ORIONS】</span></p>
-      </div>
-    </div>
   </div>
-  <div class="ft"><span>MST Golf Thailand · POS API Requirements</span><span>4 / 4</span></div>
+  <div class="ft"><span>MST Golf Thailand · POS API Specification</span><span>2 / 2</span></div>
 </section>
 
 </body>
