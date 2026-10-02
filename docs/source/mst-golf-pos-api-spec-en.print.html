@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>MST Golf — POS API Specification (EN)</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  @page { size: A4 portrait; margin: 0; }
+  :root {
+    --ink: #14201b; --muted: #5d6e66; --faint: #8a9a92; --line: #dde6e1; --soft: #f4f7f5;
+    --brand: #0a5c36; --brand-deep: #0b3d29; --tint: #e5f2ea; --amber-bg: #fdf3d7; --amber-ink: #8a5a06;
+    --sans: "Anuphan", "Noto Sans Thai", sans-serif; --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  }
+  * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  html, body { margin: 0; background: #fff; color: var(--ink); font-family: var(--sans); font-size: 9.2pt; line-height: 1.5; }
+  h1, h2, h3, p { margin: 0; }
+  ul, ol { margin: 0; padding-left: 4.6mm; display: grid; gap: 0.8mm; }
+  .page { width: 210mm; height: 297mm; padding: 12mm 13mm 9mm; display: grid; grid-template-rows: auto 1fr auto; gap: 4mm; page-break-after: always; overflow: hidden; }
+  .page:last-child { page-break-after: auto; }
+  .kicker { font-size: 8pt; font-weight: 600; color: var(--brand); letter-spacing: 0.3px; }
+  .head h2 { font-size: 17pt; line-height: 1.18; margin-top: 0.8mm; }
+  .head p { color: var(--muted); font-size: 9.2pt; margin-top: 1.2mm; }
+  .body { display: grid; gap: 3.6mm; align-content: start; min-height: 0; }
+  .ft { display: flex; justify-content: space-between; font-size: 7.2pt; color: var(--faint); border-top: 1px solid var(--line); padding-top: 2.2mm; }
+  .card { border: 1px solid var(--line); border-radius: 2.6mm; padding: 3mm 3.4mm; }
+  .card h3 { font-size: 10pt; margin-bottom: 1.4mm; }
+  .card.tint { background: var(--tint); border-color: var(--tint); }
+  .card.warn { background: var(--amber-bg); border-color: var(--amber-bg); }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 3.4mm; }
+  .small { font-size: 8pt; }
+  .muted { color: var(--muted); }
+  h3.sec { font-size: 10.6pt; }
+  table.t { width: 100%; border-collapse: collapse; font-size: 8pt; }
+  .t th { text-align: left; font-size: 7.2pt; color: var(--muted); font-weight: 600; padding: 1.2mm 1.6mm; border-bottom: 1.2px solid var(--ink); }
+  .t td { padding: 1.3mm 1.6mm; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .t td.f { font-family: var(--mono); font-size: 7.4pt; white-space: nowrap; }
+  .t td.req { white-space: nowrap; font-weight: 600; }
+  .t td.ans { width: 72mm; border-left: 1px dashed var(--line); }
+  .qa td { padding-top: 2.2mm; padding-bottom: 2.2mm; }
+  .must { color: var(--brand); }
+  .nice { color: var(--muted); }
+  .code { font-family: var(--mono); font-size: 7.8pt; background: var(--soft); border: 1px solid var(--line); border-radius: 1mm; padding: 0 1mm; white-space: nowrap; }
+  pre { margin: 0; font-family: var(--mono); font-size: 7pt; line-height: 1.45; background: var(--soft); border: 1px solid var(--line); border-radius: 2mm; padding: 2.4mm 3mm; white-space: pre; overflow: hidden; }
+  .flow { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2.4mm; }
+  .flow > div { border: 1px solid var(--line); border-radius: 2.2mm; padding: 2.4mm; font-size: 8pt; }
+  .flow b { display: block; font-size: 8.6pt; margin-bottom: 0.6mm; }
+  .flow i { font-style: normal; font-family: var(--mono); font-size: 7pt; color: var(--brand); }
+  .cover-title { font-size: 22pt; line-height: 1.15; margin-top: 1mm; }
+
+  .short { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2.6mm; }
+  .short > div { background: var(--tint); border-radius: 2.4mm; padding: 2.8mm 3mm; font-size: 8.6pt; }
+  .short b { display: block; font-size: 9.6pt; margin-bottom: 0.6mm; color: var(--brand-deep); }
+  .t td.f { font-size: 8pt; }
+</style>
+</head>
+<body>
+<section class="page">
+  <div class="head">
+    <div class="kicker">MST Golf Thailand · POS API Specification · v1 · October 2026</div>
+    <h2>Reading sales bills from the POS</h2>
+    <p>MST Golf runs a membership system: members earn points on what they buy. To give points automatically, our system needs to <b>read the store's bills from the POS through an API</b>. This page lists what we need.</p>
+  </div>
+  <div class="body">
+    <div class="short">
+      <div><b>We only read</b>Our system calls your API. We never create, change or delete anything in the POS.</div>
+      <div><b>Every 15 minutes</b>We ask for the bills that are new or changed since our last check.</div>
+      <div><b>No webhooks</b>You don't need to send anything to us or call our system.</div>
+    </div>
+
+    <h3 class="sec">1. Access</h3>
+    <table class="t">
+      <tbody>
+        <tr><td class="req" style="width:34mm">Login</td><td>An API key (or OAuth 2.0 client credentials) that can <b>only read</b> bills, limited to MST Golf's store.</td></tr>
+        <tr><td class="req">Format</td><td>HTTPS and JSON. Dates with a time zone (ISO 8601, e.g. <span class="code">2026-10-15T18:42:10+07:00</span>). Money as numbers with 2 decimals.</td></tr>
+        <tr><td class="req">IP address</td><td>Our system runs in the cloud and has no fixed IP, so please don't require an IP whitelist.</td></tr>
+        <tr><td class="req">History</td><td>We need to read at least the last 13 months of bills once, when we start.</td></tr>
+        <tr><td class="req">Not needed</td><td>Card numbers, or any customer data other than the member's phone number or member code typed on the bill.</td></tr>
+      </tbody>
+    </table>
+
+    <h3 class="sec">2. Endpoints</h3>
+    <table class="t">
+      <thead><tr><th style="width:54mm">Endpoint (example name)</th><th>What we use it for</th><th style="width:20mm">Need</th></tr></thead>
+      <tbody>
+        <tr><td class="f">GET /bills?updated_since=…</td><td>Bills created <b>or changed</b> after a given time. This must include refunds, voids and bills that reached the server late (e.g. after the internet was down). Paged.</td><td class="req must">Required</td></tr>
+        <tr><td class="f">GET /bills?from=…&amp;to=…</td><td>Bills by sale date. Used once to load past sales, and to re-read a day if needed.</td><td class="req must">Required</td></tr>
+        <tr><td class="f">GET /bills/{id}</td><td>One bill, to check when a customer asks about their points.</td><td class="req nice">Nice to have</td></tr>
+        <tr><td class="f">GET /products</td><td>Product brand and category, if bills don't include them.</td><td class="req nice">Nice to have</td></tr>
+      </tbody>
+    </table>
+    <p class="small muted">Your field and endpoint names don't have to match ours — just tell us the real names in your API documentation.</p>
+  </div>
+  <div class="ft"><span>MST Golf Thailand · POS API Specification</span><span>1 / 2</span></div>
+</section>
+
+<section class="page">
+  <div class="head">
+    <div class="kicker">POS API Specification</div>
+    <h2>What each bill needs to contain</h2>
+    <p>Everything is required unless marked <span class="nice">(nice)</span> — nice to have.</p>
+  </div>
+  <div class="body">
+    <div class="grid2" style="align-items:start">
+      <div>
+        <h3 class="sec" style="margin-bottom:1.6mm">3. Bill</h3>
+        <table class="t">
+          <tbody>
+            <tr><td class="f">bill_no</td><td>Unique, and <b>never changes</b> after the bill is closed. We use it to never give points twice.</td></tr>
+            <tr><td class="f">type</td><td>Sale, refund or void.</td></tr>
+            <tr><td class="f">ref_bill_no</td><td>For refunds and voids: the original sale's bill number.</td></tr>
+            <tr><td class="f">sold_at, updated_at</td><td>When it was sold, and when it was last saved or changed.</td></tr>
+            <tr><td class="f">status</td><td>Closed, on hold or cancelled. We only count closed bills.</td></tr>
+            <tr><td class="f">branch, terminal</td><td>Which store and which till.</td></tr>
+            <tr><td class="f">gross, discount, net</td><td>Total before discount, bill discount, amount paid. Say whether VAT is included.</td></tr>
+            <tr><td class="f">member_ref</td><td>Member's phone or member code. A separate field is best; the bill remark also works (staff type <span class="code">MSTMEMBER:0891112233</span>).</td></tr>
+            <tr><td class="f">remark</td><td>The bill's note, in full.</td></tr>
+            <tr><td class="f">payments <span class="nice">(nice)</span></td><td>Payment methods and amounts.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <h3 class="sec" style="margin-bottom:1.6mm">4. Items on the bill</h3>
+        <table class="t">
+          <tbody>
+            <tr><td class="f">sku, name</td><td>Product code and name.</td></tr>
+            <tr><td class="f">qty, unit_price</td><td>Quantity and price each.</td></tr>
+            <tr><td class="f">line_discount, line_net</td><td>Discount on the item and the item's total.</td></tr>
+            <tr><td class="f">brand, category <span class="nice">(nice)</span></td><td>Lets the store exclude some products from points.</td></tr>
+            <tr><td class="f">item_type <span class="nice">(nice)</span></td><td>Marks gift cards, vouchers and services.</td></tr>
+            <tr><td class="f">ref_line <span class="nice">(nice)</span></td><td>For a partial refund: which item was returned.</td></tr>
+          </tbody>
+        </table>
+        <div class="card tint" style="margin-top:3.4mm">
+          <h3>To get started, please send</h3>
+          <ul class="small">
+            <li>Your full API documentation</li>
+            <li>A test environment (sandbox) and a test API key</li>
+            <li>One real example each: a sale, a refund, a void</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <h3 class="sec">5. Example — a sale with a member</h3>
+    <p class="small muted" style="margin-top:-2mm">For illustration only. Your format can differ.</p>
+<pre>{ "bill_no": "CIT1-20261015-0042", "type": "SALE", "status": "CLOSED",
+  "branch": "CIT1", "terminal": "POS-01",
+  "sold_at": "2026-10-15T18:42:10+07:00", "updated_at": "2026-10-15T18:42:12+07:00",
+  "member_ref": "0891112233", "remark": "MSTMEMBER:0891112233",
+  "gross": 21800.00, "discount": 900.00, "net": 20900.00, "vat_included": true,
+  "lines": [
+    { "sku": "QI35-D-10.5", "name": "Qi35 Driver", "brand": "TaylorMade", "category": "DRIVER",
+      "qty": 1, "unit_price": 20900.00, "line_discount": 900.00, "line_net": 20000.00 },
+    { "sku": "PV1-12", "name": "Pro V1", "brand": "Titleist", "category": "BALL",
+      "qty": 1, "unit_price": 900.00, "line_discount": 0, "line_net": 900.00 }
+  ] }</pre>
+    <p class="small muted">A refund looks the same with <span class="code">"type": "REFUND"</span>, <span class="code">"ref_bill_no"</span> pointing to the sale, and the returned items.</p>
+  </div>
+  <div class="ft"><span>MST Golf Thailand · POS API Specification</span><span>2 / 2</span></div>
+</section>
+
+</body>
+</html>
