@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>MST Golf — POS API Requirements</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  @page { size: A4 portrait; margin: 0; }
+  :root {
+    --ink: #14201b; --muted: #5d6e66; --faint: #8a9a92; --line: #dde6e1; --soft: #f4f7f5;
+    --brand: #0a5c36; --brand-deep: #0b3d29; --tint: #e5f2ea; --amber-bg: #fdf3d7; --amber-ink: #8a5a06;
+    --sans: "Anuphan", "Noto Sans Thai", sans-serif; --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  }
+  * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  html, body { margin: 0; background: #fff; color: var(--ink); font-family: var(--sans); font-size: 8.8pt; line-height: 1.5; }
+  h1, h2, h3, p { margin: 0; }
+  ul, ol { margin: 0; padding-left: 4.6mm; display: grid; gap: 0.8mm; }
+  .page { width: 210mm; height: 297mm; padding: 12mm 13mm 9mm; display: grid; grid-template-rows: auto 1fr auto; gap: 4mm; page-break-after: always; overflow: hidden; }
+  .page:last-child { page-break-after: auto; }
+  .kicker { font-size: 8pt; font-weight: 600; color: var(--brand); letter-spacing: 0.3px; }
+  .head h2 { font-size: 17pt; line-height: 1.18; margin-top: 0.8mm; }
+  .head p { color: var(--muted); font-size: 9.2pt; margin-top: 1.2mm; }
+  .body { display: grid; gap: 3.6mm; align-content: start; min-height: 0; }
+  .ft { display: flex; justify-content: space-between; font-size: 7.2pt; color: var(--faint); border-top: 1px solid var(--line); padding-top: 2.2mm; }
+  .card { border: 1px solid var(--line); border-radius: 2.6mm; padding: 3mm 3.4mm; }
+  .card h3 { font-size: 10pt; margin-bottom: 1.4mm; }
+  .card.tint { background: var(--tint); border-color: var(--tint); }
+  .card.warn { background: var(--amber-bg); border-color: var(--amber-bg); }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 3.4mm; }
+  .small { font-size: 8pt; }
+  .muted { color: var(--muted); }
+  h3.sec { font-size: 10.6pt; }
+  table.t { width: 100%; border-collapse: collapse; font-size: 8pt; }
+  .t th { text-align: left; font-size: 7.2pt; color: var(--muted); font-weight: 600; padding: 1.2mm 1.6mm; border-bottom: 1.2px solid var(--ink); }
+  .t td { padding: 1.3mm 1.6mm; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .t td.f { font-family: var(--mono); font-size: 7.4pt; white-space: nowrap; }
+  .t td.req { white-space: nowrap; font-weight: 600; }
+  .t td.ans { width: 72mm; border-left: 1px dashed var(--line); }
+  .qa td { padding-top: 2.2mm; padding-bottom: 2.2mm; }
+  .must { color: var(--brand); }
+  .nice { color: var(--muted); }
+  .code { font-family: var(--mono); font-size: 7.8pt; background: var(--soft); border: 1px solid var(--line); border-radius: 1mm; padding: 0 1mm; white-space: nowrap; }
+  pre { margin: 0; font-family: var(--mono); font-size: 7pt; line-height: 1.45; background: var(--soft); border: 1px solid var(--line); border-radius: 2mm; padding: 2.4mm 3mm; white-space: pre; overflow: hidden; }
+  .flow { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2.4mm; }
+  .flow > div { border: 1px solid var(--line); border-radius: 2.2mm; padding: 2.4mm; font-size: 8pt; }
+  .flow b { display: block; font-size: 8.6pt; margin-bottom: 0.6mm; }
+  .flow i { font-style: normal; font-family: var(--mono); font-size: 7pt; color: var(--brand); }
+  .cover-title { font-size: 22pt; line-height: 1.15; margin-top: 1mm; }
+</style>
+</head>
+<body>
+
+<!-- ═══════ 1 ═══════ -->
+<section class="page">
+  <div class="head">
+    <div class="kicker">MST Golf Thailand · POS API Requirements · v1</div>
+    <h1 class="cover-title">ข้อกำหนดการเชื่อมต่อ POS<br>เพื่อดึงยอดขายเข้าระบบสมาชิก</h1>
+    <p>สำหรับผู้ให้บริการระบบ POS ของ MST Golf ชาญอิสสระ ทาวเวอร์ 1 · จัดทำโดย ORIONS (ผู้พัฒนา MST Golf Platform) · ตุลาคม 2026</p>
+  </div>
+  <div class="body">
+    <div class="card tint">
+      <h3>ภาพรวม</h3>
+      <p class="small">MST Golf Platform คือระบบสมาชิกของร้าน: ลูกค้าสะสมแต้มจากยอดซื้อ ระดับสมาชิกคิดจากยอดซื้อ 12 เดือน และได้ข้อความแจ้งแต้มทาง LINE · ตอนนี้ระบบรับยอดขายจากไฟล์ CSV ที่ export จาก POS วันละครั้ง เราต้องการเปลี่ยนเป็น <b>ดึงข้อมูลบิลผ่าน API ของ POS เป็นรอบอัตโนมัติ</b> เพื่อให้แต้มเข้าภายในไม่กี่นาทีหลังลูกค้าชำระเงิน</p>
+    </div>
+
+    <div class="card">
+      <h3>รูปแบบการเชื่อมต่อ: MST Golf Platform ดึงข้อมูลอย่างเดียว</h3>
+      <ul class="small">
+        <li><b>ทิศทางเดียว (pull):</b> ระบบของเราเรียก API ของ POS เพื่ออ่านบิล · POS <b>ไม่ต้อง</b> ส่ง webhook และ <b>ไม่ต้อง</b> เรียกระบบของเรา</li>
+        <li><b>อ่านอย่างเดียว (read-only):</b> เราไม่สร้าง แก้ หรือลบข้อมูลใด ๆ ใน POS · ขอ API key ที่มีสิทธิ์อ่านบิลอย่างเดียว เฉพาะสาขาของ MST</li>
+        <li><b>รอบการดึง:</b> ทุก 15 นาที และดึงย้อนทับช่วงเวลาของรอบก่อนเล็กน้อย บิลที่รับไปแล้วระบบข้ามเอง</li>
+        <li><b>ไฟล์ CSV ยังใช้ต่อ</b> เป็นทางสำรองเมื่อ API ไม่พร้อมใช้งาน</li>
+      </ul>
+    </div>
+
+    <div class="flow">
+      <div><i>1</i><b>ลูกค้าชำระเงิน</b>พนักงานใส่เบอร์หรือรหัสสมาชิกในบิล แล้วปิดบิลตามปกติ</div>
+      <div><i>2</i><b>POS เก็บบิล</b>บิลพร้อมให้อ่านผ่าน API (ระบุว่าช้ากว่าเวลาจริงเท่าไร)</div>
+      <div><i>3</i><b>เราดึงทุก 15 นาที</b>ขอบิลที่ <span class="code">updated_since</span> เวลาล่าสุดที่เคยดึง</div>
+      <div><i>4</i><b>ลูกค้าได้แต้ม</b>ระบบคำนวณแต้ม ระดับ และส่งข้อความ LINE</div>
+    </div>
+
+    <div class="card">
+      <h3>สิ่งที่ขอจากผู้ให้บริการ POS</h3>
+      <ol class="small">
+        <li>เอกสาร API ฉบับเต็ม (endpoint · การยืนยันตัวตน · โครงสร้างข้อมูล · error code)</li>
+        <li>ระบบทดสอบ (sandbox) หรือสาขาทดสอบ พร้อม API key สำหรับทดสอบ</li>
+        <li>คำตอบของคำถามในหน้า 3 (ช่อง "คำตอบ")</li>
+        <li>ตัวอย่าง response จริง (JSON) ตามรายการในหน้า 4 — ลบข้อมูลส่วนตัวลูกค้าออกได้</li>
+        <li>ค่าใช้จ่ายการเปิดใช้ API (ถ้ามี) และผู้ติดต่อด้านเทคนิค</li>
+      </ol>
+    </div>
+
+    <div class="card warn">
+      <h3>หลักการเรื่องข้อมูล</h3>
+      <p class="small">เราต้องการเฉพาะข้อมูลที่ใช้คำนวณแต้มและยอดซื้อ (หน้า 2) · ไม่ต้องการข้อมูลบัตรชำระเงิน ข้อมูลพนักงานเกินชื่อ/รหัส หรือข้อมูลลูกค้าอื่นนอกจากเบอร์/รหัสสมาชิกที่ร้านใส่ในบิล · ข้อมูลส่งผ่าน HTTPS เท่านั้น และ API key เก็บแบบเข้ารหัสในระบบของเรา</p>
+    </div>
+  </div>
+  <div class="ft"><span>MST Golf Thailand · POS API Requirements</span><span>1 / 4</span></div>
+</section>
+
+<!-- ═══════ 2 ═══════ -->
+<section class="page">
+  <div class="head">
+    <div class="kicker">POS API Requirements</div>
+    <h2>ข้อมูลที่ต้องอ่านได้จาก API</h2>
+    <p>ชื่อฟิลด์ไม่ต้องตรงตามตาราง — ขอให้มีข้อมูลเทียบเท่า และระบุชื่อฟิลด์จริงในเอกสาร API · <b class="must">จำเป็น</b> = ขาดไม่ได้ · <span class="nice">ควรมี</span> = ช่วยให้ข้อมูลครบขึ้น</p>
+  </div>
+  <div class="body">
+    <h3 class="sec">1. Endpoint ที่ต้องมี</h3>
+    <table class="t">
+      <thead><tr><th style="width:52mm">Endpoint</th><th>ใช้ทำอะไร</th><th style="width:16mm">ระดับ</th></tr></thead>
+      <tbody>
+        <tr><td class="f">GET /bills?updated_since=…</td><td>รายการบิลที่ถูกสร้าง <b>หรือแก้ไข</b> หลังเวลาที่กำหนด (รวมบิลคืน บิลยกเลิก และบิลที่ส่งเข้าระบบช้า) · แบ่งหน้าด้วย cursor หรือ page</td><td class="req must">จำเป็น</td></tr>
+        <tr><td class="f">GET /bills?from=…&amp;to=…</td><td>บิลตามช่วงวันที่ขาย — ใช้ดึงยอดย้อนหลัง 12 เดือนครั้งเดียวตอนเริ่ม และดึงซ่อมเมื่อระบบเราขัดข้อง</td><td class="req must">จำเป็น</td></tr>
+        <tr><td class="f">GET /bills/{id}</td><td>รายละเอียดบิลเดียว (ใช้ตรวจสอบเมื่อลูกค้าสอบถาม)</td><td class="req nice">ควรมี</td></tr>
+        <tr><td class="f">GET /products</td><td>ข้อมูลสินค้า (SKU · ชื่อ · ยี่ห้อ · หมวด) ถ้าบิลไม่ได้ส่งยี่ห้อ/หมวดมาด้วย</td><td class="req nice">ควรมี</td></tr>
+        <tr><td class="f">GET /branches</td><td>รหัสและชื่อสาขา/เครื่อง POS</td><td class="req nice">ควรมี</td></tr>
+      </tbody>
+    </table>
+
+    <h3 class="sec">2. ข้อมูลระดับบิล</h3>
+    <table class="t">
+      <thead><tr><th style="width:44mm">ข้อมูล</th><th>รายละเอียด</th><th style="width:16mm">ระดับ</th></tr></thead>
+      <tbody>
+        <tr><td class="f">bill_id / bill_no</td><td><b>ไม่ซ้ำ และไม่เปลี่ยนหลังปิดบิล</b> — ระบบเราใช้กันแต้มเข้าซ้ำ</td><td class="req must">จำเป็น</td></tr>
+        <tr><td class="f">type</td><td>ขาย / คืนสินค้า / ยกเลิกบิล</td><td class="req must">จำเป็น</td></tr>
+        <tr><td class="f">ref_bill_no</td><td>บิลคืนหรือยกเลิก ต้องอ้างถึงเลขบิลขายเดิม</td><td class="req must">จำเป็น</td></tr>
+        <tr><td class="f">sold_at · updated_at</td><td>เวลาขาย และเวลาที่บิลถูกบันทึกหรือแก้ไขล่าสุด <b>พร้อม timezone</b> (ISO 8601)</td><td class="req must">จำเป็น</td></tr>
+        <tr><td class="f">status</td><td>ปิดแล้ว / พักบิล / ยกเลิก — เราจะนับเฉพาะบิลที่ปิดแล้ว</td><td class="req must">จำเป็น</td></tr>
+        <tr><td class="f">branch_code · terminal</td><td>สาขาและเครื่องที่ออกบิล</td><td class="req must">จำเป็น</td></tr>
+        <tr><td class="f">gross · discount · net · vat</td><td>ยอดก่อนลด · ส่วนลดท้ายบิล · ยอดสุทธิที่ลูกค้าจ่าย · VAT (ระบุว่ายอดรวม VAT แล้วหรือไม่)</td><td class="req must">จำเป็น</td></tr>
+        <tr><td class="f">member_ref</td><td>เบอร์มือถือหรือรหัสสมาชิกที่พนักงานใส่ — <b>ช่องเฉพาะ</b> ดีที่สุด · ถ้าไม่มี ใช้หมายเหตุบิลที่พิมพ์ <span class="code">MSTMEMBER:0891112233</span> ได้</td><td class="req must">จำเป็น</td></tr>
+        <tr><td class="f">remark</td><td>หมายเหตุบิล (ข้อความเต็ม)</td><td class="req must">จำเป็น</td></tr>
+        <tr><td class="f">payments[]</td><td>วิธีชำระและจำนวนเงินแต่ละวิธี (ไม่ต้องมีเลขบัตร)</td><td class="req nice">ควรมี</td></tr>
+        <tr><td class="f">cashier</td><td>ชื่อหรือรหัสพนักงาน — ใช้ติดตามบิลที่ลืมใส่เบอร์สมาชิก</td><td class="req nice">ควรมี</td></tr>
+      </tbody>
+    </table>
+
+    <h3 class="sec">3. ข้อมูลรายการสินค้าในบิล (lines[])</h3>
+    <table class="t">
+      <thead><tr><th style="width:44mm">ข้อมูล</th><th>รายละเอียด</th><th style="width:16mm">ระดับ</th></tr></thead>
+      <tbody>
+        <tr><td class="f">sku · name</td><td>รหัสและชื่อสินค้า</td><td class="req must">จำเป็น</td></tr>
+        <tr><td class="f">qty · unit_price</td><td>จำนวนและราคาต่อหน่วย</td><td class="req must">จำเป็น</td></tr>
+        <tr><td class="f">line_discount · line_net</td><td>ส่วนลดของรายการและยอดสุทธิของรายการ</td><td class="req must">จำเป็น</td></tr>
+        <tr><td class="f">brand · category</td><td>ยี่ห้อและหมวดสินค้า — ใช้กำหนดสินค้าที่ไม่ได้แต้ม</td><td class="req nice">ควรมี</td></tr>
+        <tr><td class="f">item_type</td><td>บอกได้ว่าเป็นบัตรกำนัล / คูปอง / ค่าบริการ — ไม่ควรได้แต้ม</td><td class="req nice">ควรมี</td></tr>
+        <tr><td class="f">ref_line (บิลคืน)</td><td>คืนบางรายการ: ระบุรายการที่คืนและจำนวน</td><td class="req nice">ควรมี</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="ft"><span>MST Golf Thailand · POS API Requirements</span><span>2 / 4</span></div>
+</section>
+
+<!-- ═══════ 3 ═══════ -->
+<section class="page">
+  <div class="head">
+    <div class="kicker">POS API Requirements</div>
+    <h2>คำถามถึงผู้ให้บริการ POS</h2>
+    <p>กรุณาตอบในช่อง "คำตอบ" หรือแนบเอกสารอ้างอิง</p>
+  </div>
+  <div class="body">
+    <table class="t qa">
+      <thead><tr><th style="width:6mm">#</th><th>คำถาม</th><th style="width:72mm">คำตอบ</th></tr></thead>
+      <tbody>
+        <tr><td colspan="3" style="font-weight:700;padding-top:2mm">ระบบและการเข้าถึง</td></tr>
+        <tr><td>1</td><td>ยี่ห้อ รุ่น เวอร์ชันของ POS · เป็นระบบ cloud หรือติดตั้งในร้าน</td><td class="ans"></td></tr>
+        <tr><td>2</td><td>ยืนยันตัวตนแบบใด (API key / OAuth 2.0) · token มีอายุเท่าไร ต่ออายุอย่างไร</td><td class="ans"></td></tr>
+        <tr><td>3</td><td>ออก API key ที่ <b>อ่านอย่างเดียว</b> และจำกัดเฉพาะสาขา MST ได้ไหม</td><td class="ans"></td></tr>
+        <tr><td>4</td><td>บังคับ IP whitelist ไหม — ระบบเราอยู่บน cloud ที่ IP ไม่คงที่ ถ้าบังคับขอทางเลือกอื่น</td><td class="ans"></td></tr>
+        <tr><td>5</td><td>จำกัดจำนวนคำขอ (rate limit) ต่อนาที / ต่อวัน เท่าไร · ดึงได้หน้าละกี่บิล</td><td class="ans"></td></tr>
+        <tr><td>6</td><td>มีค่าใช้จ่ายการใช้ API ไหม · ใครเปิดสิทธิ์ · ใช้เวลาเปิดกี่วัน</td><td class="ans"></td></tr>
+        <tr><td colspan="3" style="font-weight:700;padding-top:2mm">ความครบถ้วนของข้อมูล</td></tr>
+        <tr><td>7</td><td>หลังปิดบิล บิลพร้อมให้อ่านผ่าน API ช้าสุดกี่นาที</td><td class="ans"></td></tr>
+        <tr><td>8</td><td>ถ้าอินเทอร์เน็ตในร้านล่ม บิลที่ส่งเข้าระบบทีหลังจะมี <span class="code">updated_at</span> เป็นเวลาที่ส่งเข้าระบบใช่ไหม (เพื่อไม่ให้ดึงตก)</td><td class="ans"></td></tr>
+        <tr><td>9</td><td>แก้บิลหลังปิดแล้วได้ไหม · ถ้าได้ เลขบิลเดิมหรือออกเลขใหม่ · <span class="code">updated_at</span> เปลี่ยนไหม</td><td class="ans"></td></tr>
+        <tr><td>10</td><td>บิลคืนสินค้า: คืนบางรายการได้ไหม · ระบุรายการที่คืนได้ไหม · เลขบิลคืนแยกจากบิลขายไหม</td><td class="ans"></td></tr>
+        <tr><td>11</td><td>ยกเลิกบิล: เป็นบิลใหม่ที่อ้างบิลเดิม หรือเปลี่ยนสถานะบิลเดิม</td><td class="ans"></td></tr>
+        <tr><td>12</td><td>ดึงข้อมูลย้อนหลังได้ไกลสุดกี่เดือน</td><td class="ans"></td></tr>
+        <tr><td colspan="3" style="font-weight:700;padding-top:2mm">สมาชิกและสินค้า</td></tr>
+        <tr><td>13</td><td>มีช่องเฉพาะสำหรับเบอร์หรือรหัสสมาชิกไหม · ช่องนี้สแกน QR / barcode ได้ไหม · ถ้าไม่มี ใช้หมายเหตุบิลได้ไหม</td><td class="ans"></td></tr>
+        <tr><td>14</td><td>ยอดในบิลรวม VAT แล้วหรือไม่ · ส่วนลดท้ายบิลกระจายลงแต่ละรายการไหม</td><td class="ans"></td></tr>
+        <tr><td>15</td><td>แยกบัตรกำนัล คูปอง และค่าบริการ ออกจากสินค้าได้ไหม (ไม่ควรได้แต้ม)</td><td class="ans"></td></tr>
+        <tr><td colspan="3" style="font-weight:700;padding-top:2mm">การดูแล</td></tr>
+        <tr><td>16</td><td>มีการแจ้งล่วงหน้าเมื่อเปลี่ยนเวอร์ชัน API ไหม · API เดิมใช้ได้อีกนานเท่าไร</td><td class="ans"></td></tr>
+        <tr><td>17</td><td>ช่องทางและเวลาตอบเมื่อ API มีปัญหา · หน้าแสดงสถานะระบบ (status page)</td><td class="ans"></td></tr>
+        <tr><td>18</td><td>ผู้ติดต่อด้านเทคนิค (ชื่อ · อีเมล · โทร)</td><td class="ans"></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="ft"><span>MST Golf Thailand · POS API Requirements</span><span>3 / 4</span></div>
+</section>
+
+<!-- ═══════ 4 ═══════ -->
+<section class="page">
+  <div class="head">
+    <div class="kicker">POS API Requirements</div>
+    <h2>ตัวอย่างข้อมูลและการทดสอบ</h2>
+    <p>ด้านล่างคือรูปแบบข้อมูลที่เราคาดหวัง (ตัวอย่างประกอบ ไม่ใช่รูปแบบบังคับ) · ขอ response จริงจาก POS ตามรายการด้านขวา</p>
+  </div>
+  <div class="body">
+    <div class="grid2" style="align-items:start">
+      <div>
+        <p class="small muted" style="margin-bottom:1.4mm">ตัวอย่าง: บิลขายที่มีสมาชิก</p>
+<pre>{
+  "bill_no": "CIT1-20261015-0042",
+  "type": "SALE",
+  "status": "CLOSED",
+  "branch_code": "CIT1",
+  "terminal": "POS-01",
+  "sold_at": "2026-10-15T18:42:10+07:00",
+  "updated_at": "2026-10-15T18:42:12+07:00",
+  "member_ref": "0891112233",
+  "remark": "MSTMEMBER:0891112233",
+  "gross": 21800.00,
+  "discount": 900.00,
+  "net": 20900.00,
+  "vat_included": true,
+  "payments": [
+    { "method": "CARD", "amount": 20900.00 }
+  ],
+  "cashier": "S012",
+  "lines": [
+    { "line_no": 1,
+      "sku": "QI35-D-10.5", "name": "Qi35 Driver",
+      "brand": "TaylorMade", "category": "DRIVER",
+      "qty": 1, "unit_price": 20900.00,
+      "line_discount": 900.00, "line_net": 20000.00 },
+    { "line_no": 2,
+      "sku": "PV1-12", "name": "Pro V1",
+      "brand": "Titleist", "category": "BALL",
+      "qty": 1, "unit_price": 900.00,
+      "line_discount": 0, "line_net": 900.00 }
+  ]
+}</pre>
+      </div>
+      <div style="display:grid; gap:3.4mm">
+        <div>
+          <p class="small muted" style="margin-bottom:1.4mm">ตัวอย่าง: คืนสินค้าบางรายการ</p>
+<pre>{
+  "bill_no": "CIT1-20261018-0007",
+  "type": "RETURN",
+  "ref_bill_no": "CIT1-20261015-0042",
+  "status": "CLOSED",
+  "sold_at": "2026-10-18T12:05:00+07:00",
+  "updated_at": "2026-10-18T12:05:02+07:00",
+  "net": -900.00,
+  "lines": [
+    { "ref_line": 2, "sku": "PV1-12",
+      "qty": 1, "line_net": 900.00 }
+  ]
+}</pre>
+        </div>
+        <div class="card">
+          <h3>ขอ response จริงอย่างละ 1 บิล</h3>
+          <ul class="small">
+            <li>บิลขายที่มีสมาชิก · บิลที่ไม่มีสมาชิก</li>
+            <li>บิลที่มีส่วนลดท้ายบิล · บิลที่จ่ายหลายวิธี</li>
+            <li>บิลคืนบางรายการ · บิลยกเลิกทั้งใบ</li>
+            <li>บิลที่ถูกแก้ไขหลังปิดบิล (ถ้า POS อนุญาต)</li>
+            <li>บิลที่มีบัตรกำนัลหรือคูปอง</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>ขั้นตอนทดสอบร่วมกัน</h3>
+      <ol class="small">
+        <li>ผู้ให้บริการ POS ส่งเอกสาร API · sandbox · API key ทดสอบ · คำตอบหน้า 3</li>
+        <li>ORIONS เชื่อมต่อกับ sandbox และดึงบิลตัวอย่างทุกประเภท</li>
+        <li>ทดสอบที่ร้านจริง 1 วัน: ออกบิลขาย คืน ยกเลิก แล้วเทียบยอดในระบบสมาชิกกับรายงานปิดวันของ POS ให้ตรงกันทุกบาท</li>
+        <li>เปิด API key จริง (อ่านอย่างเดียว) แล้วเปลี่ยนจากไฟล์ CSV เป็น API — CSV ยังเก็บไว้เป็นทางสำรอง</li>
+      </ol>
+    </div>
+
+    <div class="grid2">
+      <div class="card tint">
+        <h3>สิ่งที่ระบบเราทำเมื่อได้ข้อมูล</h3>
+        <ul class="small">
+          <li>บิลเดียวกันได้แต้มครั้งเดียว ไม่ว่าจะดึงซ้ำกี่รอบ</li>
+          <li>บิลคืน/ยกเลิก หักแต้มตามสัดส่วนของบิลเดิม</li>
+          <li>บิลที่ไม่มีสมาชิก นับเป็นยอดขายของร้าน ไม่มีใครได้แต้ม</li>
+          <li>บันทึกผลทุกรอบการดึง และแสดงสถานะในหลังบ้านของร้าน</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>ติดต่อ</h3>
+        <p class="small">ORIONS — ผู้พัฒนา MST Golf Platform<br>คำถามด้านเทคนิคเรื่องการเชื่อมต่อ ส่งผ่าน MST Golf Thailand หรือติดต่อ ORIONS โดยตรง<br><span class="muted">【ชื่อ · อีเมล · โทร ของผู้ติดต่อฝั่ง ORIONS】</span></p>
+      </div>
+    </div>
+  </div>
+  <div class="ft"><span>MST Golf Thailand · POS API Requirements</span><span>4 / 4</span></div>
+</section>
+
+</body>
+</html>
