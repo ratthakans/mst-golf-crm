@@ -16,7 +16,9 @@ export type CoreErrorCode =
   | "HOLD_EXPIRED"
   | "BOOKING_RULE"
   | "IMPORT_STATE"
-  | "IMPORT_FILE";
+  | "IMPORT_FILE"
+  | "SHOPIFY_AUTH"
+  | "SHOPIFY_ERROR";
 
 const STATUS: Partial<Record<CoreErrorCode, number>> = {
   NOT_FOUND: 404,
@@ -27,6 +29,8 @@ const STATUS: Partial<Record<CoreErrorCode, number>> = {
   SLOT_TAKEN: 409,
   HOLD_EXPIRED: 409,
   IMPORT_STATE: 409,
+  SHOPIFY_AUTH: 502,
+  SHOPIFY_ERROR: 502,
 };
 
 export class CoreError extends Error {

@@ -123,7 +123,8 @@ export function readBillType(raw: string | undefined): BillType | null {
   return "SALE";
 }
 
-function isExcluded(line: { sku: string | null; category: string | null }, pos: PosSettings): boolean {
+/** A line that earns no points under Settings › POS (excluded SKUs / categories). */
+export function isPointExcluded(line: { sku: string | null; category: string | null }, pos: Pick<PosSettings, "pointExcludedSkus" | "pointExcludedCategories">): boolean {
   if (line.category && pos.pointExcludedCategories.some((c) => c.toLowerCase() === line.category!.toLowerCase())) return true;
   if (!line.sku) return false;
   return pos.pointExcludedSkus.some((p) => (p.endsWith("*") ? line.sku!.startsWith(p.slice(0, -1)) : line.sku === p));
@@ -248,7 +249,7 @@ export function parseBills(headers: string[], rows: string[][], mapping: PosMapp
         qty: Math.abs(qty) || 1,
         unitSatang: unit !== null ? Math.abs(unit) : Math.round(net / (Math.abs(qty) || 1)),
         netSatang: net,
-        pointExcluded: isExcluded({ sku, category }, pos),
+        pointExcluded: isPointExcluded({ sku, category }, pos),
         signed,
       });
     }

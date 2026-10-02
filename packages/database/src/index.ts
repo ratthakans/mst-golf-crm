@@ -52,6 +52,7 @@ const TENANT_MODELS = new Set<string>([
   "PointTransaction",
   "FieldDefinition",
   "LineChannel",
+  "ShopifyConnection",
   "Consent",
   "Segment",
   "Automation",
