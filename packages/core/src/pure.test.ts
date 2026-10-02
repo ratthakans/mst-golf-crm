@@ -6,6 +6,8 @@ import { formatBaht, toSatang } from "./money";
 import { fromLocal, localDateKey, openWindow } from "./time";
 import { daySlots, priceFor } from "./booking";
 import { pointsForSatang } from "./points";
+import { newCouponCode, normalizeCouponCode } from "./rewards";
+import { earnRateText } from "@mstgolf/shared/tiers";
 import { slugify } from "./posts";
 
 describe("money", () => {
@@ -76,10 +78,25 @@ describe("rules", () => {
   it("points and prices", () => {
     expect(pointsForSatang(1_000_000, 1, 1.25)).toBe(12_500);
     expect(pointsForSatang(99, 1, 1)).toBe(0);
+    // ฿500 = 1 point (perBaht 0.002): float error must not lose the point at exact multiples.
+    expect(pointsForSatang(250_000, 0.002, 1)).toBe(5);
+    expect(pointsForSatang(49_999, 0.002, 1)).toBe(0);
+    expect(pointsForSatang(150_000, 0.002, 1.5)).toBe(4);
+    expect(earnRateText(0.002)).toBe("ทุก ฿500 = 1 แต้ม");
+    expect(earnRateText(1)).toBe("฿1 = 1 แต้ม");
     expect(priceFor(100_000, 60, 10)).toBe(90_000);
   });
   it("slugs", () => {
     expect(slugify("How to choose a Driver")).toBe("how-to-choose-a-driver");
     expect(slugify("วิธีเลือกไดรเวอร์")).toMatch(/^post-/);
+  });
+});
+
+describe("coupons", () => {
+  it("codes avoid look-alike characters and read back however they are typed", () => {
+    for (let i = 0; i < 50; i++) expect(newCouponCode()).toMatch(/^MST-[2-9A-HJKMNP-Z]{4}-[2-9A-HJKMNP-Z]{4}$/);
+    expect(normalizeCouponCode("mst 7kq4 x9pd")).toBe("MST-7KQ4-X9PD");
+    expect(normalizeCouponCode("7KQ4X9PD")).toBe("MST-7KQ4-X9PD");
+    expect(normalizeCouponCode("MST-7KQ4")).toBeNull();
   });
 });

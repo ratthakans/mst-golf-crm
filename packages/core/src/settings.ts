@@ -3,6 +3,7 @@ import type {
   NotificationSettings,
   OrgSettings,
   PosSettings,
+  RedemptionSettings,
   SiteSettings,
   TierSettings,
 } from "@mstgolf/shared";
@@ -33,6 +34,8 @@ export const DEFAULT_NOTIFICATIONS: NotificationSettings = {
   BOOKING_REMINDER: true,
   BOOKING_CANCELLED: true,
   BOOKING_MOVED: true,
+  REDEMPTION_RECEIVED: true,
+  REDEMPTION_STATUS: true,
 };
 
 export const DEFAULT_POS: PosSettings = {
@@ -53,7 +56,8 @@ export interface ResolvedSettings {
   notifications: NotificationSettings;
   pos: PosSettings;
   site: SiteSettings;
-  features: { intelligence: boolean; booking: boolean };
+  redemption: RedemptionSettings;
+  features: { intelligence: boolean; booking: boolean; rewards: boolean };
   raw: Partial<OrgSettings>;
 }
 
@@ -71,9 +75,11 @@ export function resolveSettings(raw: unknown): ResolvedSettings {
     notifications: { ...DEFAULT_NOTIFICATIONS, ...(s.notifications ?? {}) },
     pos: { ...DEFAULT_POS, ...(s.pos ?? {}) },
     site: s.site ?? {},
+    redemption: { alertEmails: s.redemption?.alertEmails ?? [], backofficeUrl: s.redemption?.backofficeUrl },
     features: {
       intelligence: s.features?.intelligence ?? false,
       booking: s.features?.booking ?? true,
+      rewards: s.features?.rewards ?? true,
     },
     raw: s,
   };

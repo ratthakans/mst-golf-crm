@@ -1,4 +1,5 @@
-import type { MemberSource, Prisma } from "@mstgolf/database";
+import type { MemberSource } from "@mstgolf/database";
+import { Prisma } from "@mstgolf/database";
 import { normalizeThaiMobile } from "@mstgolf/shared/phone";
 import { findTier, lowestTier, reviewTier, tierProgress, tierRank } from "@mstgolf/shared/tiers";
 import { writeAudit } from "./audit";
@@ -627,6 +628,7 @@ export async function mergeMembers(
       moved.bookings = (await tx.booking.updateMany({ where: { memberId: merged.id }, data: { memberId: survivor.id } })).count;
       moved.events = (await tx.event.updateMany({ where: { memberId: merged.id }, data: { memberId: survivor.id } })).count;
       moved.consents = (await tx.consent.updateMany({ where: { memberId: merged.id }, data: { memberId: survivor.id } })).count;
+      moved.redemptions = (await tx.redemption.updateMany({ where: { memberId: merged.id }, data: { memberId: survivor.id } })).count;
       await tx.notification.updateMany({ where: { memberId: merged.id, status: "PENDING" }, data: { status: "SKIPPED", lastError: "รวมบัญชีแล้ว" } });
 
       // Points move as a transfer so both ledgers stay readable. A second welcome bonus is not carried over.
@@ -693,6 +695,9 @@ export async function eraseMember(orgId: string, actor: Actor, memberId: string,
     });
     await tx.booking.updateMany({ where: { memberId: m.id }, data: { memberId: null, guestName: null, guestPhone: null } });
     await tx.notification.updateMany({ where: { memberId: m.id, status: "PENDING" }, data: { status: "SKIPPED", lastError: "ลบข้อมูลสมาชิก" } });
+    // Reward requests keep their record for the accounts, without the delivery address.
+    await tx.redemption.updateMany({ where: { memberId: m.id, status: "ISSUED" }, data: { status: "CANCELLED", note: "ลบข้อมูลสมาชิก" } });
+    await tx.redemption.updateMany({ where: { memberId: m.id }, data: { delivery: Prisma.DbNull } });
     await tx.member.update({
       where: { id: m.id },
       data: {

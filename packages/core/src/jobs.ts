@@ -5,7 +5,9 @@ import { SYSTEM } from "./context";
 import { db, inTx } from "./db";
 import { recordEvent } from "./events";
 import { refreshMemberSpend } from "./members";
+import { processEmails } from "./notify/email";
 import { processOutbox, type OutboxRun } from "./notify/sender";
+import { expireCoupons } from "./rewards";
 import { ledgerDrift } from "./points";
 import { pruneJobRuns } from "./ops";
 import { getOrg } from "./settings";
@@ -23,6 +25,7 @@ export interface NightlyReport {
   bookingsCompleted: number;
   holdsExpired: number;
   previewsCleared: number;
+  couponsExpired: number;
   ledgerDrift: number;
   monthlyReview: boolean;
   shopify: SyncResult | { error: string } | null; // null = no active online shop
@@ -59,6 +62,7 @@ export async function runNightly(orgId: string, now = new Date()): Promise<Night
     if (r.tierChanged === "up") tierUps++;
   }
   const bookings = await closeFinishedBookings(orgId, now);
+  const couponsExpired = await expireCoupons(orgId, now);
   const cleared = await client.importBatch.deleteMany({ where: { status: "PREVIEW", createdAt: { lt: new Date(now.getTime() - 24 * 3600_000) } } });
   await pruneJobRuns(orgId, now);
   const drift = await ledgerDrift(orgId);
@@ -71,19 +75,21 @@ export async function runNightly(orgId: string, now = new Date()): Promise<Night
     bookingsCompleted: bookings.completed,
     holdsExpired: bookings.expired,
     previewsCleared: cleared.count,
+    couponsExpired,
     ledgerDrift: drift.length,
     monthlyReview: monthly,
     shopify,
   };
 }
 
-/** Every 15 minutes: queue booking reminders, then deliver whatever is waiting. */
-export async function runFrequent(now = new Date()): Promise<{ reminders: number; outbox: OutboxRun }> {
+/** Every 15 minutes: queue booking reminders, then deliver whatever is waiting (LINE, then staff email). */
+export async function runFrequent(now = new Date()): Promise<{ reminders: number; outbox: OutboxRun; email: OutboxRun }> {
   const orgs = await prisma.organization.findMany({ where: { isActive: true }, select: { id: true } });
   let reminders = 0;
   for (const o of orgs) reminders += await queueReminders(o.id, now);
   const outbox = await processOutbox({ limit: 200, now });
-  return { reminders, outbox };
+  const email = await processEmails({ limit: 50 });
+  return { reminders, outbox, email };
 }
 
 export async function runNightlyAll(now = new Date()): Promise<NightlyReport[]> {

@@ -59,6 +59,9 @@ model Organization {
   notifications     Notification[]
   posts             Post[]
   jobRuns           JobRun[]
+  rewards           Reward[]
+  redemptions       Redemption[]
+  emails            EmailMessage[]
 
   @@map("organizations")
 }
@@ -149,6 +152,7 @@ model Store {
   lanes         Lane[]
   importBatches ImportBatch[]
   shopifyShops  ShopifyConnection[]
+  couponsUsed   Redemption[]
 
   @@unique([orgId, code])
   @@map("stores")
@@ -194,6 +198,7 @@ model Member {
   bookings          Booking[]
   notifications     Notification[]
   reviewItems       ReviewItem[]
+  redemptions       Redemption[]
 
   @@unique([orgId, code])
   @@index([orgId, status, createdAt])
@@ -363,6 +368,8 @@ enum EventType {
   BOOKING_CHECKED_IN
   BOOKING_NO_SHOW
   MERGED
+  COUPON_USED
+  REDEMPTION_STATUS
 }
 
 // ---------------------------------------------------------------------------
@@ -376,16 +383,19 @@ model PointTransaction {
   member      Member       @relation(fields: [memberId], references: [id], onDelete: Cascade)
   type        PointTxType
   delta       Int
-  reason      String // WELCOME · PURCHASE · BIRTHDAY · RETURN · VOID · ROLLBACK · ADJUST · MERGE_IN · MERGE_OUT · OPENING
+  reason      String // WELCOME · PURCHASE · BIRTHDAY · RETURN · VOID · ROLLBACK · ADJUST · MERGE_IN · MERGE_OUT · OPENING · REDEEM · REDEEM_REFUND
   note        String? // staff's reason for an ADJUST
   saleId      String?
   sale        Sale?        @relation(fields: [saleId], references: [id], onDelete: SetNull)
-  batchId     String?
-  createdById String?
-  createdAt   DateTime     @default(now())
+  batchId      String?
+  redemptionId String?
+  redemption   Redemption?  @relation(fields: [redemptionId], references: [id], onDelete: SetNull)
+  createdById  String?
+  createdAt    DateTime     @default(now())
 
   @@index([orgId, memberId, createdAt])
   @@index([orgId, saleId])
+  @@index([orgId, redemptionId])
   @@map("point_transactions")
 }
 
@@ -395,6 +405,7 @@ enum PointTxType {
   REVERSAL
   ADJUST
   OPENING
+  REDEEM
 }
 
 // ---------------------------------------------------------------------------
@@ -651,6 +662,127 @@ enum NotificationStatus {
   SENT
   FAILED // gave up after retries
   SKIPPED // no LINE identity, member unreachable, kind switched off, or LINE not configured
+}
+
+// ---------------------------------------------------------------------------
+// Rewards (docs/PRODUCT.md §11): a catalogue members spend points on.
+// COUPON  — issued instantly with a unique code (QR); staff validate it at the
+//           counter and apply the discount in the POS themselves.
+// PHYSICAL — a request (e.g. an iPad) Marketing reviews, then the back office
+//           fulfils and ships; the member follows the status in LINE.
+// Points leave the balance the moment a member redeems (a REDEEM ledger row) and
+// come back as REDEEM_REFUND if the request is rejected or cancelled.
+// ---------------------------------------------------------------------------
+model Reward {
+  id             String       @id @default(cuid())
+  orgId          String
+  org            Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  kind           RewardKind
+  name           String
+  description    String       @default("")
+  terms          String       @default("") // conditions shown before the member confirms
+  imageUrl       String?
+  costPoints     Int
+  valueSatang    Int? // COUPON: discount value
+  minSpendSatang Int? // COUPON: minimum bill to use it (shown, checked by the cashier)
+  validDays      Int? // COUPON: valid this many days after it is issued
+  fulfilment     String? // PHYSICAL: what the member is told, e.g. "7–14 วัน ขึ้นกับสต็อก"
+  stock          Int? // null = unlimited; goes down on redeem, back up on reject/cancel
+  perMemberLimit Int? // null = no limit
+  minTier        String? // TierSettings.key — lower tiers see it but cannot redeem
+  startsAt       DateTime?
+  endsAt         DateTime?
+  isActive       Boolean      @default(true)
+  sortOrder      Int          @default(0)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  redemptions Redemption[]
+
+  @@index([orgId, isActive, sortOrder])
+  @@map("rewards")
+}
+
+enum RewardKind {
+  COUPON
+  PHYSICAL
+}
+
+model Redemption {
+  id         String           @id @default(cuid())
+  orgId      String
+  org        Organization     @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  code       String // "RD-000123" — the Redemption ID the member and staff quote
+  memberId   String
+  member     Member           @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  rewardId   String
+  reward     Reward           @relation(fields: [rewardId], references: [id])
+  kind       RewardKind
+  rewardName String // as it was when redeemed
+  costPoints Int
+  status     RedemptionStatus
+  // COUPON
+  couponCode    String? // unique token in the QR
+  valueSatang   Int?
+  expiresAt     DateTime?
+  usedAt        DateTime?
+  usedStoreId   String?
+  usedStore     Store?    @relation(fields: [usedStoreId], references: [id])
+  usedInvoiceNo String?
+  usedById      String?
+  // PHYSICAL
+  delivery   Json? // { method: "PICKUP" | "SHIP", name, phone, address?, storeId? }
+  carrier    String?
+  trackingNo String?
+  ownerId    String? // staff who owns the case
+  note       String? // reason or message the member sees (rejection, delay)
+  history    Json    @default("[]") // [{ status, at, by, note }]
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  pointTransactions PointTransaction[]
+
+  @@unique([orgId, code])
+  @@unique([orgId, couponCode])
+  @@index([orgId, status, createdAt])
+  @@index([orgId, memberId, createdAt])
+  @@index([orgId, rewardId])
+  @@map("redemptions")
+}
+
+enum RedemptionStatus {
+  ISSUED // coupon ready to use
+  USED
+  EXPIRED
+  SUBMITTED // physical: received
+  UNDER_REVIEW
+  APPROVED
+  PROCESSING
+  SHIPPED
+  COMPLETED
+  REJECTED
+  CANCELLED
+}
+
+// Email outbox for staff alerts (a new reward request to Marketing). Same idea
+// as Notification: written in the transaction, delivered afterwards.
+model EmailMessage {
+  id        String             @id @default(cuid())
+  orgId     String
+  org       Organization       @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  to        String[]
+  kind      String // REDEMPTION_REQUEST
+  dedupeKey String
+  payload   Json
+  status    NotificationStatus @default(PENDING)
+  attempts  Int                @default(0)
+  lastError String?
+  sentAt    DateTime?
+  createdAt DateTime           @default(now())
+
+  @@unique([orgId, dedupeKey])
+  @@index([status, createdAt])
+  @@map("email_messages")
 }
 
 // ---------------------------------------------------------------------------

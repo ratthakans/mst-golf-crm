@@ -65,7 +65,7 @@ export type BusinessType =
   | "academy";
 
 export interface PointsSettings {
-  perBaht: number; // base points per 1 unit of currency spent, before the tier's pointRate
+  perBaht: number; // base points per 1 unit of currency spent, before the tier's pointRate (0.002 = ฿500 per point)
   signupBonus: number;
   birthdayBonus: number;
   expiryMonths: number;
@@ -89,6 +89,7 @@ export interface TierSettings {
   benefits: TierBenefits;
 }
 
+/** Legacy placeholder from schema v1 — the catalogue lives in the Reward table. */
 export interface RewardSettings {
   name: string;
   costPoints: number;
@@ -104,6 +105,8 @@ export interface FeatureFlags {
   referral: boolean;
   events: boolean;
   coupons: boolean;
+  /** Rewards catalogue, coupons and reward requests (docs/PRODUCT.md §11). On unless switched off. */
+  rewards?: boolean;
   lessons?: boolean;
   arena?: boolean;
   teeTime?: boolean;
@@ -149,7 +152,9 @@ export type NotificationKind =
   | "BOOKING_CONFIRMED"
   | "BOOKING_REMINDER"
   | "BOOKING_CANCELLED"
-  | "BOOKING_MOVED";
+  | "BOOKING_MOVED"
+  | "REDEMPTION_RECEIVED"
+  | "REDEMPTION_STATUS";
 
 export type NotificationSettings = Record<NotificationKind, boolean>;
 
@@ -208,6 +213,12 @@ export interface SiteCopy {
   services?: Partial<Record<SiteServiceSlug, SiteServiceCopy>>;
 }
 
+// Who hears about reward requests and how the email links back to the case.
+export interface RedemptionSettings {
+  alertEmails: string[]; // Marketing inbox(es) — get an email for every reward request
+  backofficeUrl?: string; // origin of the back office, e.g. https://crm.mstgolf.co.th
+}
+
 export interface OrgSettings {
   productName?: string; // back-office name shown to staff, e.g. "MST Golf Platform"
   logoUrl?: string;
@@ -227,6 +238,7 @@ export interface OrgSettings {
   notifications?: Partial<NotificationSettings>;
   pos?: PosSettings;
   site?: SiteSettings;
+  redemption?: RedemptionSettings;
   readiness?: Record<string, { at: string; by: string }>; // go-live items MST has confirmed (Settings › ความพร้อมเปิดใช้)
 }
 

@@ -11,6 +11,7 @@ export interface RenderContext {
   storeName: string;
   memberUrl: string | null; // LIFF link to the member card
   bookingUrl: string | null; // LIFF link to booking
+  rewardsUrl?: string | null; // LIFF link to rewards
 }
 
 export interface WelcomePayload {
@@ -43,6 +44,29 @@ export interface BookingPayload {
   previousStartAt?: string;
   previousLaneName?: string;
   reason?: string | null;
+}
+
+export interface RedemptionReceivedPayload {
+  code: string;
+  kind: "COUPON" | "PHYSICAL";
+  rewardName: string;
+  points: number;
+  balance: number;
+  couponCode: string | null;
+  valueSatang: number | null;
+  expiresAt: string | null;
+  fulfilment: string | null;
+}
+export interface RedemptionStatusPayload {
+  code: string;
+  kind: "COUPON" | "PHYSICAL";
+  rewardName: string;
+  status: string;
+  note: string | null;
+  carrier: string | null;
+  trackingNo: string | null;
+  refunded: number;
+  method: "PICKUP" | "SHIP" | null;
 }
 
 type Row = { label: string; value: string; strong?: boolean };
@@ -140,6 +164,50 @@ export function renderNotification(kind: NotificationKind, payload: unknown, ctx
       if (p.discountPct) rows.push({ label: "ส่วนลดร้าน", value: `${p.discountPct}%` });
       if (p.simDiscountPct) rows.push({ label: "ส่วนลดซิมกอล์ฟ", value: `${p.simDiscountPct}%` });
       return [bubble(ctx, `ยินดีด้วย คุณเป็นสมาชิก ${p.tierName} แล้ว`, "สิทธิประโยชน์ใหม่ใช้ได้ตั้งแต่วันนี้", rows, { label: "เปิดบัตรสมาชิก", url: ctx.memberUrl })];
+    }
+    case "REDEMPTION_RECEIVED": {
+      const p = payload as RedemptionReceivedPayload;
+      const url = ctx.rewardsUrl ?? ctx.memberUrl;
+      if (p.kind === "COUPON") {
+        const rows: Row[] = [
+          { label: "คูปอง", value: p.rewardName, strong: true },
+          { label: "รหัสคูปอง", value: p.couponCode ?? "—" },
+          { label: "ใช้ได้ถึง", value: p.expiresAt ? formatThaiDate(new Date(p.expiresAt)) : "—" },
+          { label: "แต้มที่ใช้", value: `−${n(p.points)}` },
+          { label: "แต้มคงเหลือ", value: n(p.balance) },
+        ];
+        return [bubble(ctx, "ได้รับคูปองแล้ว", "เปิดคูปองแล้วให้พนักงานสแกน QR ตอนชำระเงิน", rows, { label: "เปิดคูปอง", url }, `Redemption ID ${p.code}`)];
+      }
+      const rows: Row[] = [
+        { label: "รางวัล", value: p.rewardName, strong: true },
+        { label: "Redemption ID", value: p.code },
+        { label: "แต้มที่ใช้", value: `−${n(p.points)}` },
+        { label: "แต้มคงเหลือ", value: n(p.balance) },
+      ];
+      const foot = `${p.fulfilment ? `ระยะเวลาโดยประมาณ ${p.fulfilment} ` : ""}ขึ้นอยู่กับสต็อกและการยืนยันการจัดส่ง · ถ้าคำขอไม่ผ่าน แต้มจะคืนเข้าบัญชีทั้งหมด`;
+      return [bubble(ctx, "ได้รับคำขอแลกรางวัลแล้ว", "ทีมงานจะตรวจสอบและแจ้งขั้นตอนถัดไปทาง LINE", rows, { label: "ติดตามสถานะ", url }, foot)];
+    }
+    case "REDEMPTION_STATUS": {
+      const p = payload as RedemptionStatusPayload;
+      const url = ctx.rewardsUrl ?? ctx.memberUrl;
+      const titles: Record<string, string> = {
+        UNDER_REVIEW: "กำลังตรวจสอบคำขอของคุณ",
+        APPROVED: "คำขอแลกรางวัลได้รับการอนุมัติ",
+        PROCESSING: p.method === "PICKUP" ? "กำลังเตรียมของให้มารับ" : "กำลังเตรียมจัดส่ง",
+        SHIPPED: "จัดส่งรางวัลแล้ว",
+        COMPLETED: p.method === "PICKUP" ? "รับรางวัลเรียบร้อย" : "ส่งถึงเรียบร้อย",
+        REJECTED: "คำขอแลกรางวัลไม่ได้รับการอนุมัติ",
+        CANCELLED: p.kind === "COUPON" ? "คูปองถูกยกเลิก" : "ยกเลิกคำขอแลกรางวัลแล้ว",
+        USED: "ใช้คูปองแล้ว",
+      };
+      const rows: Row[] = [
+        { label: p.kind === "COUPON" ? "คูปอง" : "รางวัล", value: p.rewardName, strong: true },
+        { label: "Redemption ID", value: p.code },
+      ];
+      if (p.status === "SHIPPED" && p.trackingNo) rows.push({ label: p.carrier ? `เลขพัสดุ (${p.carrier})` : "เลขพัสดุ", value: p.trackingNo });
+      if (p.refunded) rows.push({ label: "คืนแต้ม", value: `+${n(p.refunded)}`, strong: true });
+      const lead = p.note ?? (p.status === "USED" ? "ขอบคุณที่ใช้บริการ MST Golf" : "");
+      return [bubble(ctx, titles[p.status] ?? "อัปเดตสถานะการแลกรางวัล", lead, rows, { label: "ดูรายละเอียด", url })];
     }
     case "BOOKING_CONFIRMED":
     case "BOOKING_REMINDER":

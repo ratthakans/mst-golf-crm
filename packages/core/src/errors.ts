@@ -17,6 +17,8 @@ export type CoreErrorCode =
   | "BOOKING_RULE"
   | "IMPORT_STATE"
   | "IMPORT_FILE"
+  | "REWARD_RULE"
+  | "COUPON_STATE"
   | "SHOPIFY_AUTH"
   | "SHOPIFY_ERROR";
 
@@ -29,6 +31,7 @@ const STATUS: Partial<Record<CoreErrorCode, number>> = {
   SLOT_TAKEN: 409,
   HOLD_EXPIRED: 409,
   IMPORT_STATE: 409,
+  COUPON_STATE: 409,
   SHOPIFY_AUTH: 502,
   SHOPIFY_ERROR: 502,
 };

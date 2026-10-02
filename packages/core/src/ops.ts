@@ -1,6 +1,7 @@
 import type { Prisma } from "@mstgolf/database";
 import { prisma } from "@mstgolf/database";
 import { SITE_PHOTO_KEYS } from "@mstgolf/shared";
+import { earnRateText } from "@mstgolf/shared/tiers";
 import { writeAudit } from "./audit";
 import type { Actor } from "./context";
 import { currentConsentTexts, lineChannelStatus, listStores } from "./config";
@@ -108,6 +109,7 @@ export async function systemStatus(orgId: string, now = new Date()) {
     CRON_SECRET: !!process.env.CRON_SECRET,
     ENCRYPTION_KEY: !!process.env.ENCRYPTION_KEY,
     PUBLIC_BLOB_READ_WRITE_TOKEN: !!process.env.PUBLIC_BLOB_READ_WRITE_TOKEN,
+    EMAIL: !!process.env.RESEND_API_KEY && !!process.env.EMAIL_FROM,
     DATABASE_SCHEMA: process.env.DATABASE_SCHEMA || "public",
   };
   return {
@@ -126,7 +128,7 @@ export async function systemStatus(orgId: string, now = new Date()) {
 export type ReadyState = "ok" | "todo" | "confirm" | "waiting";
 export interface ReadyItem {
   key: string;
-  group: "website" | "store" | "members" | "pos" | "team" | "line" | "system";
+  group: "website" | "store" | "members" | "rewards" | "pos" | "team" | "line" | "system";
   label: string;
   state: ReadyState; // confirm = the value is set, MST must say it is right
   detail: string;
@@ -136,7 +138,7 @@ export interface ReadyItem {
 }
 
 /** Items MST confirms by pressing a button (the value exists; only MST knows it is right). */
-export const CONFIRMABLE = ["store.hours", "store.lanes", "booking.rules", "members.tiers", "members.points", "pos.excluded", "consent.legal", "site.copy"] as const;
+export const CONFIRMABLE = ["store.hours", "store.lanes", "booking.rules", "members.tiers", "members.points", "pos.excluded", "consent.legal", "site.copy", "rewards.catalogue"] as const;
 export type ConfirmKey = (typeof CONFIRMABLE)[number];
 
 const DAY_TH: Record<string, string> = { mon: "จ", tue: "อ", wed: "พ", thu: "พฤ", fri: "ศ", sat: "ส", sun: "อา" };
@@ -153,7 +155,7 @@ export async function readiness(orgId: string, now = new Date()): Promise<ReadyI
   const confirmed = settings.raw.readiness ?? {};
   const c = (key: ConfirmKey) => confirmed[key] ?? null;
   const site = settings.site;
-  const [stores, line, consent, posts, commits, users, status] = await Promise.all([
+  const [stores, line, consent, posts, commits, users, status, rewards] = await Promise.all([
     listStores(orgId),
     lineChannelStatus(orgId),
     currentConsentTexts(orgId),
@@ -161,6 +163,7 @@ export async function readiness(orgId: string, now = new Date()): Promise<ReadyI
     client.importBatch.count({ where: { status: "COMMITTED", mode: "DAILY" } }),
     client.user.count({ where: { isActive: true } }),
     systemStatus(orgId, now),
+    client.reward.findMany({ where: { isActive: true }, select: { name: true, costPoints: true }, orderBy: { costPoints: "asc" } }),
   ]);
   const store = stores.find((s) => s.isActive) ?? null;
   const lanes = store?.lanes.filter((l) => l.isActive) ?? [];
@@ -186,9 +189,17 @@ export async function readiness(orgId: string, now = new Date()): Promise<ReadyI
 
   // Members and points
   add({ key: "members.tiers", group: "members", label: "ระดับสมาชิกและสิทธิ์", owner: "MST", href: "/settings/tiers", state: confirmState("members.tiers"), detail: settings.tiers.map((t) => `${t.name} ≥ ${formatBaht(t.minSpend12m * 100)} ×${t.pointRate} ลด ${t.benefits.discountPct}% ซิม ${t.benefits.simDiscountPct}%`).join(" · "), confirmed: c("members.tiers") });
-  add({ key: "members.points", group: "members", label: "อัตราแต้ม · แต้มต้อนรับ", owner: "MST", href: "/settings/points", state: confirmState("members.points"), detail: `฿1 = ${settings.pointsPerBaht} แต้ม · ต้อนรับ ${settings.welcomeBonus.toLocaleString("en-US")} แต้ม`, confirmed: c("members.points") });
+  add({ key: "members.points", group: "members", label: "อัตราแต้ม · แต้มต้อนรับ", owner: "MST", href: "/settings/points", state: confirmState("members.points"), detail: `${earnRateText(settings.pointsPerBaht)} · ต้อนรับ ${settings.welcomeBonus.toLocaleString("en-US")} แต้ม`, confirmed: c("members.points") });
   add({ key: "pos.excluded", group: "members", label: "สินค้าที่ไม่ได้แต้ม", owner: "MST", href: "/settings/points", state: confirmState("pos.excluded"), detail: [...settings.pos.pointExcludedCategories, ...settings.pos.pointExcludedSkus].join(", ") || "ทุกสินค้าได้แต้ม", confirmed: c("pos.excluded") });
   add({ key: "consent.legal", group: "members", label: "ข้อกำหนดและนโยบายความเป็นส่วนตัว ผ่านฝ่ายกฎหมาย", owner: "MST", href: "/settings/consent", state: confirmState("consent.legal", !!consent.terms), detail: consent.terms ? `ข้อกำหนดฉบับ ${consent.terms.version}${consent.marketing ? ` · การรับข่าวสารฉบับ ${consent.marketing.version}` : ""}` : "ยังไม่มีข้อความ", confirmed: c("consent.legal") });
+
+  // Rewards
+  if (settings.features.rewards) {
+    const alerts = settings.redemption.alertEmails;
+    add({ key: "rewards.catalogue", group: "rewards", label: "รางวัลและคูปองที่เปิดให้แลก", owner: "MST", href: "/rewards/catalog", state: confirmState("rewards.catalogue", rewards.length > 0), detail: rewards.length ? rewards.map((r) => `${r.name} ${r.costPoints.toLocaleString("en-US")} แต้ม`).join(" · ") : "ยังไม่มีรางวัล — สมาชิกเห็นหน้ารางวัลว่าง", confirmed: c("rewards.catalogue") });
+    add({ key: "rewards.alerts", group: "rewards", label: "อีเมลแจ้ง Marketing เมื่อมีคำขอแลกของ", owner: "MST", href: "/settings/rewards", state: alerts.length ? "ok" : "waiting", detail: alerts.length ? alerts.join(", ") : "ยังไม่มีอีเมลผู้รับ — คำขอยังเข้าคิวในหลังบ้านตามปกติ" });
+    add({ key: "rewards.mailer", group: "rewards", label: "บริการส่งอีเมล", owner: "ORIONS", href: "/settings/system", state: status.env.EMAIL ? "ok" : "todo", detail: status.env.EMAIL ? "พร้อมส่ง" : "ยังไม่ได้ตั้ง RESEND_API_KEY / EMAIL_FROM — อีเมลจะถูกข้าม" });
+  }
 
   // POS and team
   add({ key: "pos.file", group: "pos", label: "นำเข้าไฟล์ POS จริง", owner: "MST", href: "/import", state: commits > 0 ? "ok" : "waiting", detail: commits > 0 ? `นำเข้าแล้ว ${commits} รอบ` : "รอไฟล์ export จาก POS ของร้าน" });

@@ -16,6 +16,7 @@ export interface PointEntry {
   note?: string | null;
   saleId?: string | null;
   batchId?: string | null;
+  redemptionId?: string | null;
   createdById?: string | null;
 }
 
@@ -29,7 +30,9 @@ export type PointReason =
   | "ADJUST"
   | "MERGE_IN"
   | "MERGE_OUT"
-  | "OPENING";
+  | "OPENING"
+  | "REDEEM"
+  | "REDEEM_REFUND";
 
 export const POINT_REASON_LABEL: Record<PointReason, string> = {
   WELCOME: "แต้มต้อนรับสมาชิกใหม่",
@@ -42,6 +45,8 @@ export const POINT_REASON_LABEL: Record<PointReason, string> = {
   MERGE_IN: "รวมบัญชี",
   MERGE_OUT: "ย้ายไปบัญชีหลัก",
   OPENING: "แต้มยกมาจากระบบเดิม",
+  REDEEM: "แลกรางวัล",
+  REDEEM_REFUND: "คืนแต้มจากการแลก",
 };
 
 export async function postPoints(tx: Tx, orgId: string, e: PointEntry): Promise<void> {
@@ -57,6 +62,7 @@ export async function postPoints(tx: Tx, orgId: string, e: PointEntry): Promise<
       note: e.note ?? null,
       saleId: e.saleId ?? null,
       batchId: e.batchId ?? null,
+      redemptionId: e.redemptionId ?? null,
       createdById: e.createdById ?? null,
     },
   });

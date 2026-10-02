@@ -165,3 +165,11 @@ export function isMonthlyTierReview(now: Date, timeZone = "Asia/Bangkok"): boole
   const day = new Intl.DateTimeFormat("en-US", { timeZone, day: "numeric" }).format(now);
   return day === "1";
 }
+
+/** "฿1 = 1 แต้ม" or "ทุก ฿500 = 1 แต้ม" — how the base earn rate reads to people. */
+export function earnRateText(perBaht: number): string {
+  if (!(perBaht > 0)) return "ไม่ได้แต้ม";
+  if (perBaht >= 1) return `฿1 = ${Number(perBaht.toFixed(2))} แต้ม`;
+  const every = 1 / perBaht;
+  return `ทุก ฿${Number(every.toFixed(2)).toLocaleString("en-US")} = 1 แต้ม`;
+}

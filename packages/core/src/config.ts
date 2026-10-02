@@ -89,7 +89,7 @@ export async function savePointRules(orgId: string, actor: Actor, input: { welco
   const raw = settings.raw.points ?? { perBaht: 1, signupBonus: 1600, birthdayBonus: 0, expiryMonths: 12 };
   const points: OrgSettings["points"] = {
     ...raw,
-    perBaht: input.perBaht === undefined ? settings.pointsPerBaht : num(input.perBaht, 0.01, 100, "แต้มต่อบาท"),
+    perBaht: input.perBaht === undefined ? settings.pointsPerBaht : num(input.perBaht, 0.0001, 100, "แต้มต่อบาท"),
     signupBonus: input.welcomeBonus === undefined ? settings.welcomeBonus : Math.round(num(input.welcomeBonus, 0, 100_000, "แต้มต้อนรับ")),
   };
   const next = await updateSettings(orgId, { points });

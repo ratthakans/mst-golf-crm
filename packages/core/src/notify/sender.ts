@@ -76,6 +76,7 @@ async function processOrgOutbox(
     storeName: store?.name ?? "MST Golf",
     memberUrl: liffUrl(line?.liffId ?? null, "/member", settings.site.siteUrl),
     bookingUrl: liffUrl(line?.liffId ?? null, "/booking", settings.site.siteUrl),
+    rewardsUrl: liffUrl(line?.liffId ?? null, "/rewards", settings.site.siteUrl),
   };
 
   const skip = async (id: string, reason: string) => {
