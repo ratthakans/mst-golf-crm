@@ -15,6 +15,7 @@ import {
   holdSlot,
   listLanes,
   localParts,
+  parsePhone,
   previewImport,
   redeemReward,
   saveReward,
@@ -60,7 +61,7 @@ async function main() {
     const fullName = `${FIRST[i % FIRST.length]} ${LAST[rand(LAST.length)]}`;
     try {
       if (i % 3 === 0) await createMemberAtCounter(org.id, actor, { fullName, phone, consentConfirmed: true, marketing: i % 2 === 0 });
-      else await signUp(org.id, { lineUserId: `Udemo${i.toString(16).padStart(8, "0")}${rand(1e6)}`, channel: i % 5 === 0 ? "WEB" : "LINE", fullName, phone, birthday: i % 4 === 0 ? `19${70 + (i % 25)}-${String(1 + (i % 12)).padStart(2, "0")}-15` : null, acceptTerms: true, marketing: i % 2 === 1 });
+      else await signUp(org.id, { verifiedPhone: parsePhone(phone), channel: "WEB", fullName, phone, birthday: i % 4 === 0 ? `19${70 + (i % 25)}-${String(1 + (i % 12)).padStart(2, "0")}-15` : null, acceptTerms: true, marketing: i % 2 === 1 });
       phones.push(phone);
     } catch (e) {
       console.warn("skip member", phone, (e as Error).message);
@@ -93,7 +94,7 @@ async function main() {
 
   // Bookings for today and the next days.
   const lanes = await listLanes(org.id);
-  const members = await prisma.member.findMany({ where: { orgId: org.id, status: "ACTIVE", identities: { some: { type: "LINE" } } }, take: 12 });
+  const members = await prisma.member.findMany({ where: { orgId: org.id, status: "ACTIVE", consentAt: { not: null } }, take: 12 });
   const now = new Date();
   let made = 0;
   for (let i = 0; i < members.length; i++) {
@@ -102,7 +103,7 @@ async function main() {
     const start = fromLocal(p.year, p.month, p.day, 12 + rand(9));
     if (start <= now) continue;
     try {
-      const h = await holdSlot(org.id, { memberId: members[i]!.id, laneId: lanes[rand(lanes.length)]!.id, startAt: start.toISOString(), partySize: 1 + rand(3), source: i % 3 ? "LINE" : "WEB" }, now);
+      const h = await holdSlot(org.id, { memberId: members[i]!.id, laneId: lanes[rand(lanes.length)]!.id, startAt: start.toISOString(), partySize: 1 + rand(3), source: "WEB" }, now);
       await confirmHold(org.id, members[i]!.id, h.id, now);
       made++;
     } catch {
@@ -129,8 +130,8 @@ async function main() {
   await savePost(org.id, actor, null, {
     title: "จองซิมกอล์ฟออนไลน์ได้แล้ว",
     slug: "book-golf-simulator-online",
-    excerpt: "เลือกวัน เวลา และ lane เองผ่าน LINE หรือเว็บไซต์ สมาชิก Silver และ Gold ได้ส่วนลดอัตโนมัติ",
-    body: "## จองอย่างไร\n\n1. เปิดหน้า **จองซิม** แล้วล็อกอินด้วย LINE\n2. เลือกวัน เวลา และ lane ที่ว่าง\n3. ได้ข้อความยืนยันใน LINE และข้อความเตือนก่อนถึงเวลา\n\nชำระเงินที่ร้านตอนเช็กอิน",
+    excerpt: "เลือกวัน เวลา และ lane เองบนเว็บไซต์ สมาชิก Silver และ Gold ได้ส่วนลดอัตโนมัติ",
+    body: "## จองอย่างไร\n\n1. เปิดหน้า **จองซิม** แล้วเข้าสู่ระบบด้วยเบอร์มือถือ\n2. เลือกวัน เวลา และ lane ที่ว่าง\n3. ดูการยืนยันและการเตือนก่อนเวลาได้ที่หน้าการแจ้งเตือน (และอีเมลถ้าใส่ไว้)\n\nชำระเงินที่ร้านตอนเช็กอิน",
     category: "SERVICE",
     status: "PUBLISHED",
     coverUrl: "/mock/sim-bays.jpg",
@@ -150,7 +151,7 @@ async function main() {
   const coupon = await saveReward(org.id, actor, null, { kind: "COUPON", name: "คูปองส่วนลด ฿1,000", description: "ส่วนลดสินค้าทุกหมวดที่ร้าน MST Golf", terms, costPoints: 1000, valueBaht: 1000, minSpendBaht: 5000, validDays: 30, sortOrder: 1 });
   const small = await saveReward(org.id, actor, null, { kind: "COUPON", name: "คูปองส่วนลด ฿300", terms, costPoints: 300, valueBaht: 300, validDays: 30, sortOrder: 2 });
   const ipad = await saveReward(org.id, actor, null, { kind: "PHYSICAL", name: "iPad 10.9 นิ้ว Wi-Fi 64GB", description: "สำหรับสมาชิกที่สะสมแต้มสูง", terms: "สินค้าตามสต็อก สีอาจแตกต่าง · ไม่สามารถเปลี่ยนเป็นเงินสด", costPoints: 3000, stock: 3, fulfilment: "7–14 วัน ขึ้นกับสต็อก", sortOrder: 3 });
-  const rich = await prisma.member.findMany({ where: { orgId: org.id, status: "ACTIVE", points: { gte: 3000 }, identities: { some: { type: "LINE" } } }, orderBy: { points: "desc" }, take: 4 });
+  const rich = await prisma.member.findMany({ where: { orgId: org.id, status: "ACTIVE", points: { gte: 3000 }, consentAt: { not: null } }, orderBy: { points: "desc" }, take: 4 });
   for (const [i, m] of rich.entries()) {
     const c = await redeemReward(org.id, m.id, { rewardId: i % 2 ? small.id : coupon.id, acceptTerms: true }).catch(() => null);
     if (c?.couponCode && i === 0) await useCoupon(org.id, actor, { couponCode: c.couponCode, storeId: store.id, invoiceNo: "DEMO-0001" }).catch(() => undefined);
