@@ -106,11 +106,12 @@ export function BookingApp(props: Props) {
     void load(key);
   };
 
-  // Keep the grid fresh: on focus and once a minute while looking at it.
+  // Keep the grid fresh: on focus and every 10 seconds while looking at it,
+  // so a slot someone else just booked turns "เต็ม" almost at once.
   useEffect(() => {
     if (view !== "grid") return;
     const refresh = () => document.visibilityState === "visible" && void load(date, true);
-    const t = window.setInterval(refresh, 60_000);
+    const t = window.setInterval(refresh, 10_000);
     window.addEventListener("focus", refresh);
     return () => {
       window.clearInterval(t);
@@ -126,7 +127,24 @@ export function BookingApp(props: Props) {
     return () => window.removeEventListener("pagehide", release);
   }, [view, hold]);
 
-  const openPick = (p: Pick) => {
+  // Tapping a slot checks it live first: if someone took it since the grid
+  // last refreshed, say so right there instead of opening the sheet.
+  const checking = useRef(false);
+  const openPick = async (p: Pick) => {
+    if (checking.current) return;
+    checking.current = true;
+    const res = await api<AvailabilityData>(`/api/me/availability?date=${date}`);
+    checking.current = false;
+    if (res.ok) {
+      setAvail(res.data);
+      const cell = res.data.slots.find((s) => new Date(s.startAt).getTime() === new Date(p.startAt).getTime())?.lanes.find((l) => l.laneId === p.laneId);
+      if (cell && cell.state !== "free") {
+        setMsg({ kind: "warn", text: `${p.laneName} เวลา ${p.label} น. ไม่ว่างแล้ว — มีคนเพิ่งจองไป เลือกช่องอื่นได้เลย` });
+        topRef.current?.scrollIntoView({ block: "start", behavior: "smooth" });
+        return;
+      }
+    }
+    setMsg(null);
     setPick(p);
     setParty((n) => Math.min(Math.max(1, n), p.capacity));
     setSheetError(null);
