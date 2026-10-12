@@ -63,6 +63,7 @@ Money is integer **satang** in columns ending `Satang`; convert only with `toSat
 
 ## Customer sign-in, notifications, LINE
 - **Web-only for now (decided 12 Oct 2026).** Members sign in on the website with mobile number + 6-digit SMS code (`packages/core/src/otp.ts`, `notify/sms.ts`; ThaiBulkSMS, or `SMS_PROVIDER=mock` which shows the code outside the production schema).
+- **SMS codes are off for now (`settings.features.otp`, default false — user: "focus on the flow first").** The number alone signs in via `/api/me/phone`; such phones are not marked verified. Switch on at Settings › เว็บไซต์และร้าน before go-live (readiness flags it).
 - The customer cookie `mst_member` holds a member id, a verified phone (30 min, to finish sign-up) or a LINE user (`apps/web/lib/session.ts`). Members are resolved from it with `memberFor()`, never from the request body.
 - Every notification is queued in the Notification outbox (`enqueue` inside the same transaction). The member sees it in `/app/inbox`. `processOutbox` also delivers it by email (Resend) when the member gave one, or by LINE when LINE is on.
 - **LINE is switched off with `settings.features.line` (default false).** The LIFF / Messaging API code stays, and so do the Rich Menu links (`/member`, `/booking`, `/rewards`). Don't delete it. No page may promise LINE while the flag is off.

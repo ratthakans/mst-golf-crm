@@ -2,7 +2,7 @@ import Link from "next/link";
 import { allowPage } from "../../../lib/auth";
 import { currentOrg } from "../../../lib/org";
 import { Forbidden } from "../../Forbidden";
-import { SiteForm } from "./SiteForm";
+import { LoginForm, SiteForm } from "./SiteForm";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +16,10 @@ export default async function SiteSettingsPage() {
         <h1 style={{ marginTop: 6 }}>เว็บไซต์และร้าน</h1>
         <p>ข้อมูลที่แสดงบนเว็บไซต์และในข้อความถึงลูกค้า</p>
       </div>
-      <SiteForm values={settings.site} />
+      <div className="stack">
+        <SiteForm values={settings.site} />
+        <LoginForm otp={settings.features.otp} />
+      </div>
     </>
   );
 }

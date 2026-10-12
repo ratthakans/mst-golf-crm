@@ -109,6 +109,8 @@ export interface FeatureFlags {
   rewards?: boolean;
   /** LINE (LIFF sign-in, Messaging API pushes). Off: members sign in on the website with an SMS code. */
   line?: boolean;
+  /** Website sign-in proves the phone with an SMS code. Off: the number alone signs in (testing the flow only — never for go-live). */
+  otp?: boolean;
   lessons?: boolean;
   arena?: boolean;
   teeTime?: boolean;

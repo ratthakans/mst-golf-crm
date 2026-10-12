@@ -19,6 +19,6 @@ export async function POST(req: NextRequest) {
     if (member && member.status !== "ACTIVE") {
       return json({ error: "เบอร์นี้ใช้เข้าสู่ระบบไม่ได้ กรุณาติดต่อร้าน", code: "PHONE_TAKEN" }, 409);
     }
-    return withSession(json({ next: "signup" }), { kind: "phone", phone });
+    return withSession(json({ next: "signup" }), { kind: "phone", phone, proven: true });
   });
 }

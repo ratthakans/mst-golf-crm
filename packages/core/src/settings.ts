@@ -59,7 +59,7 @@ export interface ResolvedSettings {
   pos: PosSettings;
   site: SiteSettings;
   redemption: RedemptionSettings;
-  features: { intelligence: boolean; booking: boolean; rewards: boolean; line: boolean };
+  features: { intelligence: boolean; booking: boolean; rewards: boolean; line: boolean; otp: boolean };
   raw: Partial<OrgSettings>;
 }
 
@@ -84,6 +84,7 @@ export function resolveSettings(raw: unknown): ResolvedSettings {
       booking: s.features?.booking ?? true,
       rewards: s.features?.rewards ?? true,
       line: s.features?.line ?? false,
+      otp: s.features?.otp ?? false,
     },
     raw: s,
   };

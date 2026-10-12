@@ -325,3 +325,12 @@ export async function lineChannelStatus(orgId: string) {
 }
 
 export type { BlockReason };
+
+/** Turns the SMS code at website sign-in on or off (Settings › เว็บไซต์และร้าน). */
+export async function saveLoginRules(orgId: string, actor: Actor, input: { otp: boolean }): Promise<ResolvedSettings> {
+  const { settings } = await getOrg(orgId);
+  const features = { ...(settings.raw.features ?? {}), otp: !!input.otp } as OrgSettings["features"];
+  const next = await updateSettings(orgId, { features });
+  await audited(orgId, actor, "settings.login", { otp: settings.features.otp }, { otp: !!input.otp });
+  return next;
+}

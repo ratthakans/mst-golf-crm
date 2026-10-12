@@ -27,3 +27,26 @@ export function SiteForm({ values }: { values: SiteSettings }) {
     </form>
   );
 }
+
+/** Website sign-in: with or without the SMS code. Off is for testing the flow only. */
+export function LoginForm({ otp }: { otp: boolean }) {
+  const [on, setOn] = useState(otp);
+  const s = useSave("login");
+  return (
+    <form className="card" onSubmit={(e) => { e.preventDefault(); void s.save({ otp: on }); }}>
+      <h3>การเข้าสู่ระบบของสมาชิกบนเว็บ</h3>
+      <label className="toggle-row">
+        <span>
+          <b>ยืนยันเบอร์ด้วยรหัส SMS</b>
+          <span>
+            {on
+              ? "ลูกค้าใส่เบอร์แล้วได้รหัส 6 หลักทาง SMS — ต้องมีบัญชีผู้ให้บริการ SMS"
+              : "ปิดอยู่: ใส่เบอร์อย่างเดียวก็เข้าบัญชีได้ ใช้ทดสอบ flow เท่านั้น — ใครรู้เบอร์ก็เห็นบัตรและใช้แต้มได้ ต้องเปิดก่อนเปิดใช้จริง"}
+          </span>
+        </span>
+        <input type="checkbox" checked={on} onChange={(e) => setOn(e.target.checked)} />
+      </label>
+      <SaveBar {...s} />
+    </form>
+  );
+}

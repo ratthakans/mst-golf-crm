@@ -15,6 +15,8 @@ interface Props {
   prefillName: string;
   /** The mobile number proven with an SMS code — fixed in the form. Null when signing up through LINE. */
   verifiedPhone: string | null;
+  /** The number was proven with an SMS code (false while codes are off). */
+  phoneProven: boolean;
   welcomePoints: number;
   terms: ConsentDoc | null;
   marketing: ConsentDoc | null;
@@ -26,7 +28,7 @@ interface Props {
 // Name, mobile, optional birthday and email, PDPA consent. Who is signing up
 // comes from the session cookie on the server: the verified mobile number (or
 // the LINE account when LINE is on).
-export function SignupForm({ prefillName, verifiedPhone, welcomePoints, terms, marketing, next, todayKey, birthdayMultiplier }: Props) {
+export function SignupForm({ prefillName, verifiedPhone, phoneProven, welcomePoints, terms, marketing, next, todayKey, birthdayMultiplier }: Props) {
   const router = useRouter();
   const [fullName, setFullName] = useState(prefillName.length >= 2 ? prefillName : "");
   const [phone, setPhone] = useState(verifiedPhone ?? "");
@@ -205,7 +207,19 @@ export function SignupForm({ prefillName, verifiedPhone, welcomePoints, terms, m
             </p>
           ) : (
             <p id="su-phone-hint" className="hint">
-              {verifiedPhone ? "ยืนยันแล้วด้วยรหัส SMS · " : ""}ใช้แจ้งที่เคาน์เตอร์เพื่อสะสมแต้ม ถ้าเคยให้เบอร์กับร้านไว้ แต้มเดิมจะมาอยู่ในบัตรนี้
+              {verifiedPhone && phoneProven ? "ยืนยันแล้วด้วยรหัส SMS · " : ""}ใช้แจ้งที่เคาน์เตอร์เพื่อสะสมแต้ม ถ้าเคยให้เบอร์กับร้านไว้ แต้มเดิมจะมาอยู่ในบัตรนี้
+              {verifiedPhone && (
+                <>
+                  {" · "}
+                  <button
+                    type="button"
+                    className="text-link"
+                    onClick={() => void api("/api/me/session", { method: "DELETE" }).then(() => router.refresh())}
+                  >
+                    ใช้เบอร์อื่น
+                  </button>
+                </>
+              )}
             </p>
           )}
         </div>

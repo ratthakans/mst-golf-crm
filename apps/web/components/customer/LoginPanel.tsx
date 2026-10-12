@@ -10,6 +10,7 @@ export interface LoginSetupProps {
   lineReady: boolean;
   liffId: string | null;
   devLogin: boolean;
+  otp: boolean;
 }
 
 type Phase = "starting" | "redirecting" | "verifying" | "error" | "idle";
@@ -72,7 +73,7 @@ export function LoginPanel({ setup, purpose }: { setup: LoginSetupProps; purpose
   const title = purpose === "booking" ? "เข้าสู่ระบบเพื่อจองซิมกอล์ฟ" : purpose === "rewards" ? "เข้าสู่ระบบเพื่อแลกรางวัล" : "สมาชิก MST Golf";
   const lead =
     purpose === "member"
-      ? "สมัครหรือเข้าสู่ระบบด้วยเบอร์มือถือ ไม่ต้องตั้งรหัสผ่าน เราส่งรหัส 6 หลักทาง SMS ให้ทุกครั้ง"
+      ? `สมัครหรือเข้าสู่ระบบด้วยเบอร์มือถือ ไม่ต้องตั้งรหัสผ่าน${setup.otp ? " เราส่งรหัส 6 หลักทาง SMS ให้ทุกครั้ง" : ""}`
       : "ใช้เบอร์มือถือ ไม่ต้องตั้งรหัสผ่าน ยังไม่เป็นสมาชิกก็สมัครต่อได้ในหน้านี้";
 
   return (
@@ -102,7 +103,7 @@ export function LoginPanel({ setup, purpose }: { setup: LoginSetupProps; purpose
         </div>
       )}
 
-      <PhoneLogin />
+      <PhoneLogin otp={setup.otp} />
 
       {setup.devLogin && <DevLogin />}
     </section>

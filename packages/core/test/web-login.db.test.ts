@@ -62,6 +62,12 @@ describe("website sign-up", () => {
     await expect(signUp(t.orgId, { verifiedPhone: "0897770003", channel: "WEB", fullName: "ซ้ำ", phone: "0897770003", acceptTerms: true, marketing: false })).rejects.toMatchObject({ code: "ALREADY_MEMBER" });
   });
 
+  it("while SMS codes are off, a typed number signs up but is not marked verified", async () => {
+    const r = await signUp(t.orgId, { verifiedPhone: "0897770010", phoneProven: false, channel: "WEB", fullName: "ไม่มี รหัส", phone: "0897770010", acceptTerms: true, marketing: false });
+    expect(r.outcome).toBe("created");
+    expect(r.member.phoneVerified).toBe(false);
+  });
+
   it("a POS-created member claims their account (same points), a counter member just signs in", async () => {
     const { settings } = await getOrg(t.orgId);
     const posId = await inTx(t.orgId, (tx) => insertMember(tx, t.orgId, settings, { source: "POS", displayName: "0897770004", phone: "0897770004" }));

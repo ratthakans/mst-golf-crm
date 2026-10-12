@@ -27,6 +27,7 @@ export async function POST(req: NextRequest) {
     const result = await signUp(org.id, {
       lineUserId: viaLine ? customer.sub : null,
       verifiedPhone: viaLine ? null : customer.phone,
+      phoneProven: viaLine ? undefined : customer.proven,
       channel: viaLine && (body.inLine === true || isLineClient(req)) ? "LINE" : "WEB",
       fullName: str(body.fullName, 120),
       phone: viaLine ? str(body.phone, 40) : customer.phone,

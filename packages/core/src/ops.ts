@@ -208,7 +208,16 @@ export async function readiness(orgId: string, now = new Date()): Promise<ReadyI
   add({ key: "team.users", group: "team", label: "บัญชีพนักงาน", owner: "MST", href: "/settings/users", state: users >= 2 ? "ok" : "waiting", detail: `ใช้งานอยู่ ${users} บัญชี` });
 
   // Signing in on the website
-  add({ key: "members.sms", group: "members", label: "บริการ SMS (รหัสเข้าสู่ระบบของลูกค้า)", owner: "MST", href: "/settings/system", state: status.env.SMS ? "ok" : "waiting", detail: status.env.SMS ? "พร้อมส่งรหัส" : "ยังไม่มีบัญชีผู้ให้บริการ SMS — ลูกค้าเข้าสู่ระบบบนเว็บจริงไม่ได้ (preview ใช้รหัสทดสอบ)" });
+  add({
+    key: "members.otp",
+    group: "members",
+    label: "ยืนยันเบอร์ด้วยรหัส SMS ตอนเข้าสู่ระบบ",
+    owner: "ORIONS",
+    href: "/settings/site",
+    state: settings.features.otp ? "ok" : "todo",
+    detail: settings.features.otp ? "เปิดอยู่" : "ปิดอยู่ (โหมดทดสอบ flow) — ใครรู้เบอร์ก็เข้าบัญชีและใช้แต้มได้ ต้องเปิดก่อนเปิดใช้จริง",
+  });
+  if (settings.features.otp) add({ key: "members.sms", group: "members", label: "บริการ SMS (รหัสเข้าสู่ระบบของลูกค้า)", owner: "MST", href: "/settings/system", state: status.env.SMS ? "ok" : "waiting", detail: status.env.SMS ? "พร้อมส่งรหัส" : "ยังไม่มีบัญชีผู้ให้บริการ SMS — ลูกค้าเข้าสู่ระบบบนเว็บจริงไม่ได้ (preview ใช้รหัสทดสอบ)" });
 
   // LINE (the LINE agency's part) — only when the tenant has LINE switched on
   if (settings.features.line) {

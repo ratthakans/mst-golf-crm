@@ -33,6 +33,7 @@ export default async function MemberPage({ searchParams }: { searchParams: { nex
       <SignupForm
         prefillName={customer.kind === "line" ? customer.name : ""}
         verifiedPhone={customer.kind === "phone" ? customer.phone : null}
+        phoneProven={customer.kind === "phone" && customer.proven}
         welcomePoints={org.settings.welcomeBonus}
         terms={doc(terms)}
         marketing={doc(marketing)}

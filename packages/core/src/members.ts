@@ -222,8 +222,10 @@ async function loadSummary(tx: Tx, memberId: string): Promise<MemberSummary> {
 export interface SignupInput {
   /** LINE sign-up: the verified LINE user. */
   lineUserId?: string | null;
-  /** Website sign-up: the phone was proven with an SMS code (verifyOtp) — must equal `phone`. */
+  /** Website sign-up: the phone the visitor signed in with — must equal `phone`. */
   verifiedPhone?: string | null;
+  /** False while the tenant runs without SMS codes: the number was typed, not proven, so it is not marked verified. */
+  phoneProven?: boolean;
   channel: "LINE" | "WEB";
   fullName: string;
   phone: string;
@@ -245,8 +247,9 @@ export async function signUp(orgId: string, input: SignupInput): Promise<SignupR
   const name = splitName(input.fullName);
   const phone = parsePhone(input.phone);
   const lineUserId = input.lineUserId || null;
-  const phoneVerified = !!input.verifiedPhone && input.verifiedPhone === phone;
-  if (!lineUserId && !phoneVerified) throw new CoreError("INVALID_INPUT", "กรุณายืนยันเบอร์มือถือด้วยรหัส SMS ก่อน");
+  const phoneFromSession = !!input.verifiedPhone && input.verifiedPhone === phone;
+  if (!lineUserId && !phoneFromSession) throw new CoreError("INVALID_INPUT", "กรุณาเข้าสู่ระบบด้วยเบอร์มือถือก่อน");
+  const phoneVerified = phoneFromSession && input.phoneProven !== false;
   const birthday = parseBirthday(input.birthday);
   const email = parseEmail(input.email);
   const { settings } = await getOrg(orgId);

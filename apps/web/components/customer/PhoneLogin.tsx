@@ -5,13 +5,14 @@ import { useEffect, useRef, useState } from "react";
 import { api } from "@/lib/client";
 
 // Sign in (or start signing up) with a mobile number: number → SMS code →
-// signed in. New numbers continue to the sign-up form on the same page.
+// signed in. While the tenant runs without SMS codes (testing the flow), the
+// number alone signs in. New numbers continue to the sign-up form.
 
 type Sent = { phone: string; resendAt: number; devCode: string | null };
 
 const pretty = (p: string) => (p.length === 10 ? `${p.slice(0, 3)}-${p.slice(3, 6)}-${p.slice(6)}` : p);
 
-export function PhoneLogin() {
+export function PhoneLogin({ otp }: { otp: boolean }) {
   const router = useRouter();
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
@@ -31,6 +32,16 @@ export function PhoneLogin() {
   const send = async (to: string) => {
     setBusy(true);
     setError(null);
+    if (!otp) {
+      const res = await api<{ next: "member" | "signup" }>("/api/me/phone", { method: "POST", body: { phone: to } });
+      if (!res.ok) {
+        setBusy(false);
+        setError(res.error);
+        return;
+      }
+      router.refresh();
+      return;
+    }
     const res = await api<{ phone: string; resendInSec: number; devCode: string | null }>("/api/me/otp", { method: "POST", body: { phone: to } });
     setBusy(false);
     if (!res.ok) {
@@ -94,7 +105,7 @@ export function PhoneLogin() {
         </div>
         <button type="submit" className="btn btn-primary btn-block" disabled={busy || phone.replace(/\D/g, "").length < 9}>
           {busy && <span className="spinner" aria-hidden="true" />}
-          <span>{busy ? "กำลังส่งรหัส…" : "รับรหัสทาง SMS"}</span>
+          <span>{otp ? (busy ? "กำลังส่งรหัส…" : "รับรหัสทาง SMS") : busy ? "กำลังเข้าสู่ระบบ…" : "ต่อไป"}</span>
         </button>
       </form>
     );
