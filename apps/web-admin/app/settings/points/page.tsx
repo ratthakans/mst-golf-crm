@@ -15,7 +15,7 @@ export default async function PointsSettingsPage() {
         <Link href="/settings" className="back-link">← ตั้งค่า</Link>
         <h1 style={{ marginTop: 6 }}>แต้ม · POS · ข้อความแจ้งเตือน</h1>
       </div>
-      <PointsForm welcomeBonus={settings.welcomeBonus} perBaht={settings.pointsPerBaht} />
+      <PointsForm welcomeBonus={settings.welcomeBonus} perBaht={settings.pointsPerBaht} birthdayBonus={settings.birthdayBonus} />
       <PosForm memberTag={settings.pos.memberTag} skus={settings.pos.pointExcludedSkus} categories={settings.pos.pointExcludedCategories} />
       <NotificationsForm values={settings.notifications} />
     </div>

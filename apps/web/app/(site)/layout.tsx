@@ -33,6 +33,19 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
 
       <main id="main">{children}</main>
 
+      {/* CVI band: the white logo on the green box, and the Let's Golf tagline. */}
+      <section className="brand-band" aria-label="MST Golf">
+        <div className="wrap brand-band-row">
+          {/* eslint-disable-next-line @next/next/no-img-element -- the CVI logo, shown in its white "green box" version */}
+          <img src="/mst-logo.png" alt="MST Golf" className="logo-white" width={161} height={30} />
+          <div className="brand-band-tag">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/lets-golf-white.png" alt="Let's Golf" width={112} height={86} />
+            <p lang="en">Let&rsquo;s belong. Let&rsquo;s improve. Let&rsquo;s enjoy every moment.</p>
+          </div>
+        </div>
+      </section>
+
       {/* Ft4 dense colophon: everything a visitor needs to find the store, set small. */}
       <footer className="site-footer colophon">
         <div className="wrap">

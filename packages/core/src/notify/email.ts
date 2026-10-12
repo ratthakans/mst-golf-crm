@@ -114,7 +114,7 @@ export function renderRedemptionEmail(p: RedemptionRequestPayload, backofficeUrl
     .join("")}</table>
 <p style="margin-top:18px"><b>Required actions</b></p>
 <ol>${steps.map((s) => `<li>${esc(s)}</li>`).join("")}</ol>
-${link ? `<p><a href="${esc(link)}" style="display:inline-block;background:#0a5c36;color:#fff;padding:10px 16px;border-radius:6px;text-decoration:none">Open the case</a></p>` : "<p>Open the case in the back office › Rewards.</p>"}
+${link ? `<p><a href="${esc(link)}" style="display:inline-block;background:#00854D;color:#fff;padding:10px 16px;border-radius:6px;text-decoration:none">Open the case</a></p>` : "<p>Open the case in the back office › Rewards.</p>"}
 <p style="color:#666;font-size:12px">Customer details are kept in the secure back-office record, not in this email.</p>
 </body></html>`;
   return { subject, text, html };

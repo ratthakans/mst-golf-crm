@@ -1,8 +1,8 @@
 :root {
-  --brand: #0a5c36;
-  --brand-2: #16a34a;
-  --brand-dark: #0b3d29;
-  --brand-tint: #eaf4ee;
+  --brand: #00854d; /* MST Golf CVI green (#00A35F) in the shade that keeps white text readable */
+  --brand-2: #00a35f;
+  --brand-dark: #005a33;
+  --brand-tint: #e6f6ee;
   --bg: #f3f6f4;
   --surface: #ffffff;
   --text: #14201b;
@@ -31,9 +31,9 @@
 
 /* ── Dark mode ──────────────────────────────────────────────────────────── */
 [data-theme="dark"] {
-  --brand: #22a866;
+  --brand: #1fb873;
   --brand-2: #34d17f;
-  --brand-dark: #0b3d29;
+  --brand-dark: #005a33;
   --brand-tint: #17281f;
   --bg: #0d1411;
   --surface: #161f1a;

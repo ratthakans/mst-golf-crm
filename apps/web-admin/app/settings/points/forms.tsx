@@ -10,20 +10,21 @@ function toPair(perBaht: number): { baht: string; pts: string } {
   return { baht: String(Number((1 / perBaht).toFixed(2))), pts: "1" };
 }
 
-export function PointsForm({ welcomeBonus, perBaht }: { welcomeBonus: number; perBaht: number }) {
-  const [f, setF] = useState({ welcomeBonus: String(welcomeBonus), ...toPair(perBaht) });
+export function PointsForm({ welcomeBonus, perBaht, birthdayBonus }: { welcomeBonus: number; perBaht: number; birthdayBonus: number }) {
+  const [f, setF] = useState({ welcomeBonus: String(welcomeBonus), birthdayBonus: String(birthdayBonus), ...toPair(perBaht) });
   const s = useSave("points");
   const rate = Number(f.pts) / Number(f.baht);
   const ok = Number.isFinite(rate) && rate > 0;
   const example = ok ? Math.floor(2500 * rate + 1e-9) : 0;
   const welcomeBaht = ok ? Math.round(Number(f.welcomeBonus) / rate) : 0;
   return (
-    <form className="card" onSubmit={(e) => { e.preventDefault(); void s.save({ welcomeBonus: f.welcomeBonus, perBaht: rate }); }}>
+    <form className="card" onSubmit={(e) => { e.preventDefault(); void s.save({ welcomeBonus: f.welcomeBonus, birthdayBonus: f.birthdayBonus || 0, perBaht: rate }); }}>
       <h3>แต้ม</h3>
       <div className="form-grid">
         <label className="field"><span>ยอดซื้อทุก (บาท)</span><input inputMode="decimal" value={f.baht} onChange={(e) => setF({ ...f, baht: e.target.value })} /></label>
         <label className="field"><span>ได้แต้มฐาน <span className="hint">— คูณอัตราของระดับอีกครั้ง</span></span><input inputMode="decimal" value={f.pts} onChange={(e) => setF({ ...f, pts: e.target.value })} /></label>
         <label className="field"><span>แต้มต้อนรับสมาชิกใหม่</span><input inputMode="numeric" value={f.welcomeBonus} onChange={(e) => setF({ ...f, welcomeBonus: e.target.value })} /></label>
+        <label className="field"><span>โบนัสวันเกิด <span className="hint">— จ่ายต้นเดือนเกิด ปีละครั้ง · 0 = ไม่มี</span></span><input inputMode="numeric" value={f.birthdayBonus} onChange={(e) => setF({ ...f, birthdayBonus: e.target.value })} /></label>
       </div>
       {ok && (
         <p className="muted small">
@@ -66,6 +67,7 @@ const NOTIFICATIONS: Array<{ key: string; label: string; desc: string }> = [
   { key: "BOOKING_CANCELLED", label: "ยกเลิกการจอง", desc: "เมื่อลูกค้าหรือพนักงานยกเลิก" },
   { key: "BOOKING_MOVED", label: "ย้ายเวลาการจอง", desc: "เมื่อพนักงานย้ายเวลาหรือ lane" },
   { key: "REDEMPTION_RECEIVED", label: "ได้รับคูปอง / รับคำขอแลกรางวัล", desc: "ทันทีที่สมาชิกแลก — คูปองพร้อมรหัส หรือ Redemption ID ของคำขอ" },
+  { key: "BIRTHDAY", label: "สิทธิ์เดือนเกิด", desc: "ต้นเดือนเกิด ปีละครั้ง — แต้มคูณของระดับ และโบนัสวันเกิดถ้าตั้งไว้" },
   { key: "REDEMPTION_STATUS", label: "อัปเดตสถานะการแลกรางวัล", desc: "อนุมัติ จัดส่ง เสร็จสิ้น ไม่อนุมัติ (พร้อมคืนแต้ม) และเมื่อคูปองถูกใช้" },
 ];
 

@@ -1,84 +1,85 @@
 # Design — MST Golf website
 
-The locked design system for `apps/web`: the public site and the customer pages (member card, booking). Every page change reads this file first. Extend or amend it here; don't override it per page. The back office (`apps/web-admin`) has its own UI and is not covered.
+The locked design system for `apps/web`: the public site and the customer pages (member card, booking, rewards, inbox). Every page change reads this file first. Extend or amend it here; don't override it per page.
 
-## Genre
-editorial: a golf club's yardage book. It is printed matter (card stock, ink, hairlines), not an app skin.
+**Source of the brand:** *MST Golf Corporate Visual Identity & Brand Guideline* (MST Golf Group, last updated 23 Oct 2025). Colour, type and logo rules below come from it. Questions about the brand go to MST's Design & Content team, not to us.
 
-## Macrostructure family
-- **Marketing pages** (`/`, `/services`, `/golf-simulator`): **Map / Diagram**.
+The back office (`apps/web-admin`) keeps its own UI. It only takes the CVI accent colour.
+
+## Genre and layout
+- **Genre:** editorial, a golf club's yardage book, now set in the CVI's clean sans-serif on white.
+- **Marketing pages** (`/`, `/services`, `/golf-simulator`, `/rewards`, `/promotions`): Map / Diagram.
   - The home page is organised around one drawing: the store drawn as a golf hole, with the four services as numbered stops along the ball-flight line.
-  - The other sections read like pages of the same book: a scorecard of today's lanes, a tier sheet, notes.
-  - Services: one "book page" per stop, always on the same rail. No left/right zigzag.
-- **Content pages** (`/blog`, `/blog/[slug]`, `/terms`, `/privacy`): typography only, one measured column.
-- **App pages** (`/app/member`, `/app/booking`): function first. They share tokens, type and buttons; no enrichment.
+  - The other sections read like pages of the same book: a scorecard of today's lanes, a tier sheet, offers, notes.
+- **Content pages** (`/blog`, `/blog/[slug]`, `/contact`, `/terms`, `/privacy`): typography first, one measured column (contact: facts + form).
+- **App pages** (`/app/*`): function first. They share tokens, type and buttons; no enrichment.
 
-## Theme (custom, brand-locked)
+## Colour (CVI)
 | Token | Value | Role |
 |---|---|---|
-| `--color-paper` | `oklch(97.4% 0.010 100)` | card-stock page |
-| `--color-paper-2` | `oklch(95.2% 0.013 104)` | scorecard band, colophon |
-| `--color-surface` | `oklch(99.2% 0.004 100)` | table cells, inputs |
-| `--color-ink` | `oklch(23% 0.020 167)` | text, rules under headings |
-| `--color-ink-2` | `oklch(33.3% 0.023 165)` | secondary text |
-| `--color-muted` | `oklch(49.3% 0.024 165)` | captions |
-| `--color-line` / `-strong` | `oklch(89.5% 0.012 130)` / `oklch(80% 0.016 150)` | hairlines |
-| `--color-brand` | `oklch(41.9% 0.097 156)` | MST green, from the logo. Buttons, the flag, the "your slot" mark. Under 5 % of any viewport. |
-| `--color-grass` / `--color-grass-2` / `--color-sand-trap` | `oklch(86% 0.050 150)` / `oklch(78% 0.070 150)` / `oklch(90% 0.040 88)` | the drawing only |
-| `--color-focus` | `oklch(51.5% 0.110 157)` | focus ring |
+| `--color-brand-bright` | `#00A35F` | **The CVI green.** The green band in the footer, the logo box, the flag, the "Let's Golf" mark, large marks. Never carries small text. White on it is only 3.3:1. |
+| `--color-brand` | `#00854D` | The same green, one step deeper. Buttons, links and green text, because white on it reaches 4.7:1. |
+| `--color-brand-hover` / `-deep` / `-deeper` | `#00703F` / `#005A33` / `#004428` | Hover, pressed, QR ink |
+| `--color-paper` / `--color-surface` | `#FFFFFF` | Pages are white, as in the guideline |
+| `--color-paper-2` | `oklch(97.2% 0.008 156)` | Bands (scorecard, colophon). A breath of green, not cream |
+| `--color-ink` / `-ink-2` / `-muted` | `oklch(22% 0.012 160)` / `oklch(34% …)` / `oklch(47% …)` | Text |
+| `--color-line` / `-strong` | `oklch(91% 0.006 156)` / `oklch(82% 0.010 156)` | Hairlines |
+| `--color-grass` / `-grass-2` / `--color-sand-trap` | | The drawing only |
 
-The LINE green (`--color-line-green`), the white QR paper and the tier-card gradients on the member card stay as they are. They belong to LINE and to the member card.
+These stay as they are:
+- the tier-card metals (Silver, Gold);
+- the white QR paper;
+- the LINE green, which only appears when LINE is switched on.
 
-## Typography
-- **Display:** Trirong 300 for headings; 600 for the second headline line, stop names and tier names. Roman only, never italic. Self-hosted in `public/fonts` (Thai + Latin subsets).
-- **Body:** Anuphan 400/500/600.
-- **Numerals:** IBM Plex Mono 500, in two registers only: (1) the numbered stop markers, (2) numbers inside tables (scorecard hours, tier sheet, prices). Phone numbers, dates and counts in running text use Anuphan with `tabular-nums`.
-- **Scale:** `--text-display` = `clamp(2.25rem, 1.3rem + 4vw, 4.25rem)`. Section heads use `--text-3xl`.
+The Member card is drawn in the CVI green.
+
+## Typography (CVI)
+- **Titles:** Montserrat.
+  - Weights: 800 for the hero, 700 for section and page titles, 600 for labels.
+  - Montserrat has no Thai glyphs, so Thai text in titles falls through to **Kanit** at the same weight. This pairing is ours; the guideline doesn't cover Thai.
+- **Body:** Lato 400/700, with Thai falling through to **Anuphan**.
+- **Numerals in tables and markers:** Montserrat 600 with `tabular-nums` (the `.mono` class).
+- **Loading:** Montserrat, Lato and Kanit through `next/font/google` (self-hosted at build). Anuphan is in `public/fonts`.
+
+## Logo and tagline (CVI)
+- **Logo:** `public/mst-logo.png`, the horizontal logo.
+  - On white: as is.
+  - On the CVI green: white, as the guideline's "green box backing" version (the `.logo-white` class).
+  - Never on any other green. Never outlined, stretched, rotated or recoloured.
+- **Clear space:** ½ M around the logo, M being the height of its "M".
+- **Tagline:** "Let's Golf", the script lockup.
+  - Files: `public/lets-golf.png` (green) and `-white.png`, taken from the guideline.
+  - Replace them with the vector files when D&C sends them.
+  - The manifesto line "Let's belong. Let's improve. Let's enjoy every moment." stays in English.
+- **Favicon:** the Swing Arc in white on a `#00A35F` square.
 
 ## Spacing
-The 4 pt scale in `globals.css` (`--space-1` … `--space-24`). Sections are split by a hairline or a colour shift, never by whitespace alone. The hero's bottom padding is at least 1.3× its top.
+- Use the 4 pt scale in `globals.css` (`--space-1` … `--space-24`).
+- Split sections with a hairline or a colour shift, never with whitespace alone.
 
 ## Components
-- **Nav (N9 edge-aligned):** wordmark left, then "จองซิม" (outline) and the account chip on the right. No link row. The home drawing and the footer carry the rest of the navigation.
-- **Footer (Ft4 dense colophon):** store name, address, hours, phone, map and LINE links, then every page link in one line separated by " · ". Double rule on top.
+- **Header (N9 edge-aligned):** logo left; "จองซิม" (outline) and the account button on the right.
+- **Footer:**
+  - A full-width `#00A35F` band holds the white logo, "Let's Golf" and the manifesto line.
+  - Below it sits the Ft4 colophon: store, address, hours, phone, map, online shop, then every page link in one line.
 - **Tables** are sheets, not cards: a 1 px ink rule on top, hairlines between rows, no fill, no radius.
 - **Buttons:** `--radius-btn: 6px`.
-  - Primary: solid MST green.
-  - Secondary: `.btn-outline` (ink hairline).
-  - Tertiary: `.text-link` (underlined, weight 600).
-  - LINE actions keep `.btn-line`.
+  - Primary: solid `--color-brand`.
+  - Secondary: `.btn-outline`.
+  - Tertiary: `.text-link`.
   - No pill buttons, no dark CTA bands.
-- **Photos:** framed only by radius, never by a coloured mat. Until MST uploads real photos (back office › เว็บไซต์ › เนื้อหาหน้าเว็บ) they are AI mockups, and the site must not go live with them.
+- **Photos:**
+  - Framed only by radius.
+  - The CVI's own style is black-and-white photography with the green Swing Arc over it. Use it for MST's real photos when they arrive.
+  - Until then the site shows AI mockups and must not go live with them.
 
 ## Motion
-Quiet. Colour transitions on hover (`--dur-fast`, `--ease-out`). No scroll reveals. `prefers-reduced-motion` needs nothing extra, because nothing moves.
+Quiet. Colour transitions on hover only; nothing scrolls in.
 
 ## Copy
-- Every number comes from settings or live data: prices, tiers, days ahead, today's free slots. Never write a number into the page.
-- Section heads are plain Thai statements. No "01 ·" eyebrows.
+- Every number comes from settings or live data: prices, tiers, earn rate, days ahead, today's free slots, rewards.
+- Section heads are plain Thai statements.
+- Membership is by mobile number and an SMS code. No page may promise LINE unless `settings.features.line` is on.
 
 ## Exports
-
-### tokens.css
-```css
-:root {
-  --color-paper: oklch(97.4% 0.010 100);
-  --color-paper-2: oklch(95.2% 0.013 104);
-  --color-surface: oklch(99.2% 0.004 100);
-  --color-ink: oklch(23% 0.020 167);
-  --color-ink-2: oklch(33.3% 0.023 165);
-  --color-muted: oklch(49.3% 0.024 165);
-  --color-line: oklch(89.5% 0.012 130);
-  --color-line-strong: oklch(80% 0.016 150);
-  --color-brand: oklch(41.9% 0.097 156);
-  --color-brand-deep: oklch(32.2% 0.063 162);
-  --color-tint: oklch(95.8% 0.013 160);
-  --color-focus: oklch(51.5% 0.110 157);
-  --font-display: "Trirong", "Noto Serif Thai", Georgia, serif;
-  --font-body: "Anuphan", "Noto Sans Thai", system-ui, sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
-  --radius-btn: 6px;
-  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
-}
-```
-The full set, including the spacing and text scales, lives in `apps/web/app/globals.css` `:root`.
+The tokens live in `apps/web/app/globals.css` `:root`.

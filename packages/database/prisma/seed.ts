@@ -19,7 +19,7 @@ const prisma = new PrismaClient({ datasourceUrl: databaseUrl() });
 async function main() {
   const defaults: OrgSettings = {
     productName: "MST Golf Platform",
-    brandColor: "#0a5c36",
+    brandColor: "#00854D", // CVI green #00A35F, the shade that keeps white text readable (4.7:1)
     locale: "th",
     currency: "THB",
     timezone: "Asia/Bangkok",
@@ -36,6 +36,8 @@ async function main() {
       referral: false,
       events: false,
       coupons: false,
+      rewards: true,
+      line: false, // members sign in on the website with an SMS code until LINE is switched on
     },
     messaging: {
       welcome: "ยินดีต้อนรับสู่ MST Golf",
@@ -59,6 +61,9 @@ async function main() {
       BOOKING_REMINDER: true,
       BOOKING_CANCELLED: true,
       BOOKING_MOVED: true,
+      REDEMPTION_RECEIVED: true,
+      REDEMPTION_STATUS: true,
+      BIRTHDAY: true,
     },
     pos: { memberTag: "MSTMEMBER", pointExcludedSkus: [], pointExcludedCategories: [] },
     site: { address: "ชาญอิสสระ ทาวเวอร์ 1 ถนนพระราม 4 กรุงเทพฯ" },
@@ -70,7 +75,10 @@ async function main() {
   const merged: OrgSettings = {
     ...defaults,
     ...current,
-    points: current.points && current.points.perBaht >= 0.5 ? current.points : defaults.points,
+    // Only the pre-v2 rule (exactly 0.01/baht) is replaced — ฿500 = 1 point (0.002) is a real setting.
+    points: current.points && current.points.perBaht > 0 && current.points.perBaht !== 0.01 ? current.points : defaults.points,
+    // The pre-CVI green becomes the CVI green; a colour MST picked themselves stays.
+    brandColor: !current.brandColor || current.brandColor === "#0a5c36" ? defaults.brandColor : current.brandColor,
     features: { ...defaults.features, ...(current.features ?? {}) },
     booking: { ...defaults.booking!, ...(current.booking ?? {}) },
     notifications: { ...defaults.notifications!, ...(current.notifications ?? {}) },

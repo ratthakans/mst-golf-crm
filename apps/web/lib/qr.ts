@@ -6,7 +6,7 @@ export async function qrDataUrl(text: string): Promise<string> {
     type: "svg",
     errorCorrectionLevel: "M",
     margin: 2,
-    color: { dark: "#0b3d29", light: "#ffffff" },
+    color: { dark: "#004428", light: "#ffffff" },
   });
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }

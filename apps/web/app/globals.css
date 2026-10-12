@@ -1,28 +1,28 @@
-/* Hallmark · pre-emit critique: P5 H4 E4 S5 R4 V5 */
-/* Hallmark · genre: editorial · macrostructure: Map / Diagram ("yardage book") · design-system: design.md · designed-as-app
- * theme: custom (vibe: "golf club yardage book, card stock and ink") · paper oklch(97.4% 0.010 100) · accent oklch(41.9% 0.097 156) MST green
- * display: Trirong 300/600 · body: Anuphan · numerals: IBM Plex Mono 500 · nav: N9 edge-aligned · footer: Ft4 dense colophon
- * enrichment: E5 hand-built SVG (store as a golf hole) · axes: light / high-contrast-serif / chromatic-green
- * previous: Clubhouse Ledger (sticky masthead, Anuphan only) — superseded 2026-09-27
+/* MST Golf Corporate Visual Identity (Brand Guideline, Oct 2025) on the yardage-book layout.
+ * brand green #00A35F for surfaces and large marks · #00854D wherever text sits on or is green (4.7:1 on white)
+ * titles: Montserrat 700–900 (+ Kanit for Thai) · body: Lato (+ Anuphan for Thai) · numerals: Montserrat tabular
+ * logo on white or in a #00A35F box, never on another green · tagline "Let's Golf"
+ * layout: Map / Diagram ("yardage book") · nav N9 edge-aligned · footer: green band + Ft4 colophon
  */
 
 :root {
   /* colour */
-  --color-paper: oklch(97.4% 0.010 100); /* card stock */
-  --color-paper-2: oklch(95.2% 0.013 104);
-  --color-surface: oklch(99.2% 0.004 100);
-  --color-ink: oklch(23% 0.020 167);
-  --color-ink-2: oklch(33.3% 0.023 165);
-  --color-muted: oklch(49.3% 0.024 165);
-  --color-faint: oklch(62% 0.020 166);
-  --color-line: oklch(89.5% 0.012 130);
-  --color-line-strong: oklch(80% 0.016 150);
-  --color-brand: oklch(41.9% 0.097 156); /* MST green, from the logo */
-  --color-brand-hover: oklch(37.2% 0.083 157);
-  --color-brand-deep: oklch(32.2% 0.063 162);
-  --color-brand-deeper: oklch(26.3% 0.049 163);
-  --color-tint: oklch(95.8% 0.013 160);
-  --color-tint-2: oklch(92% 0.025 161);
+  --color-paper: #ffffff;
+  --color-paper-2: oklch(97.2% 0.008 156); /* a breath of green, for bands */
+  --color-surface: #ffffff;
+  --color-ink: oklch(22% 0.012 160);
+  --color-ink-2: oklch(34% 0.012 160);
+  --color-muted: oklch(47% 0.012 160);
+  --color-faint: oklch(62% 0.010 160);
+  --color-line: oklch(91% 0.006 156);
+  --color-line-strong: oklch(82% 0.010 156);
+  --color-brand-bright: #00a35f; /* CVI green — surfaces, the logo box, large marks */
+  --color-brand: #00854d; /* CVI green for text and buttons (white on it 4.7:1) */
+  --color-brand-hover: #00703f;
+  --color-brand-deep: #005a33;
+  --color-brand-deeper: #004428;
+  --color-tint: oklch(96.5% 0.025 156);
+  --color-tint-2: oklch(92.5% 0.050 156);
   --color-on-brand: oklch(97.9% 0.008 157);
   --color-on-brand-muted: oklch(84.5% 0.036 160);
   --color-sand: oklch(92.7% 0.028 87);
@@ -33,14 +33,14 @@
   --color-danger-tint: #fdeeec;
   --color-warn: #7a5200;
   --color-warn-tint: #fff4d6;
-  --color-focus: oklch(51.5% 0.110 157);
+  --color-focus: #00a35f;
   --color-qr-paper: #ffffff;
-  --color-scrim: rgba(8, 22, 16, 0.55);
+  --color-scrim: rgba(0, 40, 22, 0.55);
 
   /* tiers */
-  --tier-member-bg: linear-gradient(135deg, #0e6a40 0%, #0b3d29 100%);
-  --tier-member-ink: #f4faf6;
-  --tier-member-sub: #b9d4c4;
+  --tier-member-bg: linear-gradient(135deg, #00a35f 0%, #00703f 100%);
+  --tier-member-ink: #ffffff;
+  --tier-member-sub: #d6f2e4;
   --tier-silver-bg: linear-gradient(135deg, #f1f3f4 0%, #c9d0d5 55%, #aeb7be 100%);
   --tier-silver-ink: #1d262b;
   --tier-silver-sub: #4b575e;
@@ -49,11 +49,11 @@
   --tier-gold-sub: #5e4a17;
 
   /* type */
-  --font-body: "Anuphan", "Noto Sans Thai", "Sukhumvit Set", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-display: "Trirong", "Noto Serif Thai", Georgia, serif; /* headings only, roman */
-  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace; /* prices, times, lane numbers */
-  --color-grass: oklch(86% 0.050 150); /* yardage-map fairway */
-  --color-grass-2: oklch(78% 0.070 150); /* yardage-map green */
+  --font-body: var(--ff-lato, "Lato"), "Anuphan", "Noto Sans Thai", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: var(--ff-montserrat, "Montserrat"), var(--ff-kanit, "Kanit"), "Noto Sans Thai", system-ui, sans-serif; /* titles */
+  --font-mono: var(--ff-montserrat, "Montserrat"), "Anuphan", system-ui, sans-serif; /* numerals: prices, times, lane numbers (tabular) */
+  --color-grass: oklch(90% 0.060 156); /* yardage-map fairway */
+  --color-grass-2: oklch(80% 0.110 156); /* yardage-map green */
   --color-sand-trap: oklch(90% 0.040 88);
   --text-xs: 0.8125rem;
   --text-sm: 0.875rem;
@@ -86,8 +86,8 @@
   --radius-btn: 6px; /* buttons: squared, like a printed tab */
   --rule: 1px solid var(--color-line);
 
-  --shadow-card: 0 1px 2px rgba(11, 61, 41, 0.06), 0 8px 24px -12px rgba(11, 61, 41, 0.18);
-  --shadow-float: 0 12px 40px -12px rgba(11, 61, 41, 0.35);
+  --shadow-card: 0 1px 2px rgba(0, 68, 40, 0.06), 0 8px 24px -12px rgba(0, 68, 40, 0.18);
+  --shadow-float: 0 12px 40px -12px rgba(0, 68, 40, 0.35);
 
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-in: cubic-bezier(0.55, 0, 1, 0.45);
@@ -154,8 +154,8 @@ h4 {
 h1,
 h2 {
   font-family: var(--font-display);
-  font-weight: 300;
-  letter-spacing: -0.005em;
+  font-weight: 700;
+  letter-spacing: -0.01em;
   line-height: 1.2;
 }
 h3 {
@@ -187,7 +187,7 @@ textarea {
 }
 .mono {
   font-family: var(--font-mono);
-  font-weight: 500;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0;
 }

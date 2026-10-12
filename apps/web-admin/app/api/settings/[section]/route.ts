@@ -32,7 +32,7 @@ export async function PUT(req: Request, { params }: { params: { section: string 
         await saveTiers(org.id, actor, b.tiers as TierSettings[]);
         break;
       case "points":
-        await savePointRules(org.id, actor, { welcomeBonus: Number(b.welcomeBonus), perBaht: Number(b.perBaht) });
+        await savePointRules(org.id, actor, { welcomeBonus: Number(b.welcomeBonus), perBaht: Number(b.perBaht), birthdayBonus: b.birthdayBonus === undefined ? undefined : Number(b.birthdayBonus) });
         break;
       case "rewards":
         await saveRedemptionSettings(org.id, actor, { alertEmails: b.alertEmails, backofficeUrl: new URL(req.url).origin }); // the email links back to wherever this was saved

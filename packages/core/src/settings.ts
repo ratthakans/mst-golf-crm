@@ -67,7 +67,7 @@ export function resolveSettings(raw: unknown): ResolvedSettings {
   const s = (raw && typeof raw === "object" ? raw : {}) as Partial<OrgSettings>;
   return {
     productName: s.productName ?? "MST Golf Platform",
-    brandColor: s.brandColor ?? "#0a5c36",
+    brandColor: !s.brandColor || s.brandColor === "#0a5c36" ? "#00854D" : s.brandColor, // CVI green (text-safe shade)
     currency: s.currency ?? "THB",
     timezone: s.timezone ?? "Asia/Bangkok",
     pointsPerBaht: s.points?.perBaht && s.points.perBaht > 0 ? s.points.perBaht : 1,

@@ -31,7 +31,7 @@ function Delta({ now, before }: { now: number; before: number }) {
   return <span className={`delta ${d > 0 ? "up" : "down"}`}>{d > 0 ? "▲" : "▼"} {Math.abs(d * 100).toFixed(0)}%</span>;
 }
 
-const SRC_COLORS: Record<string, string> = { LINE: "#06c755", WEB: "#2563eb", COUNTER: "#0a5c36", POS: "#a16207", IMPORT: "#94a3b8", WALKIN: "#0a5c36", PHONE: "#7c3aed" };
+const SRC_COLORS: Record<string, string> = { LINE: "#06c755", WEB: "#2563eb", COUNTER: "#00854d", POS: "#a16207", IMPORT: "#94a3b8", WALKIN: "#00854d", PHONE: "#7c3aed" };
 
 function SourceSplit({ counts }: { counts: Record<string, number> }) {
   const entries = Object.entries(counts).filter(([, n]) => n > 0);

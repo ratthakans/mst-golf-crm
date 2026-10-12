@@ -375,7 +375,7 @@ function CouponSheet({ coupon, onClose }: { coupon: RedemptionRow; onClose: () =
     if (!live || !coupon.couponCode) return;
     let alive = true;
     void import("qrcode").then((QR) =>
-      QR.toString(coupon.couponCode!, { type: "svg", errorCorrectionLevel: "M", margin: 2, color: { dark: "#0b3d29", light: "#ffffff" } }).then((svg) => {
+      QR.toString(coupon.couponCode!, { type: "svg", errorCorrectionLevel: "M", margin: 2, color: { dark: "#004428", light: "#ffffff" } }).then((svg) => {
         if (alive) setQr(`data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`);
       }),
     );

@@ -19,7 +19,7 @@ export function SignupLinkButton({ orgName, signupBonus, signupUrl }: { orgName:
 
   useEffect(() => {
     if (!open || !url || !canvas.current) return;
-    void QRCode.toCanvas(canvas.current, url, { width: 220, margin: 1, color: { dark: "#0b3d29", light: "#ffffff" } });
+    void QRCode.toCanvas(canvas.current, url, { width: 220, margin: 1, color: { dark: "#004428", light: "#ffffff" } });
   }, [open, url]);
 
   useEffect(() => {
@@ -44,7 +44,7 @@ export function SignupLinkButton({ orgName, signupBonus, signupUrl }: { orgName:
 
   async function downloadQr() {
     // Larger render for print; the on-screen canvas is sized for the dialog.
-    const dataUrl = await QRCode.toDataURL(url, { width: 1024, margin: 2, color: { dark: "#0b3d29", light: "#ffffff" } });
+    const dataUrl = await QRCode.toDataURL(url, { width: 1024, margin: 2, color: { dark: "#004428", light: "#ffffff" } });
     const a = document.createElement("a");
     a.href = dataUrl;
     a.download = "signup-qr.png";

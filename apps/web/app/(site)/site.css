@@ -466,11 +466,44 @@
 /* ------------------------------------------------------------------ footer */
 /* Ft4 dense colophon: the store's details and every link, set small in one block. */
 
-.site-footer.colophon {
+.brand-band {
   margin-top: var(--space-16);
+  background: var(--color-brand-bright);
+  color: #fff;
+}
+.brand-band-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-6);
+  padding-block: var(--space-8);
+}
+/* The logo in white on the CVI green box — the guideline's "green box backing" version. */
+.brand-band .logo-white {
+  height: 30px;
+  width: auto;
+  filter: brightness(0) invert(1);
+}
+.brand-band-tag {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+}
+.brand-band-tag img {
+  width: 112px;
+  height: auto;
+}
+.brand-band-tag p {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--text-md);
+  line-height: 1.5;
+  max-width: 18rem;
+}
+.site-footer.colophon {
   padding: var(--space-12) 0 var(--space-10);
   background: var(--color-paper-2);
-  border-top: 3px double var(--color-line-strong);
   color: var(--color-ink-2);
   font-size: var(--text-sm);
 }
@@ -567,11 +600,13 @@
 .hole-title {
   margin-top: var(--space-3);
   font-size: var(--text-display);
+  font-weight: 800;
   line-height: 1.12;
 }
 .hole-title-strong {
   display: block;
-  font-weight: 600;
+  font-weight: 800;
+  color: var(--color-brand);
 }
 .hole-lede {
   margin-top: var(--space-5);
