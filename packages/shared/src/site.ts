@@ -86,4 +86,6 @@ export const DEFAULT_HOME_COPY = {
   heroLede: (lanes: number) => `อุปกรณ์กอล์ฟ ฟิตติ้งไม้ให้เข้ากับวงสวิง คลาสกับโปร และ Golf Simulator ${lanes} lane — อยู่ในร้านเดียว ใจกลางถนนพระราม 4`,
   servicesTitle: "ครบตั้งแต่เลือกไม้ จนถึงวันออกรอบ",
   servicesLede: "สี่บริการที่ต่อกันเป็นเส้นเดียว ลองไม้บนซิม ฟิตติ้งให้เข้ากับวงสวิง แล้วซ้อมต่อกับโปรได้ในที่เดียว",
+  // Placeholder from the MST Golf group's line-up — MST Thailand confirms what this store carries.
+  brands: ["TaylorMade", "Callaway", "Titleist", "PING", "Cobra", "Mizuno", "Srixon", "Honma", "FootJoy", "G/FORE", "Sun Day Red", "adidas", "PUMA", "Under Armour"].join("\n"),
 };

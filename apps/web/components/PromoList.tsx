@@ -15,7 +15,9 @@ export function PromoList({ promos }: { promos: PromoItem[] }) {
               <img className="promo-cover" src={p.coverUrl} alt="" loading="lazy" width={480} height={270} />
             )}
             <div className="promo-text">
-              <h3 className="promo-title">{p.title}</h3>
+              <h3 className="promo-title">
+                <Link href={`/promotions/${p.slug}`}>{p.title}</Link>
+              </h3>
               {p.excerpt && <p className="promo-excerpt">{p.excerpt}</p>}
               <p className="promo-until">{p.endsAt ? `ถึง ${formatThaiDate(new Date(p.endsAt))}` : "ระยะเวลาจำกัด"}</p>
               <div className="promo-actions">
@@ -29,11 +31,9 @@ export function PromoList({ promos }: { promos: PromoItem[] }) {
                       {p.linkLabel || "ดูรายละเอียด"}
                     </Link>
                   ))}
-                {p.hasBody && (
-                  <Link href={`/blog/${p.slug}`} className="text-link">
-                    เงื่อนไข
-                  </Link>
-                )}
+                <Link href={`/promotions/${p.slug}`} className="text-link">
+                  {p.hasBody ? "รายละเอียดและเงื่อนไข" : "ดูโปรโมชัน"}
+                </Link>
               </div>
             </div>
           </li>

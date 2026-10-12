@@ -29,5 +29,6 @@ export function homeCopy(copy: SiteCopy | undefined, lanes: number) {
     heroLede: copy?.heroLede || HOME_COPY.heroLede(lanes),
     servicesTitle: copy?.servicesTitle || HOME_COPY.servicesTitle,
     servicesLede: copy?.servicesLede || HOME_COPY.servicesLede,
+    brands: (copy?.brands || HOME_COPY.brands).split(/\n|,/).map((b) => b.trim()).filter(Boolean),
   };
 }

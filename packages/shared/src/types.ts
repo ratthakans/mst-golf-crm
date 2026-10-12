@@ -216,6 +216,7 @@ export interface SiteCopy {
   heroLede?: string;
   servicesTitle?: string;
   servicesLede?: string;
+  brands?: string; // brands sold in the store, one per line — the home page brand strip
   services?: Partial<Record<SiteServiceSlug, SiteServiceCopy>>;
 }
 

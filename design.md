@@ -7,10 +7,18 @@ The locked design system for `apps/web`: the public site and the customer pages 
 The back office (`apps/web-admin`) keeps its own UI. It only takes the CVI accent colour.
 
 ## Genre and layout
-- **Genre:** editorial, a golf club's yardage book, now set in the CVI's clean sans-serif on white.
-- **Marketing pages** (`/`, `/services`, `/golf-simulator`, `/rewards`, `/promotions`): Map / Diagram.
-  - The home page is organised around one drawing: the store drawn as a golf hole, with the four services as numbered stops along the ball-flight line.
-  - The other sections read like pages of the same book: a scorecard of today's lanes, a tier sheet, offers, notes.
+- **Genre:** a golf shop's website, promotion-led (no e-commerce: visitors see offers, they don't buy online). Clean CVI sans-serif on white, photography first.
+- **Home (`/`), in order:**
+  1. A promotion bar.
+  2. A full-bleed hero carousel: every running promotion with a picture, then the store. Auto-advance 6 s, swipe, pause on hover/touch, none with reduced motion.
+  3. "โปรโมชันตอนนี้": a bento of one big card and up to four small ones; a sideways swipe on phones.
+  4. A brand marquee.
+  5. Four service cards. Simulator booking is one of them, with today's free slots.
+  6. The membership band.
+  7. Articles.
+  8. Visit.
+- **Header:** logo, page links (desktop) or a full-screen menu (phone), "จองซิม" and the account on the right.
+- **Other marketing pages** (`/services`, `/golf-simulator`, `/rewards`, `/promotions`, `/promotions/[slug]`) keep the yardage-book pieces: the hole drawing on Services, the lane scorecard, the tier sheet.
 - **Content pages** (`/blog`, `/blog/[slug]`, `/contact`, `/terms`, `/privacy`): typography first, one measured column (contact: facts + form).
 - **App pages** (`/app/*`): function first. They share tokens, type and buttons; no enrichment.
 
@@ -74,7 +82,7 @@ The Member card is drawn in the CVI green.
   - Until then the site shows AI mockups and must not go live with them.
 
 ## Motion
-Quiet. Colour transitions on hover only; nothing scrolls in.
+Allowed: the hero carousel (slow Ken-Burns zoom on the active slide plus a progress bar), image zoom on card hover, the brand marquee, sheet/menu fade-ins. Everything stops under `prefers-reduced-motion`. Nothing scrolls in.
 
 ## Copy
 - Every number comes from settings or live data: prices, tiers, earn rate, days ahead, today's free slots, rewards.

@@ -110,3 +110,18 @@ export const IconBell = (p: P) => (
     <path d="M6 16V11a6 6 0 1 1 12 0v5l1.5 2h-15L6 16zM10 20.5a2 2 0 0 0 4 0" />
   </Stroke>
 );
+export const IconMenu = (p: P) => (
+  <Stroke {...p}>
+    <path d="M4 7h16M4 12h16M4 17h16" />
+  </Stroke>
+);
+export const IconChevronLeft = (p: P) => (
+  <Stroke {...p}>
+    <path d="M15 5l-7 7 7 7" />
+  </Stroke>
+);
+export const IconChevronRight = (p: P) => (
+  <Stroke {...p}>
+    <path d="M9 5l7 7-7 7" />
+  </Stroke>
+);

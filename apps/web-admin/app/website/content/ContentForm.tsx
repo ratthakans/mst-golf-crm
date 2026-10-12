@@ -10,13 +10,14 @@ interface Copy {
   heroLede?: string;
   servicesTitle?: string;
   servicesLede?: string;
+  brands?: string;
   services?: Record<string, { short?: string; body?: string; points?: string } | undefined>;
 }
 interface Props {
   initial: { photos: Record<string, string | undefined>; copy: Copy };
   slots: Array<{ key: string; label: string; where: string; mock: string }>;
   services: Array<{ slug: string; name: string; thai: string; short: string; body: string; points: string }>;
-  defaults: { heroTitle: string; heroHighlight: string; heroLede: string; servicesTitle: string; servicesLede: string };
+  defaults: { heroTitle: string; heroHighlight: string; heroLede: string; servicesTitle: string; servicesLede: string; brands: string };
   origin: string | null;
   uploadsEnabled: boolean;
 }
@@ -127,6 +128,7 @@ export function ContentForm({ initial, slots, services, defaults, origin, upload
           {text("heroLede", "คำโปรยใต้หัวข้อ", true)}
           {text("servicesTitle", "หัวข้อส่วนบริการ")}
           {text("servicesLede", "คำโปรยส่วนบริการ", true)}
+          {text("brands", "แบรนด์ที่ขายในร้าน — บรรทัดละ 1 แบรนด์ (แถบแบรนด์บนหน้าแรก)", true)}
         </div>
       </div>
 

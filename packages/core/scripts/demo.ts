@@ -136,10 +136,10 @@ async function main() {
     coverUrl: "/mock/sim-bays.jpg",
   }).catch((e) => console.warn("post", (e as Error).message));
   await savePost(org.id, actor, null, {
-    title: "สมัครสมาชิก MST Golf ด้วย LINE",
+    title: "สมัครสมาชิก MST Golf ด้วยเบอร์มือถือ",
     slug: "join-mst-golf-membership",
     excerpt: "บัตรสมาชิกในมือถือ สะสมแต้มทุกการซื้อ และระดับ Silver / Gold จากยอดซื้อ 12 เดือน",
-    body: "สมัครได้ในไม่กี่ขั้นตอนผ่าน LINE แล้วแจ้งเบอร์โทรที่เคาน์เตอร์ทุกครั้งที่ซื้อสินค้าเพื่อสะสมแต้ม",
+    body: "สมัครบนเว็บไซต์ด้วยเบอร์มือถือในไม่กี่ขั้นตอน แล้วแจ้งเบอร์โทรที่เคาน์เตอร์ทุกครั้งที่ซื้อสินค้าเพื่อสะสมแต้ม",
     category: "NEWS",
     status: "PUBLISHED",
     coverUrl: "/mock/store.jpg",

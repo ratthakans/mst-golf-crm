@@ -173,6 +173,7 @@ export async function saveSiteContent(orgId: string, actor: Actor, input: SiteCo
     heroLede: clip(c.heroLede, 300),
     servicesTitle: clip(c.servicesTitle, 80),
     servicesLede: clip(c.servicesLede, 300),
+    brands: clip(c.brands, 1000),
     services,
   };
   const site: SiteSettings = { ...settings.site, photos, copy };

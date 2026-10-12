@@ -1,172 +1,218 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { availability, formatThaiDate, localDateKey } from "@mstgolf/core";
-import { Photo } from "@/components/Photo";
+import { availability, localDateKey } from "@mstgolf/core";
+import { earnRateText } from "@mstgolf/shared/tiers";
 import { PostList } from "@/components/PostList";
-import { SimScorecard } from "@/components/SimScorecard";
-import { TierTable } from "@/components/TierTable";
-import { YardageMap } from "@/components/YardageMap";
-import { sitePhotos } from "@/lib/images";
+import { PromoCarousel, type HeroSlide } from "@/components/PromoCarousel";
+import { Photo } from "@/components/Photo";
+import { servicePhotos, sitePhotos } from "@/lib/images";
 import { homeCopy, siteServices } from "@/lib/content";
-import { formatBaht, formatPoints, hoursLines, openingSpec } from "@/lib/format";
+import { formatBaht, formatPoints, formatThaiDate, hoursLines, openingSpec } from "@/lib/format";
 import { getLanes, getOrg, getStore, siteOrigin } from "@/lib/org";
-import { currentPromotions, publishedPosts } from "@/lib/posts";
-import { PromoList } from "@/components/PromoList";
+import { currentPromotions, publishedPosts, type PromoItem } from "@/lib/posts";
 
 export const revalidate = 300;
 
 export const metadata: Metadata = {
-  title: { absolute: "MST Golf — ร้านกอล์ฟ ฟิตติ้ง อคาเดมี และ Golf Simulator ชาญอิสสระ ทาวเวอร์ 1" },
+  title: { absolute: "MST Golf — ร้านกอล์ฟ โปรโมชัน ฟิตติ้ง อคาเดมี และ Golf Simulator ชาญอิสสระ ทาวเวอร์ 1" },
   description:
-    "Pro shop · Club fitting · Academy · Golf Simulator 3 lane ที่ชาญอิสสระ ทาวเวอร์ 1 ถนนพระราม 4 จองซิมกอล์ฟออนไลน์ สมัครสมาชิกด้วยเบอร์มือถือ สะสมแต้มทุกการซื้อ",
+    "ร้านอุปกรณ์กอล์ฟ MST Golf ชาญอิสสระ ทาวเวอร์ 1 ถนนพระราม 4 — โปรโมชันไม้กอล์ฟ รองเท้า เสื้อผ้า และอุปกรณ์ · Club fitting · Academy · Golf Simulator · สมัครสมาชิกสะสมแต้มทุกการซื้อ",
   alternates: { canonical: "/" },
-  openGraph: { title: "MST Golf", description: "ร้านกอล์ฟที่ให้คุณลองก่อนเลือก — Pro shop · Club fitting · Academy · Golf Simulator", url: "/" },
+  openGraph: { title: "MST Golf", description: "โปรโมชันล่าสุด ไม้กอล์ฟ อุปกรณ์ ฟิตติ้ง อคาเดมี และ Golf Simulator", url: "/" },
 };
 
+const daysLeft = (iso: string | null, now: Date): number | null => (iso ? Math.max(0, Math.ceil((new Date(iso).getTime() - now.getTime()) / 86_400_000)) : null);
+
+function promoHref(p: PromoItem): { href: string; external: boolean } {
+  if (p.linkUrl) return { href: p.linkUrl, external: /^https:\/\//.test(p.linkUrl) };
+  return { href: `/promotions/${p.slug}`, external: false };
+}
+
+// The home page of a golf shop: what's on offer now first, then the brands,
+// the services (simulator booking is one of them), membership, articles, and
+// how to find the store. Every promotion comes from the back office.
 export default async function HomePage() {
-  const [org, store, lanes, posts, origin, promos] = await Promise.all([getOrg(), getStore(), getLanes(), publishedPosts(3), siteOrigin(), currentPromotions(3)]);
+  const [org, store, lanes, posts, origin, promos] = await Promise.all([getOrg(), getStore(), getLanes(), publishedPosts(3), siteOrigin(), currentPromotions(9)]);
   const s = org.settings;
   const photos = sitePhotos(s.site);
+  const svcPhotos = servicePhotos(photos);
   const services = siteServices(s.site.copy);
   const copy = homeCopy(s.site.copy, lanes.length || 3);
   const address = s.site.address ?? store?.address ?? null;
   const hours = store ? hoursLines(store.openHours) : [];
   const prices = Array.from(new Set(lanes.map((l) => l.hourlyPriceSatang))).sort((x, y) => x - y);
-  const maxCap = lanes.reduce((m, l) => Math.max(m, l.capacity), 0);
-  const maxDaysAhead = Math.max(...s.tiers.map((t) => t.benefits.simBookingDaysAhead));
-  const minDaysAhead = Math.min(...s.tiers.map((t) => t.benefits.simBookingDaysAhead));
   const now = new Date();
   const today = s.features.booking && lanes.length ? await availability(org.id, localDateKey(now), now).catch(() => null) : null;
+  const freeToday = today?.open ? today.slots.reduce((n, sl) => n + sl.lanes.filter((l) => l.state === "free").length, 0) : null;
+
+  // Hero: every running promotion that has a picture, then the store itself.
+  const slides: HeroSlide[] = [
+    ...promos
+      .filter((p) => p.coverUrl)
+      .slice(0, 5)
+      .map((p) => {
+        const left = daysLeft(p.endsAt, now);
+        const cta = promoHref(p);
+        return {
+          key: p.slug,
+          image: p.coverUrl!,
+          eyebrow: left === null ? "โปรโมชัน" : left <= 7 ? `โปรโมชัน · เหลืออีก ${left} วัน` : `โปรโมชัน · ถึง ${formatThaiDate(new Date(p.endsAt!))}`,
+          title: p.title,
+          text: p.excerpt,
+          cta: { label: p.linkLabel || "ดูโปรโมชัน", ...cta },
+          more: p.linkUrl && p.hasBody ? { label: "เงื่อนไข", href: `/promotions/${p.slug}` } : null,
+        };
+      }),
+    {
+      key: "store",
+      image: photos.hero.src,
+      eyebrow: store?.name ?? org.name,
+      title: copy.heroHighlight ? `${copy.heroTitle} ${copy.heroHighlight}` : copy.heroTitle,
+      text: copy.heroLede,
+      cta: { label: "ดูโปรโมชันทั้งหมด", href: "/promotions", external: false },
+      more: { label: "บริการในร้าน", href: "/services" },
+    },
+  ];
 
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "LocalBusiness",
+    "@type": "SportingGoodsStore",
     name: org.name,
     url: origin,
     image: `${origin}/mst-logo.png`,
     ...(s.site.phone ? { telephone: s.site.phone } : {}),
-    ...(address
-      ? { address: { "@type": "PostalAddress", streetAddress: address, addressLocality: "กรุงเทพมหานคร", addressCountry: "TH" } }
-      : {}),
+    ...(address ? { address: { "@type": "PostalAddress", streetAddress: address, addressLocality: "กรุงเทพมหานคร", addressCountry: "TH" } } : {}),
     ...(store ? { openingHoursSpecification: openingSpec(store.openHours).map((o) => ({ "@type": "OpeningHoursSpecification", ...o })) } : {}),
     ...(s.site.mapsUrl ? { hasMap: s.site.mapsUrl } : {}),
     ...(s.site.shopUrl ? { sameAs: [s.site.shopUrl] } : {}),
   };
 
+  const [lead, ...rest] = promos;
+
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
+      <h1 className="visually-hidden">{org.name} — ร้านกอล์ฟ ชาญอิสสระ ทาวเวอร์ 1</h1>
 
-      <section className="hole" aria-labelledby="hero-h">
-        <div className="wrap hole-grid">
-          <div className="hole-copy">
-            <p className="hole-place">{store?.name ?? org.name}</p>
-            <h1 id="hero-h" className="hole-title">
-              {copy.heroTitle}
-              {copy.heroHighlight && (
-                <>
-                  {" "}
-                  <span className="hole-title-strong">{copy.heroHighlight}</span>
-                </>
-              )}
-            </h1>
-            <p className="hole-lede">{copy.heroLede}</p>
-            <div className="cta-row">
-              <Link href="/app/booking" className="btn btn-primary">
-                จองซิม
-              </Link>
-              <Link href="/app/member" className="btn btn-outline">
-                สมัครสมาชิก
-              </Link>
-            </div>
-          </div>
-          <YardageMap services={services} title={copy.servicesTitle} lede={copy.servicesLede} />
-        </div>
-      </section>
-
-      <section className="card-section" aria-labelledby="today-h">
-        <div className="wrap card-grid">
-          <div className="card-copy">
-            <h2 id="today-h">Golf Simulator วันนี้</h2>
-            <p>{services.find((x) => x.slug === "golf-simulator")?.short}</p>
-            <dl className="card-facts">
-              {prices.length > 0 && (
-                <div>
-                  <dt>ราคา</dt>
-                  <dd className="mono">{prices.map((p) => formatBaht(p)).join(" / ")} /ชม.</dd>
-                </div>
-              )}
-              {maxCap > 0 && (
-                <div>
-                  <dt>ต่อ lane</dt>
-                  <dd>
-                    สูงสุด {maxCap} คน ราคาเดียว
-                  </dd>
-                </div>
-              )}
-              <div>
-                <dt>จองล่วงหน้า</dt>
-                <dd>
-                  {minDaysAhead === maxDaysAhead ? minDaysAhead : `${minDaysAhead}–${maxDaysAhead}`} วัน ตามระดับสมาชิก
-                </dd>
-              </div>
-              <div>
-                <dt>ชำระเงิน</dt>
-                <dd>ที่ร้านตอนเช็กอิน</dd>
-              </div>
-            </dl>
-            <Link href="/golf-simulator" className="text-link">
-              ราคาหลังส่วนลดและกติกาการจอง
-            </Link>
-          </div>
-          {today ? <SimScorecard avail={today} dateLabel={formatThaiDate(now, { weekday: true, year: false })} /> : <Photo photo={photos.simBays} ratio="16 / 10" />}
-        </div>
-      </section>
-
-      <section className="ledger-section" aria-labelledby="tiers-h">
-        <div className="wrap ledger-grid">
-          <div className="ledger-copy">
-            <h2 id="tiers-h">สมาชิก MST Golf</h2>
-            <p>
-              สมัครฟรีด้วยเบอร์มือถือ รับ <b className="num">{formatPoints(s.welcomeBonus)}</b> แต้มต้อนรับ แล้วใช้บัตรในมือถือที่เคาน์เตอร์ได้ทันที
-              {s.features.rewards ? " · ใช้แต้มแลกคูปองและของรางวัล" : ""}
-            </p>
-            <div className="cta-row">
-              <Link href="/register" className="btn btn-primary">
-                สมัครสมาชิก
-              </Link>
-              <Link href="/rewards" className="text-link">
-                สิทธิ์และรางวัลทั้งหมด
-              </Link>
-            </div>
-          </div>
-          <TierTable tiers={s.tiers} pointsPerBaht={s.pointsPerBaht} />
-        </div>
-      </section>
+      <PromoCarousel slides={slides} />
 
       {promos.length > 0 && (
-        <section className="notes-section promo-section" aria-labelledby="promo-h">
+        <section className="home-section" aria-labelledby="deals-h">
           <div className="wrap">
-            <div className="notes-head">
-              <h2 id="promo-h">โปรโมชัน</h2>
+            <div className="section-head">
+              <h2 id="deals-h">โปรโมชันตอนนี้</h2>
               <Link href="/promotions" className="text-link">
-                ทั้งหมด
+                ดูทั้งหมด
               </Link>
             </div>
-            <PromoList promos={promos} />
+            <div className={`deal-grid deal-n${Math.min(rest.length, 4)}`}>
+              {[lead!, ...rest.slice(0, 4)].map((p, i) => {
+                const left = daysLeft(p.endsAt, now);
+                return (
+                  <Link key={p.slug} href={`/promotions/${p.slug}`} className={`deal${i === 0 ? " deal-lead" : ""}`}>
+                    <span className="deal-img">
+                      {p.coverUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element -- promotion covers come from MST's uploads
+                        <img src={p.coverUrl} alt="" loading="lazy" />
+                      ) : (
+                        <span className="deal-blank" aria-hidden="true" />
+                      )}
+                    </span>
+                    <span className="deal-body">
+                      {left !== null && <span className={`deal-badge${left <= 3 ? " soon" : ""}`}>{left === 0 ? "วันสุดท้าย" : `เหลือ ${left} วัน`}</span>}
+                      <span className="deal-title">{p.title}</span>
+                      {p.excerpt && <span className="deal-text">{p.excerpt}</span>}
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
           </div>
         </section>
       )}
 
-      <section className="notes-section" aria-labelledby="posts-h">
+      {copy.brands.length > 0 && (
+        <section className="brand-strip" aria-label="แบรนด์ในร้าน">
+          <div className="brand-marquee">
+            {[0, 1].map((k) => (
+              <ul key={k} className="brand-row" aria-hidden={k === 1}>
+                {copy.brands.map((b) => (
+                  <li key={b}>{b}</li>
+                ))}
+              </ul>
+            ))}
+          </div>
+        </section>
+      )}
+
+      <section className="home-section" aria-labelledby="svc-h">
         <div className="wrap">
-          <div className="notes-head">
-            <h2 id="posts-h">บทความ</h2>
+          <div className="section-head">
+            <h2 id="svc-h">{copy.servicesTitle}</h2>
+            <Link href="/services" className="text-link">
+              บริการทั้งหมด
+            </Link>
+          </div>
+          <p className="section-lede">{copy.servicesLede}</p>
+          <ul className="svc-grid">
+            {services.map((svc) => {
+              const sim = svc.slug === "golf-simulator";
+              return (
+                <li key={svc.slug} className={`svc-card${sim ? " svc-sim" : ""}`}>
+                  <Link href={sim ? "/golf-simulator" : `/services#${svc.slug}`} className="svc-link">
+                    <Photo photo={svcPhotos[svc.slug] ?? photos.proShop} ratio="4 / 5" sizes="(min-width: 900px) 25vw, 50vw" />
+                    <span className="svc-text">
+                      <span className="svc-name">{svc.name}</span>
+                      <span className="svc-thai">{svc.thai}</span>
+                    </span>
+                  </Link>
+                  {sim && (
+                    <p className="svc-sim-row">
+                      <span>
+                        {prices.length ? `${prices.map((p) => formatBaht(p)).join(" / ")} /ชม.` : ""}
+                        {freeToday !== null ? ` · วันนี้ว่าง ${freeToday} ช่อง` : ""}
+                      </span>
+                      <Link href="/app/booking" className="btn btn-primary btn-sm">
+                        จองซิม
+                      </Link>
+                    </p>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      </section>
+
+      <section className="member-band" aria-labelledby="member-h">
+        <div className="wrap member-band-grid">
+          <div>
+            <p className="member-band-eyebrow">สมาชิก MST Golf</p>
+            <h2 id="member-h">สมัครฟรี รับ {formatPoints(s.welcomeBonus)} แต้มทันที</h2>
+            <p>
+              สะสมแต้มทุกการซื้อ ({earnRateText(s.pointsPerBaht)}) · ส่วนลดตามระดับ {s.tiers.map((t) => t.name).join(" / ")} · แลกคูปองและของรางวัล · จองซิมออนไลน์
+            </p>
+          </div>
+          <div className="member-band-cta">
+            <Link href="/register" className="btn btn-light">
+              สมัครสมาชิก
+            </Link>
+            <Link href="/rewards" className="btn btn-ghost-light">
+              สิทธิ์และรางวัล
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <section className="home-section" aria-labelledby="posts-h">
+        <div className="wrap">
+          <div className="section-head">
+            <h2 id="posts-h">บทความและข่าว</h2>
             <Link href="/blog" className="text-link">
               ทั้งหมด
             </Link>
           </div>
-          {posts.length ? <PostList posts={posts} /> : <p className="empty">บทความชุดแรกกำลังจะมา — ติดตามเทคนิคการซ้อมและข่าวจากร้านได้ที่นี่</p>}
+          {posts.length ? <PostList posts={posts} /> : <p className="empty">บทความชุดแรกกำลังจะมา — เทคนิคการซ้อมและข่าวจากร้าน</p>}
         </div>
       </section>
 
@@ -199,11 +245,6 @@ export default async function HomePage() {
               <Link href="/contact" className="btn btn-outline">
                 ติดต่อเรา
               </Link>
-              {s.features.line && s.site.lineOaUrl && (
-                <a href={s.site.lineOaUrl} className="btn btn-line" target="_blank" rel="noopener">
-                  เพิ่มเพื่อน LINE OA
-                </a>
-              )}
             </div>
           </div>
         </div>
