@@ -13,7 +13,7 @@ export function HeaderAccount() {
   if (!brief || !brief.signedIn) {
     return (
       <Link href="/app/member" className="btn btn-primary btn-sm acct-login">
-        เข้าสู่ระบบ / สมัคร
+        เข้าสู่ระบบ<span className="acct-login-more">/ สมัคร</span>
       </Link>
     );
   }

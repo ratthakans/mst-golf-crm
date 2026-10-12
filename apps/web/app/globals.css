@@ -23,7 +23,7 @@
   --color-brand-deeper: #004428;
   --color-tint: oklch(96.5% 0.025 156);
   --color-tint-2: oklch(92.5% 0.050 156);
-  --color-on-brand: oklch(97.9% 0.008 157);
+  --color-on-brand: #ffffff; /* CVI white; the tinted off-white fell to 4.44:1 on #00854D */
   --color-on-brand-muted: oklch(84.5% 0.036 160);
   --color-sand: oklch(92.7% 0.028 87);
   --color-sand-ink: oklch(45.9% 0.073 84);

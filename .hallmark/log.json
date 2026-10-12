@@ -1,4 +1,36 @@
 [
-  { "date": "2026-09-27", "scope": "app", "macrostructure": "Map / Diagram (yardage book)", "theme": "custom", "theme_axes": "light / high-contrast-serif / chromatic-green", "vibe": "golf club yardage book, card stock and ink", "enrichment": "E5 hand-built SVG (store as a golf hole)", "nav": "N9 edge-aligned", "footer": "Ft4 dense colophon", "brief": "MST Golf Thailand public website + customer pages (apps/web)" },
-  { "date": "2026-09-26", "scope": "app", "macrostructure": "Clubhouse Ledger (custom)", "theme": "custom", "theme_axes": "light / geometric-sans / chromatic-green", "enrichment": "hand-built SVG", "nav": "sticky masthead", "footer": "address block", "brief": "MST Golf website, first build (inferred from the previous stamp)" }
+ {
+  "date": "2026-10-12",
+  "scope": "app",
+  "macrostructure": "Catalogue (sale sheet)",
+  "theme": "design.md (MST CVI)",
+  "theme_axes": "light / geometric-sans / chromatic-green",
+  "enrichment": "none — live data (promotions, lanes, tiers)",
+  "nav": "N9 edge-aligned (kept)",
+  "footer": "Ft4 dense colophon + CVI band (kept)",
+  "brief": "MST Golf home: make it read less AI — promotion sale sheet, no text over photos, no carousel"
+ },
+ {
+  "date": "2026-09-27",
+  "scope": "app",
+  "macrostructure": "Map / Diagram (yardage book)",
+  "theme": "custom",
+  "theme_axes": "light / high-contrast-serif / chromatic-green",
+  "vibe": "golf club yardage book, card stock and ink",
+  "enrichment": "E5 hand-built SVG (store as a golf hole)",
+  "nav": "N9 edge-aligned",
+  "footer": "Ft4 dense colophon",
+  "brief": "MST Golf Thailand public website + customer pages (apps/web)"
+ },
+ {
+  "date": "2026-09-26",
+  "scope": "app",
+  "macrostructure": "Clubhouse Ledger (custom)",
+  "theme": "custom",
+  "theme_axes": "light / geometric-sans / chromatic-green",
+  "enrichment": "hand-built SVG",
+  "nav": "sticky masthead",
+  "footer": "address block",
+  "brief": "MST Golf website, first build (inferred from the previous stamp)"
+ }
 ]

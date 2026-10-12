@@ -8,15 +8,17 @@ The back office (`apps/web-admin`) keeps its own UI. It only takes the CVI accen
 
 ## Genre and layout
 - **Genre:** a golf shop's website, promotion-led (no e-commerce: visitors see offers, they don't buy online). Clean CVI sans-serif on white, photography first.
-- **Home (`/`), in order:**
+- **Home (`/`): the sale sheet** (Hallmark macrostructure *Catalogue*, Oct 2026). Set like the promotion sheet at a shop counter. In order:
   1. A promotion bar.
-  2. A full-bleed hero carousel: every running promotion with a picture, then the store. Auto-advance 6 s, swipe, pause on hover/touch, none with reduced motion.
-  3. "โปรโมชันตอนนี้": a bento of one big card and up to four small ones; a sideways swipe on phones.
-  4. A brand marquee.
-  5. Four service cards. Simulator booking is one of them, with today's free slots.
-  6. The membership band.
-  7. Articles.
-  8. Visit.
+  2. **Shop window:** a sheet header (store name · "โปรโมชันเดือน… · N รายการ" over a 1 px ink rule), then the lead promotion large: end date or countdown, title, short line, one button; its cover sits beside it, never under the text.
+  3. **The rest of the month's promotions as a ruled list:** thumbnail, title, short line, end date on the right. Then a "ทุกโปรโมชันและเงื่อนไข" link.
+  4. **Brands on the shelves:** one static line, no marquee.
+  5. **Free sim lanes:** the live scorecard for today, or for tomorrow once the store has closed. Price from settings, plus a "จองซิม" button.
+  6. **In the store:** a ruled directory of the services (name · Thai name · one line · →), no photo tiles.
+  7. **Membership:** the real tier sheet (`TierTable`) and one button.
+  8. Articles.
+  9. The store: name, address, hours, phone, map, photo.
+- **Never on the home page:** text over photos, carousels, a marquee, photo-tile grids, pill badges, or a CTA band with two buttons. Those read as generated.
 - **Header:** logo, page links (desktop) or a full-screen menu (phone), "จองซิม" and the account on the right.
 - **Other marketing pages** (`/services`, `/golf-simulator`, `/rewards`, `/promotions`, `/promotions/[slug]`) keep the yardage-book pieces: the hole drawing on Services, the lane scorecard, the tier sheet.
 - **Content pages** (`/blog`, `/blog/[slug]`, `/contact`, `/terms`, `/privacy`): typography first, one measured column (contact: facts + form).
@@ -28,6 +30,7 @@ The back office (`apps/web-admin`) keeps its own UI. It only takes the CVI accen
 | `--color-brand-bright` | `#00A35F` | **The CVI green.** The green band in the footer, the logo box, the flag, the "Let's Golf" mark, large marks. Never carries small text. White on it is only 3.3:1. |
 | `--color-brand` | `#00854D` | The same green, one step deeper. Buttons, links and green text, because white on it reaches 4.7:1. |
 | `--color-brand-hover` / `-deep` / `-deeper` | `#00703F` / `#005A33` / `#004428` | Hover, pressed, QR ink |
+| `--color-on-brand` | `#FFFFFF` | Text on `--color-brand`. Pure white is what reaches 4.7:1; a tinted off-white falls under 4.5:1. |
 | `--color-paper` / `--color-surface` | `#FFFFFF` | Pages are white, as in the guideline |
 | `--color-paper-2` | `oklch(97.2% 0.008 156)` | Bands (scorecard, colophon). A breath of green, not cream |
 | `--color-ink` / `-ink-2` / `-muted` | `oklch(22% 0.012 160)` / `oklch(34% …)` / `oklch(47% …)` | Text |
@@ -82,7 +85,7 @@ The Member card is drawn in the CVI green.
   - Until then the site shows AI mockups and must not go live with them.
 
 ## Motion
-Allowed: the hero carousel (slow Ken-Burns zoom on the active slide plus a progress bar), image zoom on card hover, the brand marquee, sheet/menu fade-ins. Everything stops under `prefers-reduced-motion`. Nothing scrolls in.
+Allowed: hover colour shifts, the → nudging 4 px on directory rows, sheet/menu fade-ins. The home carousel and brand marquee were removed in the sale-sheet redesign. Everything stops under `prefers-reduced-motion`. Nothing scrolls in.
 
 ## Copy
 - Every number comes from settings or live data: prices, tiers, earn rate, days ahead, today's free slots, rewards.

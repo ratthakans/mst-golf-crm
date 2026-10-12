@@ -25,7 +25,7 @@ export function SimScorecard({ avail, dateLabel }: { avail: Availability; dateLa
   const free = slots.reduce((n, s) => n + s.lanes.filter((l) => l.state === "free").length, 0);
   return (
     <div className="scorecard-wrap">
-      <table className="scorecard">
+      <table className="scorecard" tabIndex={0} aria-label="ตารางช่องว่าง Golf Simulator (เลื่อนซ้ายขวาได้)">
         <caption>
           {dateLabel} · ว่าง <span className="mono">{free}</span> ช่อง
         </caption>
