@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
   const org = await currentOrg();
-  return { title: `เข้าสู่ระบบ · ${org.settings.productName}`, robots: { index: false } };
+  return { title: `เข้าสู่ระบบ · ${org.name}`, robots: { index: false } };
 }
 
 export default async function LoginPage({ searchParams }: { searchParams: { next?: string } }) {
@@ -19,7 +19,6 @@ export default async function LoginPage({ searchParams }: { searchParams: { next
       <header className="public-head">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/mst-logo.png" alt={org.name} className="public-logo" />
-        <h1>{org.settings.productName}</h1>
         <p>เข้าสู่ระบบสำหรับพนักงาน</p>
       </header>
       <LoginForm next={searchParams.next ?? "/"} />

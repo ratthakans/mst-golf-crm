@@ -16,7 +16,7 @@ const THEME_INIT = `(function(){try{var t=localStorage.getItem('mst-theme');if(t
 export async function generateMetadata(): Promise<Metadata> {
   const org = await currentOrg();
   return {
-    title: org.settings.productName,
+    title: org.name,
     description: `ระบบสมาชิก แต้ม และจองซิมกอล์ฟของ ${org.name}`,
     robots: { index: false, follow: false },
     icons: { icon: "/icon.svg" },
@@ -33,7 +33,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body>
         <AppShell
           orgName={org.name}
-          productName={org.settings.productName}
           user={user ? { name: user.name, roleLabel: ROLE_LABEL[user.role], permissions: user.permissions } : null}
         >
           {children}

@@ -139,13 +139,9 @@ button, input, select { font-family: inherit; }
 }
 .brand {
   background: #fff; border-radius: 10px; padding: 10px 12px;
-  display: flex; align-items: center; margin-bottom: 4px;
+  display: flex; align-items: center; margin-bottom: 16px;
 }
 .brand-logo { height: 26px; width: auto; display: block; }
-.brand-sub {
-  font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase;
-  color: #9fb6ab; padding: 0 4px 16px; font-weight: 600;
-}
 .nav-link {
   padding: 9px 12px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500;
   color: #b8ccc2; display: flex; align-items: center; gap: 11px; position: relative;

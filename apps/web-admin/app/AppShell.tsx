@@ -19,12 +19,10 @@ export interface ShellUser {
 
 export function AppShell({
   orgName,
-  productName,
   user,
   children,
 }: {
   orgName: string;
-  productName: string;
   user: ShellUser | null;
   children: React.ReactNode;
 }) {
@@ -95,7 +93,6 @@ export function AppShell({
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/mst-logo.png" alt={orgName} className="brand-logo" />
           </div>
-          <div className="brand-sub">{productName}</div>
           <CommandHint />
           <Nav permissions={user?.permissions ?? []} />
           <div className="spacer" />
