@@ -84,16 +84,17 @@ export async function saveNotificationToggles(orgId: string, actor: Actor, input
   return next;
 }
 
-export async function savePointRules(orgId: string, actor: Actor, input: { welcomeBonus?: number; perBaht?: number }): Promise<ResolvedSettings> {
+export async function savePointRules(orgId: string, actor: Actor, input: { welcomeBonus?: number; perBaht?: number; birthdayBonus?: number }): Promise<ResolvedSettings> {
   const { settings } = await getOrg(orgId);
   const raw = settings.raw.points ?? { perBaht: 1, signupBonus: 1600, birthdayBonus: 0, expiryMonths: 12 };
   const points: OrgSettings["points"] = {
     ...raw,
     perBaht: input.perBaht === undefined ? settings.pointsPerBaht : num(input.perBaht, 0.0001, 100, "แต้มต่อบาท"),
     signupBonus: input.welcomeBonus === undefined ? settings.welcomeBonus : Math.round(num(input.welcomeBonus, 0, 100_000, "แต้มต้อนรับ")),
+    birthdayBonus: input.birthdayBonus === undefined || Number.isNaN(input.birthdayBonus) ? settings.birthdayBonus : Math.round(num(input.birthdayBonus, 0, 100_000, "โบนัสวันเกิด")),
   };
   const next = await updateSettings(orgId, { points });
-  await audited(orgId, actor, "settings.points", { perBaht: settings.pointsPerBaht, welcomeBonus: settings.welcomeBonus }, { perBaht: points.perBaht, welcomeBonus: points.signupBonus });
+  await audited(orgId, actor, "settings.points", { perBaht: settings.pointsPerBaht, welcomeBonus: settings.welcomeBonus, birthdayBonus: settings.birthdayBonus }, { perBaht: points.perBaht, welcomeBonus: points.signupBonus, birthdayBonus: points.birthdayBonus });
   return next;
 }
 

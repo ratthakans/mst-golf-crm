@@ -69,7 +69,7 @@ export interface RedemptionStatusPayload {
   method: "PICKUP" | "SHIP" | null;
 }
 
-type Row = { label: string; value: string; strong?: boolean };
+export type Row = { label: string; value: string; strong?: boolean };
 
 function bubble(ctx: RenderContext, title: string, lead: string, rows: Row[], button: { label: string; url: string | null }, foot?: string): LineMessage {
   const body: unknown[] = [
@@ -126,23 +126,42 @@ const when = (iso: string) => {
   return `${formatThaiDate(d, { weekday: true, year: false })} · ${formatHm(d)} น.`;
 };
 
+export interface BirthdayPayload {
+  multiplier: number; // the tier's birthday point multiplier this month
+  bonus: number; // birthday bonus points paid now (0 = none)
+  tierName: string;
+}
+
+/** What a notification says — one source for LINE, the website inbox and email. */
+export interface NotificationContent {
+  title: string;
+  lead: string;
+  rows: Row[];
+  foot?: string;
+  button: { label: string; url: string | null };
+}
+
+const c = (title: string, lead: string, rows: Row[], button: { label: string; url: string | null }, foot?: string): NotificationContent => ({ title, lead, rows, button, foot });
+
 export function renderNotification(kind: NotificationKind, payload: unknown, ctx: RenderContext): LineMessage[] {
+  const x = notificationContent(kind, payload, ctx);
+  return [bubble(ctx, x.title, x.lead, x.rows, x.button, x.foot)];
+}
+
+export function notificationContent(kind: NotificationKind, payload: unknown, ctx: RenderContext): NotificationContent {
   switch (kind) {
     case "WELCOME": {
       const p = payload as WelcomePayload;
-      return [
-        bubble(
-          ctx,
-          "ยินดีต้อนรับสู่ MST Golf",
-          `คุณ${p.displayName} สมัครสมาชิกเรียบร้อย`,
-          [
-            { label: "รหัสสมาชิก", value: p.code },
-            { label: "แต้มต้อนรับ", value: `+${n(p.points)} แต้ม`, strong: true },
-          ],
-          { label: "เปิดบัตรสมาชิก", url: ctx.memberUrl },
-          "แสดงบัตรสมาชิกหรือแจ้งเบอร์โทรตอนชำระเงิน เพื่อรับแต้มทุกครั้ง",
-        ),
-      ];
+      return c(
+        `ยินดีต้อนรับสู่ ${ctx.storeName}`,
+        `คุณ${p.displayName} สมัครสมาชิกเรียบร้อย`,
+        [
+          { label: "รหัสสมาชิก", value: p.code },
+          { label: "แต้มต้อนรับ", value: `+${n(p.points)} แต้ม`, strong: true },
+        ],
+        { label: "เปิดบัตรสมาชิก", url: ctx.memberUrl },
+        "แสดงบัตรสมาชิกหรือแจ้งเบอร์โทรตอนชำระเงิน เพื่อรับแต้มทุกครั้ง",
+      );
     }
     case "POINTS": {
       const p = payload as PointsPayload;
@@ -156,14 +175,14 @@ export function renderNotification(kind: NotificationKind, payload: unknown, ctx
         p.nextTierName && p.remainingBaht !== null
           ? `ยอดซื้อ 12 เดือนอีก ฿${n(Math.ceil(p.remainingBaht))} ขึ้นเป็น ${p.nextTierName}`
           : `ระดับ ${p.tierName}`;
-      return [bubble(ctx, "ได้รับแต้มแล้ว", "", rows, { label: "ดูแต้มของฉัน", url: ctx.memberUrl }, foot)];
+      return c("ได้รับแต้มแล้ว", "", rows, { label: "ดูแต้มของฉัน", url: ctx.memberUrl }, foot);
     }
     case "TIER_UP": {
       const p = payload as TierUpPayload;
       const rows: Row[] = [{ label: "อัตราสะสมแต้ม", value: `×${p.pointRate}`, strong: true }];
       if (p.discountPct) rows.push({ label: "ส่วนลดร้าน", value: `${p.discountPct}%` });
       if (p.simDiscountPct) rows.push({ label: "ส่วนลดซิมกอล์ฟ", value: `${p.simDiscountPct}%` });
-      return [bubble(ctx, `ยินดีด้วย คุณเป็นสมาชิก ${p.tierName} แล้ว`, "สิทธิประโยชน์ใหม่ใช้ได้ตั้งแต่วันนี้", rows, { label: "เปิดบัตรสมาชิก", url: ctx.memberUrl })];
+      return c(`ยินดีด้วย คุณเป็นสมาชิก ${p.tierName} แล้ว`, "สิทธิประโยชน์ใหม่ใช้ได้ตั้งแต่วันนี้", rows, { label: "เปิดบัตรสมาชิก", url: ctx.memberUrl });
     }
     case "REDEMPTION_RECEIVED": {
       const p = payload as RedemptionReceivedPayload;
@@ -176,7 +195,7 @@ export function renderNotification(kind: NotificationKind, payload: unknown, ctx
           { label: "แต้มที่ใช้", value: `−${n(p.points)}` },
           { label: "แต้มคงเหลือ", value: n(p.balance) },
         ];
-        return [bubble(ctx, "ได้รับคูปองแล้ว", "เปิดคูปองแล้วให้พนักงานสแกน QR ตอนชำระเงิน", rows, { label: "เปิดคูปอง", url }, `Redemption ID ${p.code}`)];
+        return c("ได้รับคูปองแล้ว", "เปิดคูปองแล้วให้พนักงานสแกน QR ตอนชำระเงิน", rows, { label: "เปิดคูปอง", url }, `Redemption ID ${p.code}`);
       }
       const rows: Row[] = [
         { label: "รางวัล", value: p.rewardName, strong: true },
@@ -185,7 +204,7 @@ export function renderNotification(kind: NotificationKind, payload: unknown, ctx
         { label: "แต้มคงเหลือ", value: n(p.balance) },
       ];
       const foot = `${p.fulfilment ? `ระยะเวลาโดยประมาณ ${p.fulfilment} · ` : ""}ถ้าคำขอไม่ผ่าน แต้มจะคืนเข้าบัญชีทั้งหมด`;
-      return [bubble(ctx, "ได้รับคำขอแลกรางวัลแล้ว", "ทีมงานจะตรวจสอบและแจ้งขั้นตอนถัดไปทาง LINE", rows, { label: "ติดตามสถานะ", url }, foot)];
+      return c("ได้รับคำขอแลกรางวัลแล้ว", "ทีมงานจะตรวจสอบและแจ้งความคืบหน้าให้ทราบทุกขั้น", rows, { label: "ติดตามสถานะ", url }, foot);
     }
     case "REDEMPTION_STATUS": {
       const p = payload as RedemptionStatusPayload;
@@ -206,8 +225,15 @@ export function renderNotification(kind: NotificationKind, payload: unknown, ctx
       ];
       if (p.status === "SHIPPED" && p.trackingNo) rows.push({ label: p.carrier ? `เลขพัสดุ (${p.carrier})` : "เลขพัสดุ", value: p.trackingNo });
       if (p.refunded) rows.push({ label: "คืนแต้ม", value: `+${n(p.refunded)}`, strong: true });
-      const lead = p.note ?? (p.status === "USED" ? "ขอบคุณที่ใช้บริการ MST Golf" : "");
-      return [bubble(ctx, titles[p.status] ?? "อัปเดตสถานะการแลกรางวัล", lead, rows, { label: "ดูรายละเอียด", url })];
+      const lead = p.note ?? (p.status === "USED" ? `ขอบคุณที่ใช้บริการ ${ctx.storeName}` : "");
+      return c(titles[p.status] ?? "อัปเดตสถานะการแลกรางวัล", lead, rows, { label: "ดูรายละเอียด", url });
+    }
+    case "BIRTHDAY": {
+      const p = payload as BirthdayPayload;
+      const rows: Row[] = [];
+      if (p.multiplier > 1) rows.push({ label: "แต้มทุกการซื้อเดือนนี้", value: `×${p.multiplier}`, strong: true });
+      if (p.bonus > 0) rows.push({ label: "โบนัสวันเกิด", value: `+${n(p.bonus)} แต้ม`, strong: true });
+      return c("สุขสันต์เดือนเกิด", `สิทธิพิเศษสำหรับสมาชิก ${p.tierName} ตลอดเดือนนี้`, rows, { label: "เปิดบัตรสมาชิก", url: ctx.memberUrl }, "แสดงบัตรสมาชิกหรือแจ้งเบอร์โทรตอนชำระเงิน");
     }
     case "BOOKING_CONFIRMED":
     case "BOOKING_REMINDER":
@@ -222,7 +248,7 @@ export function renderNotification(kind: NotificationKind, payload: unknown, ctx
       if (kind !== "BOOKING_CANCELLED") rows.push({ label: "ค่าบริการ (ชำระที่ร้าน)", value: formatBaht(p.priceSatang) });
       const title = {
         BOOKING_CONFIRMED: "ยืนยันการจองซิมกอล์ฟ",
-        BOOKING_REMINDER: "อีก 2 ชั่วโมงถึงเวลาจอง",
+        BOOKING_REMINDER: "ใกล้ถึงเวลาจองซิมกอล์ฟแล้ว",
         BOOKING_CANCELLED: "ยกเลิกการจองแล้ว",
         BOOKING_MOVED: "เปลี่ยนเวลาการจองแล้ว",
       }[kind];
@@ -235,7 +261,7 @@ export function renderNotification(kind: NotificationKind, payload: unknown, ctx
               : "ช่องเวลานี้เปิดให้คนอื่นจองแล้ว"
             : ctx.storeName;
       const foot = kind === "BOOKING_CANCELLED" ? undefined : "มาถึงแล้วแจ้งชื่อที่เคาน์เตอร์เพื่อเช็กอิน · เกิน 15 นาทีถือว่าไม่มาตามนัด";
-      return [bubble(ctx, title, lead, rows, { label: kind === "BOOKING_CANCELLED" ? "จองเวลาใหม่" : "ดูการจองของฉัน", url: ctx.bookingUrl }, foot)];
+      return c(title, lead, rows, { label: kind === "BOOKING_CANCELLED" ? "จองเวลาใหม่" : "ดูการจองของฉัน", url: ctx.bookingUrl }, foot);
     }
   }
 }

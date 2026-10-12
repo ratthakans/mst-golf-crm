@@ -107,6 +107,8 @@ export interface FeatureFlags {
   coupons: boolean;
   /** Rewards catalogue, coupons and reward requests (docs/PRODUCT.md §11). On unless switched off. */
   rewards?: boolean;
+  /** LINE (LIFF sign-in, Messaging API pushes). Off: members sign in on the website with an SMS code. */
+  line?: boolean;
   lessons?: boolean;
   arena?: boolean;
   teeTime?: boolean;
@@ -154,7 +156,8 @@ export type NotificationKind =
   | "BOOKING_CANCELLED"
   | "BOOKING_MOVED"
   | "REDEMPTION_RECEIVED"
-  | "REDEMPTION_STATUS";
+  | "REDEMPTION_STATUS"
+  | "BIRTHDAY";
 
 export type NotificationSettings = Record<NotificationKind, boolean>;
 

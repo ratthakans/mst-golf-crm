@@ -62,6 +62,7 @@ model Organization {
   rewards           Reward[]
   redemptions       Redemption[]
   emails            EmailMessage[]
+  otpCodes          OtpCode[]
 
   @@map("organizations")
 }
@@ -184,6 +185,7 @@ model Member {
   mergedIntoId   String?
   erasedAt       DateTime?
   lineReachable  Boolean      @default(true) // false once a push fails because the member blocked the OA
+  emailNotify    Boolean      @default(true) // send this member's notifications by email too (when they gave one)
   noShowCount    Int          @default(0)
   consentAt      DateTime? // TERMS accepted
   createdAt      DateTime     @default(now())
@@ -646,14 +648,17 @@ model Notification {
   dedupeKey String // e.g. "POINTS:<batchId>:<memberId>" — the same message is never queued twice
   payload   Json
   status    NotificationStatus @default(PENDING)
+  channel   String? // how it went out: LINE · EMAIL — null = shown on the website only
   attempts  Int                @default(0)
   lastError String?
   sentAt    DateTime?
+  readAt    DateTime? // the member opened it in the website inbox
   createdAt DateTime           @default(now())
 
   @@unique([orgId, dedupeKey])
   @@index([status, createdAt])
   @@index([orgId, createdAt])
+  @@index([orgId, memberId, createdAt])
   @@map("notifications")
 }
 
@@ -762,6 +767,25 @@ enum RedemptionStatus {
   COMPLETED
   REJECTED
   CANCELLED
+}
+
+// One-time codes for signing in on the website with a mobile number (SMS).
+// Only a hash is kept; a code lives 5 minutes and allows 5 tries.
+model OtpCode {
+  id        String       @id @default(cuid())
+  orgId     String
+  org       Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  phone     String // normalised "0891112233"
+  codeHash  String // sha256(id + code)
+  attempts  Int          @default(0)
+  expiresAt DateTime
+  usedAt    DateTime?
+  ip        String?
+  createdAt DateTime     @default(now())
+
+  @@index([orgId, phone, createdAt])
+  @@index([orgId, ip, createdAt])
+  @@map("otp_codes")
 }
 
 // Email outbox for staff alerts (a new reward request to Marketing). Same idea

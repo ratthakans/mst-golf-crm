@@ -36,6 +36,7 @@ export const DEFAULT_NOTIFICATIONS: NotificationSettings = {
   BOOKING_MOVED: true,
   REDEMPTION_RECEIVED: true,
   REDEMPTION_STATUS: true,
+  BIRTHDAY: true,
 };
 
 export const DEFAULT_POS: PosSettings = {
@@ -51,13 +52,14 @@ export interface ResolvedSettings {
   timezone: string;
   pointsPerBaht: number;
   welcomeBonus: number;
+  birthdayBonus: number;
   tiers: TierSettings[];
   booking: BookingSettings;
   notifications: NotificationSettings;
   pos: PosSettings;
   site: SiteSettings;
   redemption: RedemptionSettings;
-  features: { intelligence: boolean; booking: boolean; rewards: boolean };
+  features: { intelligence: boolean; booking: boolean; rewards: boolean; line: boolean };
   raw: Partial<OrgSettings>;
 }
 
@@ -70,6 +72,7 @@ export function resolveSettings(raw: unknown): ResolvedSettings {
     timezone: s.timezone ?? "Asia/Bangkok",
     pointsPerBaht: s.points?.perBaht && s.points.perBaht > 0 ? s.points.perBaht : 1,
     welcomeBonus: Math.max(0, Math.floor(s.points?.signupBonus ?? 1600)),
+    birthdayBonus: Math.max(0, Math.floor(s.points?.birthdayBonus ?? 0)),
     tiers: resolveTiers(s.tiers),
     booking: { ...DEFAULT_BOOKING, ...(s.booking ?? {}) },
     notifications: { ...DEFAULT_NOTIFICATIONS, ...(s.notifications ?? {}) },
@@ -80,6 +83,7 @@ export function resolveSettings(raw: unknown): ResolvedSettings {
       intelligence: s.features?.intelligence ?? false,
       booking: s.features?.booking ?? true,
       rewards: s.features?.rewards ?? true,
+      line: s.features?.line ?? false,
     },
     raw: s,
   };

@@ -77,6 +77,7 @@ const TENANT_MODELS = new Set<string>([
   "Reward",
   "Redemption",
   "EmailMessage",
+  "OtpCode",
 ]);
 
 // Operations whose `where` clause should be constrained to the tenant.

@@ -36,6 +36,9 @@ export interface MemberSummary {
   status: "ACTIVE" | "MERGED" | "ERASED";
   noShowCount: number;
   marketingConsent: boolean;
+  /** Accepted the member terms (signed up themselves, or confirmed at the counter). POS-only members have not. */
+  registered: boolean;
+  emailNotify: boolean;
   createdAt: Date;
 }
 
@@ -77,6 +80,8 @@ export function toSummary(m: MemberRow): MemberSummary {
     status: m.status,
     noShowCount: m.noShowCount,
     marketingConsent: m.consents[0]?.granted ?? false,
+    registered: !!m.consentAt,
+    emailNotify: m.emailNotify,
     createdAt: m.createdAt,
   };
 }
@@ -210,11 +215,15 @@ async function loadSummary(tx: Tx, memberId: string): Promise<MemberSummary> {
 }
 
 // ---------------------------------------------------------------------------
-// Customer sign-up (LINE LIFF or the website with LINE Login)
+// Customer sign-up: the website with a verified mobile number (SMS code), or
+// LINE (LIFF / LINE Login) when the tenant has LINE switched on.
 // ---------------------------------------------------------------------------
 
 export interface SignupInput {
-  lineUserId: string;
+  /** LINE sign-up: the verified LINE user. */
+  lineUserId?: string | null;
+  /** Website sign-up: the phone was proven with an SMS code (verifyOtp) — must equal `phone`. */
+  verifiedPhone?: string | null;
   channel: "LINE" | "WEB";
   fullName: string;
   phone: string;
@@ -233,16 +242,18 @@ export interface SignupResult {
 
 export async function signUp(orgId: string, input: SignupInput): Promise<SignupResult> {
   if (!input.acceptTerms) throw new CoreError("INVALID_INPUT", "กรุณายอมรับข้อกำหนดและนโยบายความเป็นส่วนตัว");
-  if (!input.lineUserId) throw new CoreError("INVALID_INPUT", "ต้องล็อกอินด้วย LINE ก่อน");
   const name = splitName(input.fullName);
   const phone = parsePhone(input.phone);
+  const lineUserId = input.lineUserId || null;
+  const phoneVerified = !!input.verifiedPhone && input.verifiedPhone === phone;
+  if (!lineUserId && !phoneVerified) throw new CoreError("INVALID_INPUT", "กรุณายืนยันเบอร์มือถือด้วยรหัส SMS ก่อน");
   const birthday = parseBirthday(input.birthday);
   const email = parseEmail(input.email);
   const { settings } = await getOrg(orgId);
 
   try {
     return await inTx(orgId, async (tx) => {
-      if (await findMemberIdByIdentity(tx, "LINE", input.lineUserId)) {
+      if (lineUserId && (await findMemberIdByIdentity(tx, "LINE", lineUserId))) {
         throw new CoreError("ALREADY_MEMBER", "บัญชี LINE นี้เป็นสมาชิกอยู่แล้ว");
       }
       const now = new Date();
@@ -253,17 +264,23 @@ export async function signUp(orgId: string, input: SignupInput): Promise<SignupR
       if (phoneOwner) {
         const owner = await tx.member.findFirst({ where: { id: phoneOwner }, include: memberInclude });
         if (!owner || owner.status !== "ACTIVE") throw new CoreError("PHONE_TAKEN", "เบอร์นี้ใช้สมัครไม่ได้ กรุณาติดต่อร้าน");
-        if (owner.identities.some((i) => i.type === "LINE")) {
+        if (!lineUserId && owner.consentAt) {
+          throw new CoreError("ALREADY_MEMBER", "เบอร์นี้เป็นสมาชิกอยู่แล้ว — เข้าสู่ระบบด้วยเบอร์นี้ได้เลย");
+        }
+        if (lineUserId && owner.identities.some((i) => i.type === "LINE")) {
           // Someone else's LINE already owns this phone — never hand the account over.
           // The review item is written after this transaction rolls back (see below).
           throw new CoreError("PHONE_TAKEN", "เบอร์นี้ลงทะเบียนกับบัญชี LINE อื่นแล้ว กรุณาติดต่อร้านเพื่อตรวจสอบ", {
             conflictMemberId: owner.id,
           });
         }
-        // Counter- or POS-created member signing up in LINE: same member, same points and history.
-        await tx.memberIdentity.create({
-          data: { orgId, memberId: owner.id, type: "LINE", value: input.lineUserId, source: input.channel, verifiedAt: now },
-        });
+        // Counter- or POS-created member signing up: same member, same points and history.
+        if (lineUserId) {
+          await tx.memberIdentity.create({
+            data: { orgId, memberId: owner.id, type: "LINE", value: lineUserId, source: input.channel, verifiedAt: now },
+          });
+        }
+        if (phoneVerified) await tx.memberIdentity.updateMany({ where: { memberId: owner.id, type: "PHONE", verifiedAt: null }, data: { verifiedAt: now } });
         const posOnly = owner.source === "POS" || owner.source === "IMPORT";
         await tx.member.update({
           where: { id: owner.id },
@@ -279,7 +296,7 @@ export async function signUp(orgId: string, input: SignupInput): Promise<SignupR
         });
         memberId = owner.id;
         outcome = "linked";
-        await recordEvent(tx, orgId, memberId, "LINE_LINKED", { channel: input.channel });
+        await recordEvent(tx, orgId, memberId, lineUserId ? "LINE_LINKED" : "REGISTER", { channel: input.channel, linked: true });
       } else {
         memberId = await insertMember(tx, orgId, settings, {
           source: input.channel,
@@ -288,8 +305,8 @@ export async function signUp(orgId: string, input: SignupInput): Promise<SignupR
           email,
           pictureUrl: input.pictureUrl ?? null,
           phone,
-          phoneVerified: false,
-          lineUserId: input.lineUserId,
+          phoneVerified,
+          lineUserId,
           consentAt: now,
         });
         outcome = "created";
@@ -311,12 +328,12 @@ export async function signUp(orgId: string, input: SignupInput): Promise<SignupR
     });
   } catch (e) {
     // Two taps on "สมัคร" at once: the second loses on the identity index.
-    if (isUniqueViolation(e)) throw new CoreError("ALREADY_MEMBER", "บัญชี LINE นี้เป็นสมาชิกอยู่แล้ว");
+    if (isUniqueViolation(e)) throw new CoreError("ALREADY_MEMBER", lineUserId ? "บัญชี LINE นี้เป็นสมาชิกอยู่แล้ว" : "เบอร์นี้เป็นสมาชิกอยู่แล้ว");
     const conflict = e instanceof CoreError ? (e.detail?.conflictMemberId as string | undefined) : undefined;
     if (conflict) {
       const client = db(orgId);
       const open = await client.reviewItem.findFirst({
-        where: { kind: "PHONE_CONFLICT", status: "OPEN", memberId: conflict, payload: { path: ["lineUserId"], equals: input.lineUserId } },
+        where: { kind: "PHONE_CONFLICT", status: "OPEN", memberId: conflict, payload: { path: ["lineUserId"], equals: lineUserId ?? "" } },
       });
       if (!open) {
         await client.reviewItem.create({
@@ -324,7 +341,7 @@ export async function signUp(orgId: string, input: SignupInput): Promise<SignupR
             orgId,
             kind: "PHONE_CONFLICT",
             memberId: conflict,
-            payload: { phone, lineUserId: input.lineUserId, fullName: name.displayName, channel: input.channel },
+            payload: { phone, lineUserId, fullName: name.displayName, channel: input.channel },
           },
         });
       }
@@ -340,6 +357,23 @@ export async function findMemberByLine(orgId: string, lineUserId: string): Promi
   if (!memberId) return null;
   const m = await client.member.findFirst({ where: { id: memberId, status: "ACTIVE" }, include: memberInclude });
   return m ? toSummary(m) : null;
+}
+
+/** The member who owns this (normalised) phone, active or not — the website sign-in looks members up by it. */
+export async function findMemberByPhone(orgId: string, phone: string): Promise<MemberSummary | null> {
+  const client = db(orgId);
+  const memberId = await findMemberIdByIdentity(client, "PHONE", phone);
+  if (!memberId) return null;
+  const m = await client.member.findFirst({ where: { id: memberId }, include: memberInclude });
+  return m ? toSummary(m) : null;
+}
+
+/** The active member behind a session's member id, following a merge to the surviving account. */
+export async function findActiveMember(orgId: string, memberId: string): Promise<MemberSummary | null> {
+  const client = db(orgId);
+  let m = await client.member.findFirst({ where: { id: memberId }, include: memberInclude });
+  if (m?.status === "MERGED" && m.mergedIntoId) m = await client.member.findFirst({ where: { id: m.mergedIntoId }, include: memberInclude });
+  return m && m.status === "ACTIVE" ? toSummary(m) : null;
 }
 
 export async function getMember(orgId: string, memberId: string): Promise<MemberSummary | null> {
@@ -399,6 +433,7 @@ export interface ProfileInput {
   birthday?: string | null;
   email?: string | null;
   marketing?: boolean;
+  emailNotify?: boolean;
 }
 
 /** The member edits their own profile. Birthday can be set once (it drives the birthday bonus); after that only staff change it. */
@@ -409,6 +444,7 @@ export async function updateOwnProfile(orgId: string, memberId: string, input: P
     const data: Prisma.MemberUpdateInput = {};
     if (input.fullName !== undefined) Object.assign(data, splitName(input.fullName));
     if (input.email !== undefined) data.email = parseEmail(input.email);
+    if (input.emailNotify !== undefined && input.emailNotify !== m.emailNotify) data.emailNotify = input.emailNotify;
     if (input.birthday !== undefined) {
       const b = parseBirthday(input.birthday);
       if (m.birthday && dateKey(m.birthday) !== dateKey(b)) {
@@ -421,7 +457,7 @@ export async function updateOwnProfile(orgId: string, memberId: string, input: P
       await recordEvent(tx, orgId, m.id, "PROFILE_UPDATE", { fields: Object.keys(data) });
     }
     if (input.marketing !== undefined && input.marketing !== (m.consents[0]?.granted ?? false)) {
-      await recordConsents(tx, orgId, m.id, "LINE", { marketing: input.marketing });
+      await recordConsents(tx, orgId, m.id, m.identities.some((i) => i.type === "LINE") ? "LINE" : "WEB", { marketing: input.marketing });
     }
     return loadSummary(tx, m.id);
   });

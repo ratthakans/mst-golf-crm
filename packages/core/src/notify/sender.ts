@@ -4,7 +4,8 @@ import { prisma } from "@mstgolf/database";
 import { db } from "../db";
 import { resolveSettings } from "../settings";
 import { pushMessage, retryKeyFor } from "./line-api";
-import { renderNotification, type RenderContext } from "./templates";
+import { emailConfigured, postEmail, renderMemberEmail } from "./email";
+import { notificationContent, renderNotification, type RenderContext } from "./templates";
 
 const MAX_ATTEMPTS = 5;
 const STALE_MS = 48 * 60 * 60_000; // a message this late would confuse more than help
@@ -69,21 +70,25 @@ async function processOrgOutbox(
   if (pending.length === 0) return run;
 
   const settings = resolveSettings(rawSettings);
-  const line = await lineConfig(orgId);
+  const line = settings.features.line ? await lineConfig(orgId) : null;
   const store = await client.store.findFirst({ where: { isActive: true }, orderBy: { createdAt: "asc" } });
+  const liffId = line?.liffId ?? null;
   const ctx: RenderContext = {
     brandColor: settings.brandColor,
     storeName: store?.name ?? "MST Golf",
-    memberUrl: liffUrl(line?.liffId ?? null, "/member", settings.site.siteUrl),
-    bookingUrl: liffUrl(line?.liffId ?? null, "/booking", settings.site.siteUrl),
-    rewardsUrl: liffUrl(line?.liffId ?? null, "/rewards", settings.site.siteUrl),
+    memberUrl: liffUrl(liffId, "/member", settings.site.siteUrl),
+    bookingUrl: liffUrl(liffId, "/booking", settings.site.siteUrl),
+    rewardsUrl: liffUrl(liffId, "/rewards", settings.site.siteUrl),
   };
+  const mailer = emailConfigured();
 
   const skip = async (id: string, reason: string) => {
     await client.notification.updateMany({ where: { id, status: "PENDING" }, data: { status: "SKIPPED", lastError: reason } });
     run.skipped++;
   };
 
+  // Every notification is in the member's website inbox regardless; this loop
+  // only decides whether it also goes out by LINE (when switched on) or email.
   for (const n of pending) {
     const kind = n.kind as NotificationKind;
     if (!settings.notifications[kind]) {
@@ -94,17 +99,12 @@ async function processOrgOutbox(
       await skip(n.id, "เกิน 48 ชั่วโมง ไม่ส่งแล้ว");
       continue;
     }
-    if (!line) {
-      await skip(n.id, "ยังไม่ได้ตั้งค่า LINE Messaging API");
-      continue;
-    }
     const member = await client.member.findFirst({
       where: { id: n.memberId },
-      select: { status: true, lineReachable: true, identities: { where: { type: "LINE" }, select: { value: true } } },
+      select: { status: true, lineReachable: true, email: true, emailNotify: true, identities: { where: { type: "LINE" }, select: { value: true } } },
     });
-    const to = member?.identities[0]?.value;
-    if (!member || member.status !== "ACTIVE" || !to) {
-      await skip(n.id, "สมาชิกไม่มี LINE");
+    if (!member || member.status !== "ACTIVE") {
+      await skip(n.id, "สมาชิกไม่อยู่ในระบบแล้ว");
       continue;
     }
     if (kind === "BOOKING_REMINDER" || kind === "BOOKING_CONFIRMED") {
@@ -114,6 +114,15 @@ async function processOrgOutbox(
         continue;
       }
     }
+    const lineTo = line ? member.identities[0]?.value ?? null : null;
+    const emailTo = !lineTo && mailer && member.email && member.emailNotify ? member.email : null;
+    if (!lineTo && !emailTo) {
+      await skip(
+        n.id,
+        settings.features.line && !line ? "ยังไม่ได้ตั้งค่า LINE Messaging API — แสดงในเว็บ" : member.email && member.emailNotify && !mailer ? "ยังไม่ได้ตั้งบริการอีเมล — แสดงในเว็บ" : "แสดงในเว็บเท่านั้น",
+      );
+      continue;
+    }
 
     // Claim the row so a concurrent run cannot send it too.
     const claimed = await client.notification.updateMany({
@@ -122,16 +131,31 @@ async function processOrgOutbox(
     });
     if (claimed.count === 0) continue;
 
-    const messages = renderNotification(kind, n.payload, ctx);
-    const res = await pushMessage(line.accessToken, to, messages, retryKeyFor(n.id), opts.fetchImpl);
+    if (lineTo) {
+      const res = await pushMessage(line!.accessToken, lineTo, renderNotification(kind, n.payload, ctx), retryKeyFor(n.id), opts.fetchImpl);
+      if (res.ok) {
+        await client.notification.updateMany({ where: { id: n.id }, data: { status: "SENT", channel: "LINE", sentAt: new Date(), lastError: null } });
+        if (!member.lineReachable) await client.member.updateMany({ where: { id: n.memberId }, data: { lineReachable: true } });
+        run.sent++;
+      } else if (res.unreachable) {
+        await client.notification.updateMany({ where: { id: n.id }, data: { status: "FAILED", lastError: res.error } });
+        await client.member.updateMany({ where: { id: n.memberId }, data: { lineReachable: false } });
+        run.failed++;
+      } else if (res.retry && n.attempts + 1 < MAX_ATTEMPTS) {
+        await client.notification.updateMany({ where: { id: n.id }, data: { lastError: res.error } });
+        run.retrying++;
+      } else {
+        await client.notification.updateMany({ where: { id: n.id }, data: { status: "FAILED", lastError: res.error } });
+        run.failed++;
+      }
+      continue;
+    }
+
+    const mail = renderMemberEmail(notificationContent(kind, n.payload, ctx), { storeName: ctx.storeName, brandColor: settings.brandColor });
+    const res = await postEmail({ to: [emailTo!], ...mail, idempotencyKey: n.id }, opts.fetchImpl);
     if (res.ok) {
-      await client.notification.updateMany({ where: { id: n.id }, data: { status: "SENT", sentAt: new Date(), lastError: null } });
-      if (!member.lineReachable) await client.member.updateMany({ where: { id: n.memberId }, data: { lineReachable: true } });
+      await client.notification.updateMany({ where: { id: n.id }, data: { status: "SENT", channel: "EMAIL", sentAt: new Date(), lastError: null } });
       run.sent++;
-    } else if (res.unreachable) {
-      await client.notification.updateMany({ where: { id: n.id }, data: { status: "FAILED", lastError: res.error } });
-      await client.member.updateMany({ where: { id: n.memberId }, data: { lineReachable: false } });
-      run.failed++;
     } else if (res.retry && n.attempts + 1 < MAX_ATTEMPTS) {
       await client.notification.updateMany({ where: { id: n.id }, data: { lastError: res.error } });
       run.retrying++;

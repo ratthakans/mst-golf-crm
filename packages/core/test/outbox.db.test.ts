@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from "vitest";
-import { db, processOutbox, saveLineChannel, signUp } from "../src";
+import { db, processOutbox, saveLineChannel, signUp, updateSettings } from "../src";
 import { makeOrg } from "./fixtures";
 
 let t: Awaited<ReturnType<typeof makeOrg>>;
@@ -7,6 +7,7 @@ let t: Awaited<ReturnType<typeof makeOrg>>;
 beforeAll(async () => {
   process.env.ENCRYPTION_KEY ??= "0".repeat(64);
   t = await makeOrg("outbox");
+  await updateSettings(t.orgId, { features: { booking: true, line: true } as never }); // these tests cover the LINE channel
 });
 
 describe("LINE outbox", () => {

@@ -18,6 +18,10 @@ export type CoreErrorCode =
   | "IMPORT_STATE"
   | "IMPORT_FILE"
   | "REWARD_RULE"
+  | "OTP_RATE"
+  | "OTP_INVALID"
+  | "SMS_UNAVAILABLE"
+  | "UNAVAILABLE"
   | "COUPON_STATE"
   | "SHOPIFY_AUTH"
   | "SHOPIFY_ERROR";
@@ -32,6 +36,9 @@ const STATUS: Partial<Record<CoreErrorCode, number>> = {
   HOLD_EXPIRED: 409,
   IMPORT_STATE: 409,
   COUPON_STATE: 409,
+  OTP_RATE: 429,
+  SMS_UNAVAILABLE: 503,
+  UNAVAILABLE: 503,
   SHOPIFY_AUTH: 502,
   SHOPIFY_ERROR: 502,
 };
