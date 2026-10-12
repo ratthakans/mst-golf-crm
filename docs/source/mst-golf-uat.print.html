@@ -2,13 +2,13 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<title>MST Golf Platform — UAT</title>
+<title>MST Golf — UAT</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
 <style>
   @page { size: A4 portrait; margin: 0; }
   :root {
     --ink: #14201b; --muted: #5d6e66; --faint: #8a9a92; --line: #dde6e1; --soft: #f4f7f5;
-    --brand: #0a5c36; --brand-deep: #0b3d29; --tint: #e5f2ea; --amber-bg: #fdf3d7; --amber-ink: #8a5a06;
+    --brand: #00854D; --brand-deep: #005a33; --tint: #e6f6ee; --amber-bg: #fdf3d7; --amber-ink: #8a5a06;
     --sans: "Anuphan", "Noto Sans Thai", sans-serif; --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
   }
   * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -50,7 +50,7 @@
 <!-- ═══════ 1 ═══════ -->
 <section class="page">
   <div class="head">
-    <div class="kicker">MST Golf Platform · UAT</div>
+    <div class="kicker">MST Golf · UAT</div>
     <h2>แบบทดสอบก่อนเปิดใช้ (UAT)</h2>
     <p>MST ทดลองใช้งานจริงบนระบบทดสอบ (preview) ตามตำแหน่งของตัวเอง ทำเครื่องหมายผ่าน/ไม่ผ่าน · ข้อที่ไม่ผ่าน ORIONS แก้แล้วทดสอบซ้ำ · ลงนามหน้าสุดท้ายเมื่อผ่านครบ</p>
   </div>
@@ -62,7 +62,7 @@
           <li>ORIONS ส่งลิงก์หลังบ้านและเว็บไซต์ของระบบทดสอบ + สร้างบัญชีผู้ดูแลระบบให้ MST</li>
           <li>ผู้ดูแลระบบของ MST สร้างบัญชีทดสอบ 1 บัญชีต่อตำแหน่งที่ใช้จริง (ข้อ A2)</li>
           <li>ไฟล์ export POS จริง 1–7 วัน และบิลคืน/ยกเลิกอย่างน้อย 1 ใบ</li>
-          <li>มือถือ iPhone และ Android อย่างละ 1 เครื่อง (สำหรับหน้าลูกค้า)</li>
+          <li>มือถือ iPhone และ Android อย่างละ 1 เครื่อง (ลูกค้าใช้งานผ่านเว็บไซต์ทั้งหมด) และอีเมลทดสอบ 1 อีเมล</li>
           <li>ข้อมูลในระบบทดสอบเป็นข้อมูลทดลอง ล้างได้ทั้งหมดก่อนเปิดจริง</li>
         </ol>
       </div>
@@ -71,7 +71,7 @@
         <ul class="small">
           <li>ทำตามคอลัมน์ <b>ขั้นตอน</b> แล้วดูว่าได้ตาม <b>ผลที่ควรได้</b> หรือไม่</li>
           <li>ติ๊ก ☐ ผ่าน หรือ ☐ ไม่ผ่าน · ไม่ผ่านให้จดสิ่งที่เห็นจริงและถ่ายภาพหน้าจอ</li>
-          <li>ข้อที่พื้นสีเทา (<b>หลัง LINE</b>) ทดสอบได้เมื่อทีม LINE ส่ง credentials แล้ว</li>
+          <li>ข้อที่พื้นสีเทา (<b>ก่อนเปิดจริง</b>) ทดสอบได้เมื่อ MST ได้บัญชีส่ง SMS และอีเมลแล้ว</li>
           <li>ส่งผลให้ ORIONS รอบเดียวหรือทีละส่วนก็ได้</li>
         </ul>
       </div>
@@ -102,13 +102,13 @@
       </tbody>
     </table>
   </div>
-  <div class="ft"><span>MST Golf Platform · UAT</span><span>1 / 4</span></div>
+  <div class="ft"><span>MST Golf · UAT</span><span>1 / 5</span></div>
 </section>
 
 <!-- ═══════ 2 ═══════ -->
 <section class="page">
   <div class="head">
-    <div class="kicker">MST Golf Platform · UAT</div>
+    <div class="kicker">MST Golf · UAT</div>
     <h2>นำเข้ายอดขายและซิมกอล์ฟ</h2>
   </div>
   <div class="body">
@@ -133,7 +133,7 @@
       <tbody>
         <tr><td class="id">D1</td><td class="what">เวลาและราคา</td><td>ดูตารางวันนี้และวันเสาร์</td><td>ช่องเวลาตรงเวลาเปิดร้านจริง · ราคาตรงราคาจริง</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
         <tr><td class="id">D2</td><td class="what">walk-in</td><td>กดช่องว่าง › Walk-in › สมาชิก B1 › ติ๊กเช็กอินเลย</td><td>การ์ดสีน้ำเงิน "เช็กอินแล้ว" · ยอดรับเป็นราคาหลังส่วนลดระดับ</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
-        <tr><td class="id">D3</td><td class="what">โทรจองคนไม่ใช่สมาชิก</td><td>โทรจอง › ไม่ใช่สมาชิก ใส่ชื่อ เวลาพรุ่งนี้</td><td>การ์ดสีเขียว · ช่องนั้นขึ้น "เต็ม" ในหน้าจองของลูกค้า</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+        <tr><td class="id">D3</td><td class="what">โทรจองคนไม่ใช่สมาชิก</td><td>โทรจอง › ไม่ใช่สมาชิก ใส่ชื่อ เวลาพรุ่งนี้</td><td>การ์ดสีเขียว · ช่องนั้นขึ้น "เต็ม" ในหน้าจองซิมบนเว็บ</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
         <tr><td class="id">D4</td><td class="what">จองซ้อน</td><td>พนักงาน 2 คนกดจองช่องเดียวกันพร้อมกัน</td><td>สำเร็จคนเดียว อีกคนขึ้นว่าช่องถูกจองแล้ว</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
         <tr><td class="id">D5</td><td class="what">ย้าย</td><td>ลากการ์ด D3 ไป lane อื่น</td><td>ย้ายได้ · ลากไปช่องที่มีคนจองแล้วไม่ได้</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
         <tr><td class="id">D6</td><td class="what">ยกเลิก · ไม่มา</td><td>ยกเลิก D3 พร้อมเหตุผล · จองอีกช่องที่เริ่มแล้ว รอเกินเวลาที่ตั้ง กด ไม่มาตามนัด</td><td>ช่องว่างทันที · ไม่มาตามนัดกดได้หลังเวลาที่ตั้งเท่านั้น และนับในหน้าสมาชิก</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
@@ -141,60 +141,85 @@
       </tbody>
     </table>
   </div>
-  <div class="ft"><span>MST Golf Platform · UAT</span><span>2 / 4</span></div>
+  <div class="ft"><span>MST Golf · UAT</span><span>2 / 5</span></div>
 </section>
 
 <!-- ═══════ 3 ═══════ -->
 <section class="page">
   <div class="head">
-    <div class="kicker">MST Golf Platform · UAT</div>
-    <h2>เว็บไซต์ ผู้ดูแลระบบ และ LINE</h2>
+    <div class="kicker">MST Golf · UAT</div>
+    <h2>เว็บไซต์และผู้ดูแลระบบ</h2>
   </div>
   <div class="body">
-    <h3 class="sec">E · เว็บไซต์ <span>การตลาด · ลูกค้า</span></h3>
+    <h3 class="sec">E · เว็บไซต์ <span>การตลาด</span></h3>
     <table class="u">
       <thead><tr><th>#</th><th>ทดสอบ</th><th>ขั้นตอน</th><th>ผลที่ควรได้</th><th>ผล</th><th>หมายเหตุ</th></tr></thead>
       <tbody>
-        <tr><td class="id">E1</td><td class="what">รูปและข้อความ</td><td><span class="ui">เว็บไซต์ › เนื้อหาหน้าเว็บ</span> เปลี่ยนภาพหลักเป็นรูปร้านจริง และแก้หัวข้อหลัก</td><td>ภายใน 5 นาที หน้าแรกแสดงรูปและข้อความใหม่</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
-        <tr><td class="id">E2</td><td class="what">บทความ</td><td>เขียนบทความพร้อมรูปปก บันทึกร่าง แล้วเผยแพร่</td><td>ร่างไม่ขึ้นเว็บ · เผยแพร่แล้วขึ้นในหน้าบทความพร้อมรูปปก</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
-        <tr><td class="id">E3</td><td class="what">ข้อมูลจากตั้งค่า</td><td>เปิดหน้า Golf Simulator และหน้าแรกบนมือถือ</td><td>ราคา ส่วนลดระดับ กติกา เวลาเปิด ตรงกับตั้งค่า · ไม่มีตัวอักษรล้นจอ</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
-        <tr><td class="id">E4</td><td class="what">ข้อความ PDPA</td><td>เปิดหน้าข้อกำหนดและนโยบายความเป็นส่วนตัว</td><td>เป็นฉบับที่ฝ่ายกฎหมาย MST อนุมัติ</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
-        <tr class="later"><td class="id">E5</td><td class="what">สมัครผ่าน LINE <b>หลัง LINE</b></td><td>มือถือ: ปุ่มสมัครใน Rich Menu › กรอก › ยินยอม</td><td>ได้บัตรสมาชิก QR · แต้มต้อนรับ · ข้อความต้อนรับใน LINE</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
-        <tr class="later"><td class="id">E6</td><td class="what">ผูกกับบัญชีเคาน์เตอร์ <b>หลัง LINE</b></td><td>สมัครใน LINE ด้วยเบอร์ของ B1</td><td>ผูกกับ B1 · ไม่ได้แต้มต้อนรับซ้ำ · แต้มเดิมอยู่ครบ</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
-        <tr class="later"><td class="id">E7</td><td class="what">ลูกค้าจองเอง <b>หลัง LINE</b></td><td>ปุ่มจองใน Rich Menu › เลือกช่อง › ยืนยัน · แล้วยกเลิกเอง</td><td>ได้ข้อความยืนยัน · ช่องขึ้นในตารางหลังบ้าน · ยกเลิกได้ก่อนเวลาที่ตั้งเท่านั้น</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+        <tr><td class="id">E1</td><td class="what">โปรโมชันขึ้นหน้าแรก</td><td><span class="ui">เว็บไซต์ › โปรโมชัน</span> เพิ่มโปรโมชันพร้อมรูปปก 16:9 ลิงก์ปุ่ม และวันสุดท้าย แล้วเผยแพร่</td><td>ภายใน 5 นาที ขึ้นแบนเนอร์และการ์ดหน้าแรก · กดปุ่มไปลิงก์ที่ตั้ง · หน้ารายละเอียดเปิดได้</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+        <tr><td class="id">E2</td><td class="what">โปรโมชันตามวัน</td><td>ตั้งโปรโมชันอีกอันให้เริ่มพรุ่งนี้ · แก้อันแรกให้วันสุดท้ายเป็นเมื่อวาน</td><td>อันที่ยังไม่เริ่ม (รอเริ่ม) และอันที่หมดแล้ว (หมดแล้ว) ไม่ขึ้นเว็บ · ร่างไม่ขึ้นเว็บ</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+        <tr><td class="id">E3</td><td class="what">รูปและข้อความ</td><td><span class="ui">เว็บไซต์ › เนื้อหาหน้าเว็บ</span> เปลี่ยนรูปเป็นรูปร้านจริง แก้หัวข้อหลัก และรายชื่อแบรนด์</td><td>หน้าแรกแสดงรูป ข้อความ และแถบแบรนด์ใหม่</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+        <tr><td class="id">E4</td><td class="what">บทความ</td><td>เขียนบทความพร้อมรูปปก บันทึกร่าง แล้วเผยแพร่</td><td>ร่างไม่ขึ้นเว็บ · เผยแพร่แล้วขึ้นในหน้าบทความ (ไม่ปนกับโปรโมชัน)</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+        <tr><td class="id">E5</td><td class="what">ข้อมูลจากตั้งค่า</td><td>เปิดหน้าแรก Golf Simulator และ ติดต่อเรา บนมือถือ</td><td>ราคา ส่วนลดระดับ เวลาเปิด ช่องว่างวันนี้ ลิงก์ร้านออนไลน์ ตรงกับตั้งค่า · ไม่มีตัวอักษรล้นจอ</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+        <tr><td class="id">E6</td><td class="what">ข้อความ PDPA</td><td>เปิดหน้าข้อกำหนด และนโยบายความเป็นส่วนตัว</td><td>เป็นฉบับที่ฝ่ายกฎหมาย MST อนุมัติ</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
       </tbody>
     </table>
-
     <h3 class="sec">F · ผู้ดูแลระบบ <span>ผู้ดูแลระบบ</span></h3>
     <table class="u">
       <thead><tr><th>#</th><th>ทดสอบ</th><th>ขั้นตอน</th><th>ผลที่ควรได้</th><th>ผล</th><th>หมายเหตุ</th></tr></thead>
       <tbody>
-        <tr><td class="id">F1</td><td class="what">ตั้งค่าจริง</td><td>ตรวจ ระดับสมาชิก · แต้ม · การจองซิม · สินค้าที่ไม่ได้แต้ม ให้ตรงนโยบายร้าน</td><td>แก้ได้ทุกค่า · ทุกการแก้อยู่ในบันทึกการใช้งาน</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+        <tr><td class="id">F1</td><td class="what">ตั้งค่าจริง</td><td>ตรวจ ระดับสมาชิก · แต้ม (ทุก ฿X = Y แต้ม แต้มต้อนรับ โบนัสวันเกิด) · การจองซิม · สินค้าที่ไม่ได้แต้ม ให้ตรงนโยบายร้าน</td><td>แก้ได้ทุกค่า · ทุกการแก้อยู่ในบันทึกการใช้งาน</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
         <tr><td class="id">F2</td><td class="what">ยืนยันความพร้อม</td><td><span class="ui">ตั้งค่า › ความพร้อมเปิดใช้</span> กดยืนยันรายการที่ตรวจแล้ว</td><td>สถานะเปลี่ยนเป็น "พร้อม" พร้อมชื่อผู้ยืนยัน</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
-        <tr><td class="id">F3</td><td class="what">รวมบัญชี</td><td>จากคิวตรวจสอบ (B6) › รวมบัญชีซ้ำ</td><td>บัญชีเดียวเหลือ แต้มและบิลรวมกัน · ไม่ได้แต้มต้อนรับซ้ำ</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
-        <tr><td class="id">F4</td><td class="what">ลบข้อมูล PDPA</td><td>สมาชิกทดสอบ › ลบข้อมูล (PDPA) › พิมพ์ "ลบข้อมูล"</td><td>ชื่อ เบอร์ LINE ถูกล้าง · ยอดขายยังนับในภาพรวม</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
-        <tr><td class="id">F5</td><td class="what">ภาพรวม</td><td>ดูภาพรวม 7 วัน หลังทดสอบ C และ D</td><td>สมาชิกใหม่ ยอดซื้อ % บิลที่ระบุสมาชิกได้ การใช้ซิม ตรงกับที่ทดสอบ</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+        <tr><td class="id">F3</td><td class="what">รวมบัญชี</td><td>จากคิวตรวจสอบ (B6) › <span class="ui">รวมบัญชีซ้ำ</span></td><td>เหลือบัญชีเดียว แต้ม บิล การจอง และการแลกรางวัลรวมกัน · ไม่ได้แต้มต้อนรับซ้ำ</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+        <tr><td class="id">F4</td><td class="what">ลบข้อมูล PDPA</td><td>สมาชิกทดสอบ › <span class="ui">ลบข้อมูล (PDPA)</span> › พิมพ์ "ลบข้อมูล"</td><td>ชื่อ เบอร์ อีเมล ถูกล้าง · เข้าเว็บด้วยเบอร์นั้นไม่เห็นบัญชีเดิม · ยอดขายยังนับในภาพรวม</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+        <tr><td class="id">F5</td><td class="what">ภาพรวม</td><td>ดูภาพรวม 7 วัน หลังทดสอบ C D G H</td><td>สมาชิกใหม่ ยอดซื้อ % บิลที่ระบุสมาชิกได้ การใช้ซิม ตรงกับที่ทดสอบ</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
         <tr><td class="id">F6</td><td class="what">สถานะระบบ</td><td><span class="ui">ตั้งค่า › สถานะระบบ</span></td><td>งานกลางคืน งานทุก 15 นาที และสำรองข้อมูล ขึ้น "ปกติ"</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
       </tbody>
     </table>
-
-    <h3 class="sec">G · ข้อความ LINE <span>หลัง LINE</span></h3>
-    <table class="u">
-      <thead><tr><th>#</th><th>ทดสอบ</th><th>ขั้นตอน</th><th>ผลที่ควรได้</th><th>ผล</th><th>หมายเหตุ</th></tr></thead>
-      <tbody>
-        <tr class="later"><td class="id">G1</td><td class="what">แจ้งแต้ม</td><td>นำเข้าบิลของสมาชิกที่ผูก LINE</td><td>ได้ข้อความยอดซื้อ แต้มที่ได้ แต้มคงเหลือ</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
-        <tr class="later"><td class="id">G2</td><td class="what">ขึ้นระดับ</td><td>ทำ C8 กับสมาชิกที่ผูก LINE</td><td>ได้ข้อความยินดีขึ้นระดับพร้อมสิทธิ์ใหม่</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
-        <tr class="later"><td class="id">G3</td><td class="what">การจอง</td><td>จอง · ย้าย · ยกเลิก ให้สมาชิกที่ผูก LINE · จองไว้ล่วงหน้าเกินเวลาเตือน</td><td>ได้ข้อความทุกครั้ง · ข้อความเตือนก่อนเวลาครั้งเดียว</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
-      </tbody>
-    </table>
   </div>
-  <div class="ft"><span>MST Golf Platform · UAT</span><span>3 / 4</span></div>
+  <div class="ft"><span>MST Golf · UAT</span><span>3 / 5</span></div>
 </section>
 
 <!-- ═══════ 4 ═══════ -->
 <section class="page">
   <div class="head">
-    <div class="kicker">MST Golf Platform · UAT</div>
+    <div class="kicker">MST Golf · UAT</div>
+    <h2>ลูกค้าบนเว็บไซต์ รางวัลและคูปอง</h2>
+  </div>
+  <div class="body">
+    <h3 class="sec">G · ลูกค้าบนเว็บไซต์ <span>มือถือ · หน้าร้าน</span></h3>
+    <table class="u">
+      <thead><tr><th>#</th><th>ทดสอบ</th><th>ขั้นตอน</th><th>ผลที่ควรได้</th><th>ผล</th><th>หมายเหตุ</th></tr></thead>
+      <tbody>
+        <tr><td class="id">G1</td><td class="what">สมัครบนเว็บ</td><td>มือถือ: เปิดเว็บ › เข้าสู่ระบบ › ใส่เบอร์ใหม่ › กรอกชื่อ วันเกิด อีเมล › ยินยอม</td><td>ได้บัตรสมาชิก QR · แต้มต้อนรับ · มีข้อความต้อนรับในการแจ้งเตือน (กระดิ่ง)</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+        <tr><td class="id">G2</td><td class="what">ผูกกับบัญชีเคาน์เตอร์</td><td>เข้าสู่ระบบบนเว็บด้วยเบอร์ของ B1</td><td>เห็นบัตรและแต้มเดิมของ B1 ทันที ไม่ต้องกรอกสมัครใหม่ · ไม่ได้แต้มต้อนรับซ้ำ</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+        <tr><td class="id">G3</td><td class="what">ลูกค้าจองเอง</td><td>เมนู จองซิม › เลือกช่องว่าง › ยืนยัน · แล้วยกเลิกเอง</td><td>จองได้ทันทีไม่ต้องรอร้าน · การจองขึ้นในตารางหลังบ้าน · ยกเลิกเองได้ก่อนเวลาที่ตั้งเท่านั้น</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+        <tr><td class="id">G4</td><td class="what">ช่องเพิ่งถูกจอง</td><td>มือถือ 2 เครื่องเปิดวันเดียวกัน · เครื่อง 1 จองช่องหนึ่ง · เครื่อง 2 กดช่องเดียวกัน</td><td>เครื่อง 2 ขึ้น "ไม่ว่างแล้ว" ตอนกด และช่องเปลี่ยนเป็น "เต็ม" ภายในไม่กี่วินาที</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+        <tr><td class="id">G5</td><td class="what">ร้านยกเลิกคิว</td><td>พนักงานยกเลิกการจองจาก G3 (จองใหม่) พร้อมเหตุผล</td><td>ลูกค้าเห็นการแจ้งเตือนพร้อมเหตุผล · ช่องกลับเป็นว่าง</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+        <tr><td class="id">G6</td><td class="what">แจ้งแต้มและระดับ</td><td>นำเข้าบิลของสมาชิก G1 (และทำ C8)</td><td>การแจ้งเตือนบนเว็บ: ยอดซื้อ แต้มที่ได้ แต้มคงเหลือ · ขึ้นระดับพร้อมสิทธิ์ใหม่</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+        <tr class="later"><td class="id">G7</td><td class="what">อีเมลถึงลูกค้า <b>ก่อนเปิดจริง</b></td><td>ทำ G1 G3 G6 กับสมาชิกที่ใส่อีเมลไว้</td><td>ได้อีเมลทุกครั้ง · ปิดรับอีเมลในหน้าสมาชิกแล้วไม่ได้อีก</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+        <tr class="later"><td class="id">G8</td><td class="what">รหัส SMS <b>ก่อนเปิดจริง</b></td><td>เปิด <span class="ui">ยืนยันเบอร์ด้วยรหัส SMS</span> แล้วเข้าสู่ระบบด้วยเบอร์จริง</td><td>ได้ SMS รหัส 6 หลัก · ใส่ผิด 5 ครั้งถูกล็อก · ขอรหัสใหม่ได้หลังเวลาที่กำหนด</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+      </tbody>
+    </table>
+    <h3 class="sec">H · รางวัลและคูปอง <span>หน้าร้าน · การตลาด</span></h3>
+    <table class="u">
+      <thead><tr><th>#</th><th>ทดสอบ</th><th>ขั้นตอน</th><th>ผลที่ควรได้</th><th>ผล</th><th>หมายเหตุ</th></tr></thead>
+      <tbody>
+        <tr><td class="id">H1</td><td class="what">แลกคูปองบนเว็บ</td><td>สมาชิกที่มีแต้มพอ › รางวัล › แลกคูปอง</td><td>แต้มหักทันที · ได้คูปองพร้อม QR และรหัส MST-XXXX-XXXX · แต้มไม่พอแลกไม่ได้</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+        <tr><td class="id">H2</td><td class="what">ใช้คูปองที่ร้าน</td><td><span class="ui">ตรวจคูปอง</span> สแกน QR จากมือถือลูกค้า › <span class="ui">ใช้คูปอง</span> ใส่เลขบิล</td><td>ขึ้น "ใช้ได้" พร้อมมูลค่าและเงื่อนไข · ใช้แล้วสแกนซ้ำขึ้นว่าใช้ไปแล้วเมื่อไร ที่ไหน</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+        <tr><td class="id">H3</td><td class="what">ขอแลกของรางวัล</td><td>สมาชิกขอแลกของรางวัล (เช่น iPad) บนเว็บ</td><td>คำขอขึ้นใน <span class="ui">รางวัล › คำขอที่ต้องดำเนินการ</span> · อีเมลแจ้งการตลาด (เมื่อมีบัญชีอีเมล)</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+        <tr><td class="id">H4</td><td class="what">สถานะคำขอ</td><td>เปลี่ยนสถานะ กำลังตรวจสอบ → อนุมัติ → กำลังเตรียมของ → จัดส่งแล้ว (ใส่เลขพัสดุ) → เสร็จสิ้น</td><td>ลูกค้าเห็นสถานะและเลขพัสดุบนเว็บ และได้การแจ้งเตือนทุกขั้น</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+        <tr><td class="id">H5</td><td class="what">ไม่อนุมัติ</td><td>ขอแลกอีกครั้ง แล้วกด ไม่อนุมัติ พร้อมเหตุผล</td><td>แต้มคืนเต็มจำนวน · สต็อกคืน · ลูกค้าเห็นเหตุผล</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+        <tr><td class="id">H6</td><td class="what">แคตตาล็อก</td><td><span class="ui">แคตตาล็อกรางวัล</span> ตั้งสต็อก 1 ชิ้น และจำกัดคนละ 1 ครั้ง</td><td>แลกครบแล้วขึ้นว่าหมด · คนเดิมแลกซ้ำไม่ได้ · ปิดรางวัลแล้วหายจากเว็บ</td><td class="box">☐ ผ่าน<br>☐ ไม่ผ่าน</td><td class="note"></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="ft"><span>MST Golf · UAT</span><span>4 / 5</span></div>
+</section>
+
+<!-- ═══════ 5 ═══════ -->
+<section class="page">
+  <div class="head">
+    <div class="kicker">MST Golf · UAT</div>
     <h2>สรุปผลและลงนาม</h2>
   </div>
   <div class="body">
@@ -207,9 +232,10 @@
           <tr><td class="what">B · สมาชิกที่เคาน์เตอร์</td><td>6</td><td></td><td></td><td></td></tr>
           <tr><td class="what">C · นำเข้า POS</td><td>8</td><td></td><td></td><td></td></tr>
           <tr><td class="what">D · ซิมกอล์ฟ</td><td>7</td><td></td><td></td><td></td></tr>
-          <tr><td class="what">E · เว็บไซต์</td><td>7 (3 หลัง LINE)</td><td></td><td></td><td></td></tr>
+          <tr><td class="what">E · เว็บไซต์</td><td>6</td><td></td><td></td><td></td></tr>
           <tr><td class="what">F · ผู้ดูแลระบบ</td><td>6</td><td></td><td></td><td></td></tr>
-          <tr><td class="what">G · ข้อความ LINE</td><td>3 (หลัง LINE)</td><td></td><td></td><td></td></tr>
+          <tr><td class="what">G · ลูกค้าบนเว็บไซต์</td><td>8 (2 ก่อนเปิดจริง)</td><td></td><td></td><td></td></tr>
+          <tr><td class="what">H · รางวัลและคูปอง</td><td>6</td><td></td><td></td><td></td></tr>
         </tbody>
       </table>
     </div>
@@ -230,9 +256,9 @@
     <div class="card warn">
       <h3>เงื่อนไขเปิดใช้จริง</h3>
       <ul class="small">
-        <li>ส่วน A–F ผ่านครบ · ส่วนที่ต้องใช้ LINE (E5–E7, G) ผ่านเมื่อได้ credentials จากทีม LINE</li>
-        <li>หน้า <b>ตั้งค่า › ความพร้อมเปิดใช้</b> ครบทุกรายการของ MST</li>
-        <li>ข้อมูลทดสอบทั้งหมดอยู่ในระบบทดสอบ — ระบบจริงเริ่มจากข้อมูลว่าง (หรือข้อมูลเดิมที่ย้ายมา)</li>
+        <li>ส่วน A–H ผ่านครบ · ข้อ G7 G8 ผ่านเมื่อ MST ได้บัญชีอีเมลและ SMS แล้ว และเปิด <b>ยืนยันเบอร์ด้วยรหัส SMS</b> ก่อนเปิดจริง</li>
+        <li>หน้า <b>ตั้งค่า › ความพร้อมเปิดใช้</b> ครบทุกรายการของ MST · รูปตัวอย่างบนเว็บเปลี่ยนเป็นรูปจริงทั้งหมด</li>
+        <li>ข้อมูลทดสอบทั้งหมดอยู่ในระบบทดสอบ ระบบจริงเริ่มจากข้อมูลว่าง (หรือข้อมูลเดิมที่ย้ายมา)</li>
       </ul>
     </div>
     <div class="sign">
@@ -241,7 +267,7 @@
       <div>ORIONS<br>ชื่อ / วันที่</div>
     </div>
   </div>
-  <div class="ft"><span>MST Golf Platform · UAT</span><span>4 / 4</span></div>
+  <div class="ft"><span>MST Golf · UAT</span><span>5 / 5</span></div>
 </section>
 
 </body>
