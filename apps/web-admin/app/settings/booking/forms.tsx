@@ -22,7 +22,7 @@ export function BookingRulesForm({ values }: { values: BookingSettings }) {
         {field("maxUpcoming", "การจองที่ยังไม่ถึงเวลาต่อคน")}
         {field("cancelHoursBefore", "ลูกค้ายกเลิกเองได้ก่อน (ชม.)")}
         {field("noShowGraceMinutes", "ไม่มาตามนัดหลังเริ่ม (นาที)")}
-        {field("reminderHoursBefore", "เตือนใน LINE ก่อนเวลา (ชม.)")}
+        {field("reminderHoursBefore", "เตือนลูกค้าก่อนเวลา (ชม.)")}
       </div>
       <SaveBar {...s} />
     </form>

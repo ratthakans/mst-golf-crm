@@ -1,8 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { findMemberByLine, isCoreError, processEmails, processOutbox, type MemberSummary } from "@mstgolf/core";
+import { isCoreError, processEmails, processOutbox, type MemberSummary } from "@mstgolf/core";
 import { waitUntil } from "@vercel/functions";
 import { getOrg } from "./org";
-import { currentLineUser, type LineUser } from "./session";
+import { memberFor } from "./member";
+import { cookieOptions, currentCustomer, MEMBER_COOKIE, signCustomerSession, type Customer } from "./session";
 
 // Customer API plumbing. Route handlers only parse input and call
 // @mstgolf/core; every rule lives in the core and fails with a CoreError whose
@@ -59,19 +60,31 @@ export async function readJson<T extends object>(req: NextRequest): Promise<Part
   }
 }
 
-export async function requireLineUser(): Promise<LineUser> {
-  const user = await currentLineUser();
-  if (!user) throw new ApiError(401, "UNAUTHENTICATED", "กรุณาเข้าสู่ระบบด้วย LINE");
-  return user;
+export async function requireCustomer(): Promise<Customer> {
+  const c = await currentCustomer();
+  if (!c) throw new ApiError(401, "UNAUTHENTICATED", "กรุณาเข้าสู่ระบบ");
+  return c;
 }
 
-/** The org, the signed-in LINE user and their member record — or 401 / 403 NOT_MEMBER. */
-export async function requireMember(): Promise<{ orgId: string; user: LineUser; member: MemberSummary }> {
-  const user = await requireLineUser();
+/** The org, the signed-in customer and their member record — or 401 / 403 NOT_MEMBER. */
+export async function requireMember(): Promise<{ orgId: string; customer: Customer; member: MemberSummary }> {
+  const customer = await requireCustomer();
   const org = await getOrg();
-  const member = await findMemberByLine(org.id, user.sub);
+  const member = await memberFor(org.id, customer);
   if (!member) throw new ApiError(403, "NOT_MEMBER", "กรุณาสมัครสมาชิกก่อน");
-  return { orgId: org.id, user, member };
+  return { orgId: org.id, customer, member };
+}
+
+/** Sets (or replaces) the customer session cookie on a response. */
+export async function withSession(res: NextResponse, c: Customer): Promise<NextResponse> {
+  const { token, maxAge } = await signCustomerSession(c);
+  res.cookies.set(MEMBER_COOKIE, token, { ...cookieOptions, maxAge });
+  return res;
+}
+
+/** The caller's IP as Vercel reports it — for rate limits only, never stored with personal data. */
+export function clientIp(req: NextRequest): string | null {
+  return req.headers.get("x-real-ip") ?? req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null;
 }
 
 /** LINE's in-app browser identifies itself in the user agent. */

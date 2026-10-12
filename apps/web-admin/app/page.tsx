@@ -120,7 +120,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: { 
         <div>
           <h1>ภาพรวม</h1>
           <p>
-            สมาชิก {num(s.totalMembers)} คน · ผูก LINE แล้ว {num(s.membersWithLine)} คน
+            สมาชิก {num(s.totalMembers)} คน{org.settings.features.line ? ` · ผูก LINE แล้ว ${num(s.membersWithLine)} คน` : ""}
             {s.lastImportAt ? ` · นำเข้า POS ล่าสุด ${formatDateTime(s.lastImportAt)}` : " · ยังไม่เคยนำเข้า POS"}
           </p>
         </div>

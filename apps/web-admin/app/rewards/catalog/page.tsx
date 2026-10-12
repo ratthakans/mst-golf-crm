@@ -23,7 +23,7 @@ export default async function CataloguePage() {
         <div className="row between">
           <div>
             <h1>แคตตาล็อกรางวัล</h1>
-            <p>สิ่งที่สมาชิกเห็นในหน้ารางวัลใน LINE · คูปองออกให้ทันที ส่วนของรางวัลเป็นคำขอที่ทีมต้องอนุมัติ</p>
+            <p>สิ่งที่สมาชิกเห็นในหน้ารางวัลบนเว็บไซต์ · คูปองออกให้ทันที ส่วนของรางวัลเป็นคำขอที่ทีมต้องอนุมัติ</p>
           </div>
           {canManage && <Link href="/rewards/catalog/new" className="btn btn-sm">+ เพิ่มรางวัล</Link>}
         </div>

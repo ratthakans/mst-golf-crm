@@ -1156,3 +1156,89 @@
   border-color: var(--color-brand);
   color: var(--color-on-brand);
 }
+
+/* ------------------------------------------------------------- inbox */
+
+.app-tabs-wrap {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.inbox-link {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  color: var(--color-ink-2);
+}
+.inbox-link:hover,
+.inbox-link[aria-current="page"] {
+  background: var(--color-paper-2);
+  color: var(--color-brand-deep);
+}
+.inbox-dot {
+  position: absolute;
+  top: 3px;
+  right: 1px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: var(--radius-pill);
+  background: var(--color-danger);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+}
+.inbox {
+  display: grid;
+  gap: var(--space-4);
+}
+.inbox-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-3);
+}
+.inbox-item {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  background: var(--color-surface);
+  border: var(--rule);
+  border-radius: var(--radius-md);
+}
+.inbox-item.unread {
+  border-left: 3px solid var(--color-brand);
+}
+.inbox-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-3);
+}
+.inbox-head h2 {
+  font-size: var(--text-md);
+  font-weight: 600;
+}
+.inbox-head time {
+  flex: none;
+  font-size: var(--text-xs);
+  color: var(--color-muted);
+}
+.inbox-lead {
+  color: var(--color-ink-2);
+  font-size: var(--text-sm);
+}
+.summary dd.strong {
+  color: var(--color-brand-deep);
+}
+.otp-input {
+  font-size: var(--text-xl);
+  letter-spacing: 0.4em;
+  text-align: center;
+}

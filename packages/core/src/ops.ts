@@ -2,6 +2,7 @@ import type { Prisma } from "@mstgolf/database";
 import { prisma } from "@mstgolf/database";
 import { SITE_PHOTO_KEYS } from "@mstgolf/shared";
 import { earnRateText } from "@mstgolf/shared/tiers";
+import { smsProvider } from "./notify/sms";
 import { writeAudit } from "./audit";
 import type { Actor } from "./context";
 import { currentConsentTexts, lineChannelStatus, listStores } from "./config";
@@ -110,6 +111,7 @@ export async function systemStatus(orgId: string, now = new Date()) {
     ENCRYPTION_KEY: !!process.env.ENCRYPTION_KEY,
     PUBLIC_BLOB_READ_WRITE_TOKEN: !!process.env.PUBLIC_BLOB_READ_WRITE_TOKEN,
     EMAIL: !!process.env.RESEND_API_KEY && !!process.env.EMAIL_FROM,
+    SMS: smsProvider() === "thaibulksms",
     DATABASE_SCHEMA: process.env.DATABASE_SCHEMA || "public",
   };
   return {
@@ -205,10 +207,15 @@ export async function readiness(orgId: string, now = new Date()): Promise<ReadyI
   add({ key: "pos.file", group: "pos", label: "นำเข้าไฟล์ POS จริง", owner: "MST", href: "/import", state: commits > 0 ? "ok" : "waiting", detail: commits > 0 ? `นำเข้าแล้ว ${commits} รอบ` : "รอไฟล์ export จาก POS ของร้าน" });
   add({ key: "team.users", group: "team", label: "บัญชีพนักงาน", owner: "MST", href: "/settings/users", state: users >= 2 ? "ok" : "waiting", detail: `ใช้งานอยู่ ${users} บัญชี` });
 
-  // LINE (the LINE agency's part)
-  add({ key: "line.messaging", group: "line", label: "Messaging API", owner: "ทีม LINE", href: "/settings/line", state: line ? "ok" : "waiting", detail: line ? `Channel ${line.channelId}` : "ยังไม่ได้ credentials — ระบบไม่ส่งข้อความ LINE" });
-  add({ key: "line.login", group: "line", label: "LINE Login + LIFF", owner: "ทีม LINE", href: "/settings/line", state: line?.liffId && line.loginChannelId ? "ok" : "waiting", detail: line?.liffId ? "พร้อม" : "ลูกค้ายังล็อกอินหน้าสมาชิก/หน้าจองไม่ได้" });
-  add({ key: "line.oa", group: "line", label: "ลิงก์เพิ่มเพื่อน LINE OA", owner: "ทีม LINE", href: "/settings/site", state: site.lineOaUrl ? "ok" : "waiting", detail: site.lineOaUrl ?? "ยังไม่มี" });
+  // Signing in on the website
+  add({ key: "members.sms", group: "members", label: "บริการ SMS (รหัสเข้าสู่ระบบของลูกค้า)", owner: "MST", href: "/settings/system", state: status.env.SMS ? "ok" : "waiting", detail: status.env.SMS ? "พร้อมส่งรหัส" : "ยังไม่มีบัญชีผู้ให้บริการ SMS — ลูกค้าเข้าสู่ระบบบนเว็บจริงไม่ได้ (preview ใช้รหัสทดสอบ)" });
+
+  // LINE (the LINE agency's part) — only when the tenant has LINE switched on
+  if (settings.features.line) {
+    add({ key: "line.messaging", group: "line", label: "Messaging API", owner: "ทีม LINE", href: "/settings/line", state: line ? "ok" : "waiting", detail: line ? `Channel ${line.channelId}` : "ยังไม่ได้ credentials — ระบบไม่ส่งข้อความ LINE" });
+    add({ key: "line.login", group: "line", label: "LINE Login + LIFF", owner: "ทีม LINE", href: "/settings/line", state: line?.liffId && line.loginChannelId ? "ok" : "waiting", detail: line?.liffId ? "พร้อม" : "ลูกค้ายังล็อกอินหน้าสมาชิก/หน้าจองไม่ได้" });
+    add({ key: "line.oa", group: "line", label: "ลิงก์เพิ่มเพื่อน LINE OA", owner: "ทีม LINE", href: "/settings/site", state: site.lineOaUrl ? "ok" : "waiting", detail: site.lineOaUrl ?? "ยังไม่มี" });
+  }
 
   // System
   const envOk = status.env.AUTH_SECRET && status.env.CRON_SECRET && status.env.ENCRYPTION_KEY;

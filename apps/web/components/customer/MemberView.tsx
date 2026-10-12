@@ -271,12 +271,13 @@ function ProfilePanel({ card, onSaved }: { card: CardData; onSaved: (c: CardData
   const [email, setEmail] = useState(card.email ?? "");
   const [birthday, setBirthday] = useState(card.birthday ?? "");
   const [marketing, setMarketing] = useState(card.marketing);
+  const [emailNotify, setEmailNotify] = useState(card.emailNotify);
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState<{ kind: "ok" | "error"; text: string } | null>(null);
   const birthdayLocked = !!card.birthday;
 
   const dirty =
-    fullName.trim() !== card.name || email.trim() !== (card.email ?? "") || marketing !== card.marketing || (!birthdayLocked && birthday !== "");
+    fullName.trim() !== card.name || email.trim() !== (card.email ?? "") || marketing !== card.marketing || emailNotify !== card.emailNotify || (!birthdayLocked && birthday !== "");
 
   const save = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -286,7 +287,7 @@ function ProfilePanel({ card, onSaved }: { card: CardData; onSaved: (c: CardData
       return;
     }
     setBusy(true);
-    const body: Record<string, unknown> = { fullName, email: email.trim() || null, marketing };
+    const body: Record<string, unknown> = { fullName, email: email.trim() || null, marketing, emailNotify };
     if (!birthdayLocked && birthday) body.birthday = birthday;
     const res = await api<{ member: CardData }>("/api/me/profile", { method: "PATCH", body });
     setBusy(false);
@@ -331,13 +332,21 @@ function ProfilePanel({ card, onSaved }: { card: CardData; onSaved: (c: CardData
           aria-describedby="pf-bday-hint"
         />
         <p id="pf-bday-hint" className="hint">
-          {birthdayLocked ? "ตั้งวันเกิดแล้ว หากต้องการแก้ไขกรุณาติดต่อร้าน" : "ใส่ได้ครั้งเดียว เพื่อรับแต้ม ×2 ทุกการซื้อในเดือนเกิด"}
+          {birthdayLocked ? "ตั้งวันเกิดแล้ว หากต้องการแก้ไขกรุณาติดต่อร้าน" : card.tier.birthdayMultiplier > 1 ? `ใส่ได้ครั้งเดียว เพื่อรับแต้ม ×${card.tier.birthdayMultiplier} ทุกการซื้อในเดือนเกิด` : "ใส่ได้ครั้งเดียว เพื่อรับสิทธิ์เดือนเกิด"}
         </p>
       </div>
       <label className="switch">
         <span>
+          <span className="switch-label">ส่งการแจ้งเตือนทางอีเมลด้วย</span>
+          <span className="hint">{email.trim() ? "แต้มเข้า การจอง คูปอง และสถานะการแลกรางวัล — ทุกข้อความยังอยู่ในหน้าการแจ้งเตือนเสมอ" : "ใส่อีเมลด้านบนก่อน"}</span>
+        </span>
+        <input type="checkbox" checked={emailNotify} disabled={!email.trim()} onChange={(e) => setEmailNotify(e.target.checked)} />
+        <span className="track" aria-hidden="true" />
+      </label>
+      <label className="switch">
+        <span>
           <span className="switch-label">รับข่าวสารและโปรโมชั่น</span>
-          <span className="hint">ทาง LINE และช่องทางอื่น เปลี่ยนใจได้ทุกเมื่อ</span>
+          <span className="hint">โปรโมชันและข่าวสารจากร้าน เปลี่ยนใจได้ทุกเมื่อ</span>
         </span>
         <input type="checkbox" checked={marketing} onChange={(e) => setMarketing(e.target.checked)} />
         <span className="track" aria-hidden="true" />

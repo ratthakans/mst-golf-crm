@@ -144,7 +144,7 @@ export function SimulatorView({
   async function move(bookingId: string, laneId: string, startAt: string) {
     try {
       await api(`/api/booking/${bookingId}`, { method: "PATCH", body: { action: "move", laneId, startAt } });
-      setToast("ย้ายการจองแล้ว · ลูกค้าได้ข้อความแจ้งใน LINE");
+      setToast("ย้ายการจองแล้ว · แจ้งลูกค้าแล้ว");
       await load(true);
     } catch (e) {
       setError(errorText(e));
@@ -164,7 +164,7 @@ export function SimulatorView({
       <div className="page-head page-head-actions" style={{ marginBottom: 0 }}>
         <div>
           <h1>ซิมกอล์ฟ</h1>
-          <p>การจองจาก LINE เว็บไซต์ walk-in และโทรจองอยู่ในตารางเดียว · ลากการ์ดเพื่อย้ายเวลา/lane · อัปเดตเองทุก 15 วินาที</p>
+          <p>การจองจากเว็บไซต์ walk-in และโทรจองอยู่ในตารางเดียว · ลากการ์ดเพื่อย้ายเวลา/lane · อัปเดตเองทุก 15 วินาที</p>
         </div>
         {can.block && (
           <div className="head-actions">
@@ -501,7 +501,7 @@ function CreateDialog({
           checkInNow: checkIn,
         },
       });
-      onDone(checkIn ? "จองและเช็กอินแล้ว" : who === "member" && member?.hasLine ? "จองแล้ว · ลูกค้าได้ข้อความยืนยันใน LINE" : "จองแล้ว");
+      onDone(checkIn ? "จองและเช็กอินแล้ว" : who === "member" ? "จองแล้ว · แจ้งยืนยันให้ลูกค้าแล้ว" : "จองแล้ว");
     } catch (e) {
       setError(errorText(e));
       setBusy(false);
@@ -672,7 +672,7 @@ function BookingDialog({
 
       {mode === "cancel" && (
         <div style={{ marginTop: 14 }}>
-          <label className="field"><span>เหตุผล <b>*</b> <span className="hint">— ส่งให้ลูกค้าใน LINE</span></span><input value={reason} onChange={(e) => setReason(e.target.value)} /></label>
+          <label className="field"><span>เหตุผล <b>*</b> <span className="hint">— แจ้งให้ลูกค้าทราบ</span></span><input value={reason} onChange={(e) => setReason(e.target.value)} /></label>
           <div className="btn-row">
             <button className="btn btn-ghost" onClick={() => setMode("main")}>กลับ</button>
             <button className="btn btn-danger" disabled={busy || !reason.trim()} onClick={() => act({ action: "cancel", reason }, "ยกเลิกการจองแล้ว")}>ยืนยันยกเลิก</button>

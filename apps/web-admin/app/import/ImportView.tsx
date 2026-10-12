@@ -168,7 +168,7 @@ export function ImportView({
             นำเข้าเรียบร้อย — ให้แต้ม {num(done.pointsAwarded ?? 0)} แต้ม
             {done.pointsReversed ? ` · หักคืนจากการคืนสินค้า ${num(done.pointsReversed)} แต้ม` : ""}
             {done.membersCreated ? ` · สมาชิกใหม่จากบิล ${num(done.membersCreated)} คน` : ""}
-            {done.tierUps ? ` · เลื่อนระดับ ${num(done.tierUps)} คน` : ""} · ข้อความแจ้งแต้มกำลังส่งทาง LINE
+            {done.tierUps ? ` · เลื่อนระดับ ${num(done.tierUps)} คน` : ""} · แจ้งแต้มให้ลูกค้าแล้ว
           </div>
           <button className="btn btn-ghost" onClick={() => setDone(null)}>นำเข้าไฟล์ถัดไป</button>
         </div>

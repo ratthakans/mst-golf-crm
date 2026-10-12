@@ -12,7 +12,9 @@ import { Sheet } from "./Sheet";
 type Field = "fullName" | "phone" | "birthday" | "email" | "terms";
 
 interface Props {
-  lineName: string;
+  prefillName: string;
+  /** The mobile number proven with an SMS code — fixed in the form. Null when signing up through LINE. */
+  verifiedPhone: string | null;
   welcomePoints: number;
   terms: ConsentDoc | null;
   marketing: ConsentDoc | null;
@@ -21,12 +23,13 @@ interface Props {
   birthdayMultiplier: number; // entry tier's birthday-month points multiplier
 }
 
-// Flow page 03 step 02: name, mobile, optional birthday and email, PDPA
-// consent. The LINE account comes from the session cookie on the server.
-export function SignupForm({ lineName, welcomePoints, terms, marketing, next, todayKey, birthdayMultiplier }: Props) {
+// Name, mobile, optional birthday and email, PDPA consent. Who is signing up
+// comes from the session cookie on the server: the verified mobile number (or
+// the LINE account when LINE is on).
+export function SignupForm({ prefillName, verifiedPhone, welcomePoints, terms, marketing, next, todayKey, birthdayMultiplier }: Props) {
   const router = useRouter();
-  const [fullName, setFullName] = useState(lineName.length >= 2 ? lineName : "");
-  const [phone, setPhone] = useState("");
+  const [fullName, setFullName] = useState(prefillName.length >= 2 ? prefillName : "");
+  const [phone, setPhone] = useState(verifiedPhone ?? "");
   const [birthday, setBirthday] = useState("");
   const [email, setEmail] = useState("");
   const [accept, setAccept] = useState(false);
@@ -111,7 +114,7 @@ export function SignupForm({ lineName, welcomePoints, terms, marketing, next, to
         <span className="welcome-mark" aria-hidden="true">
           <IconCheck size={28} />
         </span>
-        <h1>{linked ? "เชื่อมบัญชี LINE เรียบร้อย" : "ยินดีต้อนรับสู่ MST Golf"}</h1>
+        <h1>{linked ? (verifiedPhone ? "ยินดีต้อนรับกลับ" : "เชื่อมบัญชี LINE เรียบร้อย") : "ยินดีต้อนรับสู่ MST Golf"}</h1>
         {done.welcomePoints > 0 ? (
           <p className="welcome-points">
             ได้ <b className="num">{formatPoints(done.welcomePoints)}</b> แต้มต้อนรับ
@@ -189,6 +192,7 @@ export function SignupForm({ lineName, welcomePoints, terms, marketing, next, to
             inputMode="tel"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
+            readOnly={!!verifiedPhone}
             autoComplete="tel-national"
             placeholder="08X-XXX-XXXX"
             maxLength={16}
@@ -201,7 +205,7 @@ export function SignupForm({ lineName, welcomePoints, terms, marketing, next, to
             </p>
           ) : (
             <p id="su-phone-hint" className="hint">
-              ใช้แจ้งที่เคาน์เตอร์เพื่อสะสมแต้ม ถ้าเคยให้เบอร์กับร้านไว้ แต้มเดิมจะมาอยู่ในบัตรนี้
+              {verifiedPhone ? "ยืนยันแล้วด้วยรหัส SMS · " : ""}ใช้แจ้งที่เคาน์เตอร์เพื่อสะสมแต้ม ถ้าเคยให้เบอร์กับร้านไว้ แต้มเดิมจะมาอยู่ในบัตรนี้
             </p>
           )}
         </div>

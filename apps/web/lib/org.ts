@@ -27,7 +27,7 @@ export async function siteOrigin(): Promise<string> {
 }
 
 export interface LoginSetup {
-  /** LINE Login through LIFF is ready (LIFF id + LINE Login channel id are configured). */
+  /** LINE Login through LIFF is on for this tenant and configured (LIFF id + LINE Login channel id). */
   lineReady: boolean;
   liffId: string | null;
   /** Local-only fake login for development without a LINE channel. */
@@ -40,6 +40,7 @@ export function devLoginEnabled(): boolean {
 
 /** What the customer pages need to know to sign someone in. Only the LIFF id ever reaches the browser. */
 export async function loginSetup(orgId: string): Promise<LoginSetup> {
+  if (!(await getOrg()).settings.features.line) return { lineReady: false, liffId: null, devLogin: false };
   const line = await lineConfig(orgId);
   const lineReady = !!(line?.liffId && line.loginChannelId);
   return { lineReady, liffId: lineReady ? line!.liffId : null, devLogin: !lineReady && devLoginEnabled() };

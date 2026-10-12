@@ -1,4 +1,5 @@
 import {
+  type InboxItem,
   memberBookings,
   memberRedemptions,
   rewardCatalogue,
@@ -8,7 +9,7 @@ import {
   type MemberCard,
   type PointHistoryItem,
 } from "@mstgolf/core";
-import type { BookingRow, CardData, PointRow, RedemptionRow, RewardsData } from "./types";
+import type { BookingRow, CardData, InboxRow, PointRow, RedemptionRow, RewardsData } from "./types";
 
 // Core results → plain JSON for client components and API responses. Only
 // what the member's own screens need: no internal ids beyond the booking id,
@@ -24,6 +25,7 @@ export function toCardData(c: MemberCard): CardData {
     email: m.email,
     birthday: m.birthday,
     marketing: m.marketingConsent,
+    emailNotify: m.emailNotify,
     pictureUrl: m.pictureUrl,
     points: m.points,
     tierKey: c.tier.key,
@@ -115,5 +117,19 @@ export async function loadRewards(orgId: string, memberId: string): Promise<Rewa
         canCancel: r.canCancel,
       }),
     ),
+  };
+}
+
+export function toInboxRow(n: InboxItem): InboxRow {
+  return {
+    id: n.id,
+    kind: n.kind,
+    at: n.at.toISOString(),
+    read: n.read,
+    title: n.title,
+    lead: n.lead,
+    rows: n.rows,
+    foot: n.foot ?? null,
+    link: n.button.url ? { label: n.button.label, href: n.button.url } : null,
   };
 }

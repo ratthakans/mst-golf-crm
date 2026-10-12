@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { findMemberByLine, listStores } from "@mstgolf/core";
+import { listStores } from "@mstgolf/core";
 import { LoginPanel } from "@/components/customer/LoginPanel";
 import { RewardsApp } from "@/components/customer/RewardsApp";
 import { getOrg, loginSetup } from "@/lib/org";
-import { currentLineUser } from "@/lib/session";
+import { currentMember } from "@/lib/member";
 import { loadCard, loadRewards } from "@/lib/views";
 
 export const dynamic = "force-dynamic";
@@ -26,9 +26,8 @@ export default async function RewardsPage() {
       </section>
     );
   }
-  const [setup, user] = await Promise.all([loginSetup(org.id), currentLineUser()]);
-  if (!user) return <LoginPanel setup={setup} purpose="rewards" />;
-  const member = await findMemberByLine(org.id, user.sub);
+  const [setup, { customer, member }] = await Promise.all([loginSetup(org.id), currentMember()]);
+  if (!customer) return <LoginPanel setup={setup} purpose="rewards" />;
   if (!member) redirect("/app/member?next=rewards");
 
   const [card, data, stores] = await Promise.all([loadCard(org.id, member.id), loadRewards(org.id, member.id), listStores(org.id)]);

@@ -6,7 +6,7 @@ import { CouponCheck } from "./CouponCheck";
 
 export const dynamic = "force-dynamic";
 
-// The counter's coupon screen: scan or type the code from the member's LINE,
+// The counter's coupon screen: scan or type the code from the member's phone,
 // check it, then mark it used. The discount itself is keyed into the POS.
 export default async function CouponsPage() {
   const user = await allowPage("coupons.use");

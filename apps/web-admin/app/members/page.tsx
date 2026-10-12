@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { lineConfig, liffUrl, searchMembers } from "@mstgolf/core";
+import { webOrigin } from "../../lib/web-origin";
 import { allowPage } from "../../lib/auth";
 import { currentOrg } from "../../lib/org";
 import { Forbidden } from "../Forbidden";
@@ -31,7 +32,9 @@ export default async function MembersPage({
     pageSize: PAGE_SIZE,
   });
   const line = await lineConfig(org.id);
-  const signupUrl = liffUrl(line?.liffId ?? null, "/member", org.settings.site.siteUrl);
+  // With LINE on, the LIFF link (same as the Rich Menu); otherwise the website sign-up.
+  const web = webOrigin(org.settings.site.siteUrl);
+  const signupUrl = org.settings.features.line && line?.liffId ? liffUrl(line.liffId, "/member") : web ? `${web}/register` : null;
   const showMoney = user.permissions.includes("dashboard.revenue");
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const qs = (p: number) => {
@@ -65,11 +68,13 @@ export default async function MembersPage({
             <option key={t.key} value={t.key}>{t.name}</option>
           ))}
         </select>
-        <select name="line" defaultValue={searchParams.line ?? ""} aria-label="LINE">
-          <option value="">LINE ทั้งหมด</option>
-          <option value="yes">ผูก LINE แล้ว</option>
-          <option value="no">ยังไม่ผูก LINE</option>
-        </select>
+        {org.settings.features.line && (
+          <select name="line" defaultValue={searchParams.line ?? ""} aria-label="LINE">
+            <option value="">LINE ทั้งหมด</option>
+            <option value="yes">ผูก LINE แล้ว</option>
+            <option value="no">ยังไม่ผูก LINE</option>
+          </select>
+        )}
         <select name="source" defaultValue={searchParams.source ?? ""} aria-label="ช่องทางสมัคร">
           <option value="">ทุกช่องทาง</option>
           {["LINE", "WEB", "COUNTER", "POS", "IMPORT"].map((s) => (
@@ -108,7 +113,7 @@ export default async function MembersPage({
                         <MemberAvatar id={m.id} name={m.displayName} version={photoVersion(m.pictureUrl)} size={32} />
                         <span>
                           <span className="member-name">{m.displayName}</span>
-                          <span className="sub mono">{m.code}{m.hasLine ? " · LINE" : ""}</span>
+                          <span className="sub mono">{m.code}{org.settings.features.line && m.hasLine ? " · LINE" : ""}</span>
                         </span>
                       </Link>
                     </td>

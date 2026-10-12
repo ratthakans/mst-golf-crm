@@ -292,7 +292,7 @@ export function BookingApp(props: Props) {
           {done.laneName} · {done.partySize} คน · {formatBaht(done.priceSatang)} ชำระที่ร้าน
         </p>
         <p className="notice">
-          <span>ได้ข้อความยืนยันใน LINE และเตือนก่อนเวลา {hoursText(rules.reminderHoursBefore)}</span>
+          <span>ยืนยันการจองในหน้าการแจ้งเตือน และเตือนก่อนเวลา {hoursText(rules.reminderHoursBefore)} (ส่งทางอีเมลด้วยถ้าใส่อีเมลไว้)</span>
         </p>
         <div className="stack">
           <button
@@ -547,7 +547,7 @@ export function BookingApp(props: Props) {
             {cancelTarget.laneName} · {cancelTarget.partySize} คน
           </p>
           <p className="hint" style={{ marginTop: 12 }}>
-            ช่องเวลานี้จะว่างให้คนอื่นจองทันที และคุณจะได้ข้อความแจ้งการยกเลิกใน LINE
+            ช่องเวลานี้จะว่างให้คนอื่นจองทันที และมีแจ้งการยกเลิกในหน้าการแจ้งเตือน
           </p>
         </Sheet>
       )}

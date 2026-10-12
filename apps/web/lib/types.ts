@@ -9,6 +9,7 @@ export interface CardData {
   email: string | null;
   birthday: string | null; // YYYY-MM-DD
   marketing: boolean;
+  emailNotify: boolean;
   pictureUrl: string | null;
   points: number;
   tierKey: string;
@@ -125,4 +126,16 @@ export interface RewardsData {
   balance: number;
   items: RewardItem[];
   redemptions: RedemptionRow[];
+}
+
+export interface InboxRow {
+  id: string;
+  kind: string;
+  at: string;
+  read: boolean;
+  title: string;
+  lead: string;
+  rows: Array<{ label: string; value: string; strong?: boolean }>;
+  foot: string | null;
+  link: { label: string; href: string } | null;
 }

@@ -14,18 +14,20 @@ export default async function SettingsPage() {
   const [line, shop] = await Promise.all([lineChannelStatus(org.id), shopifyStatus(org.id)]);
   const links = [
     { href: "/settings/tiers", title: "ระดับสมาชิก", desc: `${org.settings.tiers.map((t) => t.name).join(" · ")} — เกณฑ์ยอดซื้อ 12 เดือน อัตราแต้ม และสิทธิประโยชน์` },
-    { href: "/settings/points", title: "แต้ม · POS · ข้อความแจ้งเตือน", desc: `${earnRateText(org.settings.pointsPerBaht)} · แต้มต้อนรับ ${org.settings.welcomeBonus.toLocaleString("en-US")} · ${org.settings.pos.memberTag}: ในหมายเหตุบิล · เปิด/ปิดข้อความ LINE แต่ละแบบ` },
+    { href: "/settings/points", title: "แต้ม · POS · ข้อความแจ้งเตือน", desc: `${earnRateText(org.settings.pointsPerBaht)} · แต้มต้อนรับ ${org.settings.welcomeBonus.toLocaleString("en-US")} · ${org.settings.pos.memberTag}: ในหมายเหตุบิล · เปิด/ปิดการแจ้งเตือนลูกค้าแต่ละแบบ` },
     ...(org.settings.features.rewards
       ? [{ href: "/settings/rewards", title: "การแลกรางวัล", desc: org.settings.redemption.alertEmails.length ? `แจ้งคำขอแลกของไปที่ ${org.settings.redemption.alertEmails.join(", ")}` : "ยังไม่ได้ใส่อีเมล Marketing ที่จะรับแจ้งคำขอแลกของ" }]
       : []),
     { href: "/settings/booking", title: "การจองซิม", desc: "เวลาเปิดร้าน lane ราคา และกติกาการจอง/ยกเลิก/no-show" },
     { href: "/settings/consent", title: "ข้อความ PDPA", desc: "ข้อกำหนดสมาชิก นโยบายความเป็นส่วนตัว และการรับข่าวสาร (มีเวอร์ชัน)" },
-    { href: "/settings/line", title: "LINE", desc: line ? `เชื่อมแล้ว · Messaging API ${line.channelId}${line.liffId ? " · LIFF พร้อม" : " · ยังไม่มี LIFF"}` : "ยังไม่ได้เชื่อม — รอข้อมูลจากทีม LINE" },
+    ...(org.settings.features.line
+      ? [{ href: "/settings/line", title: "LINE", desc: line ? `เชื่อมแล้ว · Messaging API ${line.channelId}${line.liffId ? " · LIFF พร้อม" : " · ยังไม่มี LIFF"}` : "ยังไม่ได้เชื่อม — รอข้อมูลจากทีม LINE" }]
+      : []),
     { href: "/settings/shopify", title: "ร้านออนไลน์ (Shopify)", desc: shop ? `${shop.shopDomain} · ${shop.isActive ? "ดึงคำสั่งซื้อทุกคืน" : "ปิดอยู่"}` : "ยังไม่ได้เชื่อม — คำสั่งซื้อออนไลน์ได้แต้มและนับยอดเหมือนหน้าร้าน" },
-    { href: "/settings/site", title: "เว็บไซต์และร้าน", desc: "โดเมนเว็บ ลิงก์ LINE OA แผนที่ เบอร์ร้าน ที่อยู่" },
+    { href: "/settings/site", title: "เว็บไซต์และร้าน", desc: "โดเมนเว็บ แผนที่ เบอร์ร้าน ที่อยู่ ลิงก์ร้านออนไลน์" },
     { href: "/settings/users", title: "ผู้ใช้และสิทธิ์", desc: "บัญชีพนักงาน 5 ตำแหน่ง รีเซ็ตรหัสผ่าน ปิดบัญชี" },
     { href: "/settings/readiness", title: "ความพร้อมเปิดใช้", desc: "รายการที่ต้องครบก่อนเปิดจริง ตรวจจากระบบ · MST กดยืนยันค่าที่ตรวจแล้ว" },
-    { href: "/settings/system", title: "สถานะระบบ", desc: "งานตั้งเวลา สำรองข้อมูล ข้อความ LINE การนำเข้า และค่าระบบ" },
+    { href: "/settings/system", title: "สถานะระบบ", desc: "งานตั้งเวลา สำรองข้อมูล การแจ้งเตือน SMS อีเมล การนำเข้า และค่าระบบ" },
     { href: "/settings/audit", title: "บันทึกการใช้งาน", desc: "ใครทำอะไรเมื่อไร — ทุกการแก้แต้ม สมาชิก การจอง และการตั้งค่า" },
   ];
   return (

@@ -58,7 +58,7 @@ export function RewardsApp({ initial, contact, stores }: { initial: RewardsData;
     } else {
       choose("requests");
       setRequest(r);
-      setToast("ส่งคำขอแล้ว ทีมงานจะแจ้งความคืบหน้าทาง LINE");
+      setToast("ส่งคำขอแล้ว ติดตามความคืบหน้าได้ที่แท็บคำขอและหน้าการแจ้งเตือน");
     }
   };
 
@@ -105,7 +105,7 @@ export function RewardsApp({ initial, contact, stores }: { initial: RewardsData;
 
       {tab === "rewards" &&
         (data.items.length === 0 ? (
-          <p className="empty">ยังไม่มีรางวัลให้แลกตอนนี้ สะสมแต้มไว้ก่อน รางวัลใหม่จะแจ้งทาง LINE</p>
+          <p className="empty">ยังไม่มีรางวัลให้แลกตอนนี้ สะสมแต้มไว้ก่อน แล้วกลับมาดูรางวัลใหม่ที่หน้านี้</p>
         ) : (
           <ul className="rw-list">
             {data.items.map((i) => (
@@ -325,7 +325,7 @@ function RedeemSheet({
                     </select>
                   </div>
                 )}
-                {method === "PICKUP" && stores.length === 1 && <p className="hint">รับที่ {stores[0]!.name}{stores[0]!.address ? ` · ${stores[0]!.address}` : ""} ทีมงานจะแจ้งทาง LINE เมื่อของพร้อม</p>}
+                {method === "PICKUP" && stores.length === 1 && <p className="hint">รับที่ {stores[0]!.name}{stores[0]!.address ? ` · ${stores[0]!.address}` : ""} ทีมงานจะแจ้งเมื่อของพร้อม</p>}
                 <div className="field">
                   <label htmlFor="rw-name">ชื่อผู้รับ</label>
                   <input id="rw-name" className="input" value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" maxLength={80} />

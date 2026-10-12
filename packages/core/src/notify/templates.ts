@@ -153,7 +153,7 @@ export function notificationContent(kind: NotificationKind, payload: unknown, ct
     case "WELCOME": {
       const p = payload as WelcomePayload;
       return c(
-        `ยินดีต้อนรับสู่ ${ctx.storeName}`,
+        "ยินดีต้อนรับเป็นสมาชิก",
         `คุณ${p.displayName} สมัครสมาชิกเรียบร้อย`,
         [
           { label: "รหัสสมาชิก", value: p.code },

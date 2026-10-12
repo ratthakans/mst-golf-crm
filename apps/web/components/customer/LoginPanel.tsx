@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { LineGlyph } from "@/components/icons";
 import { api, cleanLoginParams, initLiff } from "@/lib/client";
+import { PhoneLogin } from "./PhoneLogin";
 
 export interface LoginSetupProps {
   lineReady: boolean;
@@ -15,9 +16,9 @@ type Phase = "starting" | "redirecting" | "verifying" | "error" | "idle";
 
 const RETRY_KEY = "mst_login_retry";
 
-// Signs the visitor in with LINE, the same way inside LINE (LIFF) and in a
-// normal browser (LINE Login via liff.login). On success the server sets the
-// session cookie and the page re-renders on the server with the member's data.
+// Signs the visitor in with their mobile number and an SMS code. When the
+// tenant has LINE on, LINE sign-in (LIFF / LINE Login) is offered first. On
+// success the server sets the session cookie and the page re-renders.
 export function LoginPanel({ setup, purpose }: { setup: LoginSetupProps; purpose: "member" | "booking" | "rewards" }) {
   const router = useRouter();
   const [phase, setPhase] = useState<Phase>(setup.lineReady ? "starting" : "idle");
@@ -68,24 +69,11 @@ export function LoginPanel({ setup, purpose }: { setup: LoginSetupProps; purpose
     }
   }, [setup.lineReady, signIn]);
 
-  const title = purpose === "booking" ? "เข้าสู่ระบบเพื่อจองซิมกอล์ฟ" : purpose === "rewards" ? "เข้าสู่ระบบเพื่อแลกรางวัล" : "บัตรสมาชิก MST Golf";
+  const title = purpose === "booking" ? "เข้าสู่ระบบเพื่อจองซิมกอล์ฟ" : purpose === "rewards" ? "เข้าสู่ระบบเพื่อแลกรางวัล" : "สมาชิก MST Golf";
   const lead =
-    purpose === "booking"
-      ? "ใช้บัญชี LINE ของคุณ ไม่ต้องตั้งรหัสผ่าน ระบบจะพากลับมาหน้าจองทันที"
-      : purpose === "rewards"
-        ? "ใช้บัญชี LINE ของคุณ ไม่ต้องตั้งรหัสผ่าน ระบบจะพากลับมาหน้ารางวัลทันที"
-      : "สมัครหรือเปิดบัตรสมาชิกด้วยบัญชี LINE ไม่ต้องตั้งรหัสผ่าน ระหว่างเข้าสู่ระบบเพิ่มเพื่อน LINE OA ไว้ เพื่อรับข้อความแจ้งแต้มและยืนยันการจอง";
-
-  if (!setup.lineReady && !setup.devLogin) {
-    return (
-      <section className="panel login-panel">
-        <h1>ระบบสมาชิกกำลังจะเปิดให้บริการ</h1>
-        <p className="muted">
-          เร็ว ๆ นี้สมัครสมาชิก ดูแต้ม และจองซิมกอล์ฟผ่าน LINE ได้ที่หน้านี้ ระหว่างนี้สมัครสมาชิกหรือจองซิมได้ที่หน้าร้าน
-        </p>
-      </section>
-    );
-  }
+    purpose === "member"
+      ? "สมัครหรือเข้าสู่ระบบด้วยเบอร์มือถือ ไม่ต้องตั้งรหัสผ่าน เราส่งรหัส 6 หลักทาง SMS ให้ทุกครั้ง"
+      : "ใช้เบอร์มือถือ ไม่ต้องตั้งรหัสผ่าน ยังไม่เป็นสมาชิกก็สมัครต่อได้ในหน้านี้";
 
   return (
     <section className="panel login-panel" aria-live="polite">
@@ -101,7 +89,7 @@ export function LoginPanel({ setup, purpose }: { setup: LoginSetupProps; purpose
               </p>
               <button type="button" className="btn btn-line btn-block" onClick={() => void signIn()}>
                 <LineGlyph />
-                <span>ลองเข้าสู่ระบบอีกครั้ง</span>
+                <span>ลองเข้าสู่ระบบด้วย LINE อีกครั้ง</span>
               </button>
             </>
           ) : (
@@ -110,8 +98,11 @@ export function LoginPanel({ setup, purpose }: { setup: LoginSetupProps; purpose
               <span>{phase === "redirecting" ? "กำลังไปที่ LINE…" : phase === "verifying" ? "กำลังยืนยันตัวตน…" : "กำลังเชื่อมต่อ LINE…"}</span>
             </button>
           )}
+          <p className="hint center">หรือใช้เบอร์มือถือ</p>
         </div>
       )}
+
+      <PhoneLogin />
 
       {setup.devLogin && <DevLogin />}
     </section>

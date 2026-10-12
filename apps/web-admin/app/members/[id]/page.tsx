@@ -69,7 +69,11 @@ export default async function MemberPage({ params, searchParams }: { params: { i
             <div className="member-meta">
               <span className="mono">{member.code}</span>
               <span>· {formatPhone(member.phone)} {member.phone && !member.phoneVerified && <span className="pill amber">ยังไม่ยืนยันที่ร้าน</span>}</span>
-              <span>· {member.hasLine ? (member.lineReachable ? <span className="pill green">LINE</span> : <span className="pill red">LINE ส่งไม่ถึง</span>) : <span className="pill gray">ยังไม่ผูก LINE</span>}</span>
+              {org.settings.features.line ? (
+                <span>· {member.hasLine ? (member.lineReachable ? <span className="pill green">LINE</span> : <span className="pill red">LINE ส่งไม่ถึง</span>) : <span className="pill gray">ยังไม่ผูก LINE</span>}</span>
+              ) : (
+                <span>· {member.registered ? <span className="pill green">สมาชิกบนเว็บ</span> : <span className="pill gray">ยังไม่ได้เข้าสู่ระบบบนเว็บ</span>}</span>
+              )}
               <span>· สมัครทาง {SOURCE_LABEL[member.source] ?? member.source} {formatDate(member.createdAt)}</span>
               {activity.openReviews > 0 && <Link href="/reviews" className="pill amber">มีเรื่องรอตรวจ {activity.openReviews}</Link>}
             </div>

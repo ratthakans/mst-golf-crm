@@ -1,11 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { LineGlyph } from "./icons";
 import { useBrief } from "./useBrief";
 
-// Right side of the site header: "ล็อกอินด้วย LINE", or the member's name and
-// points once the session cookie is present (read by /api/me/brief).
+// Right side of the site header: "สมาชิก" (sign in or sign up with a mobile
+// number), or the member's name and points once signed in (/api/me/brief).
 export function HeaderAccount() {
   const brief = useBrief();
 
@@ -13,9 +12,8 @@ export function HeaderAccount() {
 
   if (!brief || !brief.signedIn) {
     return (
-      <Link href="/app/member" className="btn btn-line btn-sm acct-login">
-        <LineGlyph />
-        <span>ล็อกอินด้วย LINE</span>
+      <Link href="/app/member" className="btn btn-primary btn-sm acct-login">
+        เข้าสู่ระบบ / สมัคร
       </Link>
     );
   }

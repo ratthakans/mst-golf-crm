@@ -92,12 +92,12 @@ export function RedemptionActions(props: {
         </div>
       )}
       <label className="field">
-        <span>ข้อความถึงลูกค้า {refund ? "(ต้องใส่)" : <span className="hint">— ไม่บังคับ ลูกค้าเห็นใน LINE</span>}</span>
+        <span>ข้อความถึงลูกค้า {refund ? "(ต้องใส่)" : <span className="hint">— ไม่บังคับ ลูกค้าเห็นในการแจ้งเตือน</span>}</span>
         <input value={note} onChange={(e) => setNote(e.target.value)} maxLength={500} placeholder={refund ? "เช่น สินค้าหมด ขออภัยในความไม่สะดวก" : "เช่น ของพร้อมรับที่สาขาตั้งแต่วันศุกร์"} />
       </label>
       {confirmRefund && (
         <p className="notice">
-          ยืนยันอีกครั้ง: ระบบจะคืน {props.points.toLocaleString("en-US")} แต้มให้ลูกค้า คืนสต็อก 1 ชิ้น และแจ้งลูกค้าทาง LINE — ย้อนกลับไม่ได้
+          ยืนยันอีกครั้ง: ระบบจะคืน {props.points.toLocaleString("en-US")} แต้มให้ลูกค้า คืนสต็อก 1 ชิ้น และแจ้งลูกค้า — ย้อนกลับไม่ได้
         </p>
       )}
       {error && <p className="form-error">{error}</p>}

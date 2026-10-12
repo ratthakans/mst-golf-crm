@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { addDays, availability, findMemberByLine, isCoreError, localDateKey } from "@mstgolf/core";
+import { addDays, availability, isCoreError, localDateKey } from "@mstgolf/core";
 import { BookingApp } from "@/components/customer/BookingApp";
 import { LoginPanel } from "@/components/customer/LoginPanel";
 import { getOrg, getStore, loginSetup } from "@/lib/org";
-import { currentLineUser } from "@/lib/session";
+import { currentMember } from "@/lib/member";
 import type { AvailabilityData } from "@/lib/types";
 import { loadBookings, loadCard } from "@/lib/views";
 
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 // /app/booking — Rich Menu button D in LINE, "จองซิม" on the website.
 export default async function BookingPage() {
   const org = await getOrg();
-  const [setup, user] = await Promise.all([loginSetup(org.id), currentLineUser()]);
+  const [setup, { customer, member }] = await Promise.all([loginSetup(org.id), currentMember()]);
 
   if (!org.settings.features.booking) {
     return (
@@ -29,9 +29,7 @@ export default async function BookingPage() {
       </section>
     );
   }
-  if (!user) return <LoginPanel setup={setup} purpose="booking" />;
-
-  const member = await findMemberByLine(org.id, user.sub);
+  if (!customer) return <LoginPanel setup={setup} purpose="booking" />;
   if (!member) redirect("/app/member?next=booking");
 
   const todayKey = localDateKey(new Date());

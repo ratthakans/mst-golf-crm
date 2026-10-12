@@ -58,7 +58,7 @@ export function PosForm({ memberTag, skus, categories }: { memberTag: string; sk
 }
 
 const NOTIFICATIONS: Array<{ key: string; label: string; desc: string }> = [
-  { key: "WELCOME", label: "ต้อนรับสมาชิกใหม่", desc: "หลังสมัครใน LINE หรือบนเว็บ" },
+  { key: "WELCOME", label: "ต้อนรับสมาชิกใหม่", desc: "หลังสมัครบนเว็บหรือที่เคาน์เตอร์" },
   { key: "POINTS", label: "ได้รับแต้ม", desc: "หลังนำเข้า POS — รวม 1 ข้อความต่อคนต่อรอบ ปิดได้ถ้าโควตาข้อความใกล้เต็ม" },
   { key: "TIER_UP", label: "เลื่อนระดับ", desc: "เมื่อยอด 12 เดือนถึงเกณฑ์" },
   { key: "BOOKING_CONFIRMED", label: "ยืนยันการจองซิม", desc: "ทันทีที่จองสำเร็จ" },
@@ -74,8 +74,8 @@ export function NotificationsForm({ values }: { values: Record<string, boolean> 
   const s = useSave("notifications");
   return (
     <form className="card" onSubmit={(e) => { e.preventDefault(); void s.save(f); }}>
-      <h3>ข้อความ LINE ถึงลูกค้า</h3>
-      <p className="muted small" style={{ marginTop: 0 }}>ทุกข้อความนับรวมในโควตาข้อความของ LINE OA</p>
+      <h3>การแจ้งเตือนลูกค้า</h3>
+      <p className="muted small" style={{ marginTop: 0 }}>ทุกข้อความอยู่ในหน้าการแจ้งเตือนของสมาชิกบนเว็บ และส่งทางอีเมลให้คนที่ใส่อีเมลไว้</p>
       {NOTIFICATIONS.map((n) => (
         <label key={n.key} className="toggle-row">
           <span>

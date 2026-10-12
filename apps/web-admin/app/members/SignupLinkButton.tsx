@@ -4,9 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import QRCode from "qrcode";
 
-// The customer sign-up link — the LIFF member page (same as Rich Menu button
-// A+B) — with copy, open and a printable QR for the counter. Null until the
-// LINE agency hands over the LIFF app.
+// The customer sign-up link — the website sign-up (or, with LINE on, the LIFF
+// member page) — with copy, open and a printable QR for the counter.
 export function SignupLinkButton({ orgName, signupBonus, signupUrl }: { orgName: string; signupBonus: number; signupUrl: string | null }) {
   const [open, setOpen] = useState(false);
   const [url, setUrl] = useState(signupUrl ?? "");
@@ -70,12 +69,12 @@ export function SignupLinkButton({ orgName, signupBonus, signupUrl }: { orgName:
               </button>
             </div>
             <p className="link-dialog-sub">
-              ลิงก์เดียวกับปุ่ม "สมัครสมาชิก" ใน LINE — ลูกค้าสแกนแล้วล็อกอินด้วย LINE สมัครเป็นสมาชิก {orgName} ได้เอง
+              ลูกค้าสแกนแล้วใส่เบอร์มือถือ รับรหัส SMS แล้วสมัครเป็นสมาชิก {orgName} ได้เอง
               และได้แต้มต้อนรับ {signupBonus.toLocaleString("en-TH")} แต้มทันที
             </p>
 
             {!url ? (
-              <p className="secret-note">ยังไม่มีลิงก์ — รอทีม LINE ส่งข้อมูล LIFF แล้วใส่ที่ ตั้งค่า › LINE ระหว่างนี้เพิ่มสมาชิกที่เคาน์เตอร์ได้ตามปกติ</p>
+              <p className="secret-note">ยังไม่มีลิงก์ — ใส่โดเมนเว็บไซต์ที่ ตั้งค่า › เว็บไซต์และร้าน ก่อน ระหว่างนี้เพิ่มสมาชิกที่เคาน์เตอร์ได้ตามปกติ</p>
             ) : (
             <>
             <div className="link-row">

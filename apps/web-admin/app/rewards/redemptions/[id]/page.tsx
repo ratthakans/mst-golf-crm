@@ -155,7 +155,7 @@ export default async function RedemptionPage({ params }: { params: { id: string 
             </li>
           ))}
         </ol>
-        <p className="muted small">ทุกการเปลี่ยนสถานะส่งข้อความ LINE ถึงสมาชิก · ไม่อนุมัติ/ยกเลิก = คืนแต้มและคืนสต็อกอัตโนมัติ</p>
+        <p className="muted small">ทุกการเปลี่ยนสถานะแจ้งสมาชิก (หน้าการแจ้งเตือน + อีเมลถ้ามี) · ไม่อนุมัติ/ยกเลิก = คืนแต้มและคืนสต็อกอัตโนมัติ</p>
       </div>
     </div>
   );

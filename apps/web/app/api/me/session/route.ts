@@ -12,6 +12,7 @@ export async function POST(req: NextRequest) {
     const token = str(idToken, 4000);
     if (!token) throw new ApiError(400, "INVALID_INPUT", "ไม่พบข้อมูลการเข้าสู่ระบบจาก LINE");
     const org = await getOrg();
+    if (!org.settings.features.line) throw new ApiError(404, "LINE_OFF", "เข้าสู่ระบบด้วยเบอร์มือถือแทน");
     const line = await lineConfig(org.id);
     if (!line?.loginChannelId) throw new ApiError(503, "LINE_NOT_CONFIGURED", "ระบบสมาชิกกำลังจะเปิดให้บริการ");
     const profile = await verifyIdToken(token, line.loginChannelId);
@@ -24,7 +25,7 @@ export async function POST(req: NextRequest) {
   });
 }
 
-// DELETE — sign out of this site (LIFF's own logout happens in the browser).
+// DELETE — sign out of this site (with LINE on, LIFF's own logout happens in the browser).
 export async function DELETE(req: NextRequest) {
   return handle(req, async () => {
     const res = json({ ok: true });

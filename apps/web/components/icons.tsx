@@ -105,3 +105,8 @@ export const IconGift = (p: P) => (
     <path d="M5 12.5v8h14v-8M12 8.5v12M12 8.5c-1.5-3.5-5.5-3.5-5.5-1.25S9.5 8.5 12 8.5zM12 8.5c1.5-3.5 5.5-3.5 5.5-1.25S14.5 8.5 12 8.5z" />
   </Stroke>
 );
+export const IconBell = (p: P) => (
+  <Stroke {...p}>
+    <path d="M6 16V11a6 6 0 1 1 12 0v5l1.5 2h-15L6 16zM10 20.5a2 2 0 0 0 4 0" />
+  </Stroke>
+);

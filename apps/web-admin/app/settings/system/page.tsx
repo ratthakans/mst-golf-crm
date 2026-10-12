@@ -29,7 +29,7 @@ function jobSummary(j: JobHealth): string | null {
   return null;
 }
 
-// Ops view for the Super Admin (and us): scheduled jobs, the LINE outbox,
+// Ops view for the Super Admin (and us): scheduled jobs, the notification outbox,
 // imports and whether the production secrets are in place.
 export default async function SystemPage() {
   if (!(await allowPage("settings.manage"))) return <Forbidden />;
@@ -38,7 +38,8 @@ export default async function SystemPage() {
   const envRows: Array<[string, boolean, string]> = [
     ["AUTH_SECRET", s.env.AUTH_SECRET, "ลายเซ็นการเข้าสู่ระบบหลังบ้าน"],
     ["CRON_SECRET", s.env.CRON_SECRET, "ป้องกันงานตั้งเวลาไม่ให้คนนอกเรียก"],
-    ["ENCRYPTION_KEY", s.env.ENCRYPTION_KEY, "เข้ารหัส credentials LINE — ต้องตรงกันทั้งสองโปรเจกต์ และเก็บสำรองไว้"],
+    ["ENCRYPTION_KEY", s.env.ENCRYPTION_KEY, "เข้ารหัส credentials ที่เก็บในระบบ — ต้องตรงกันทั้งสองโปรเจกต์ และเก็บสำรองไว้"],
+    ["SMS_PROVIDER · SMS_API_KEY · SMS_API_SECRET · SMS_SENDER", s.env.SMS, "ส่งรหัส SMS ให้ลูกค้าเข้าสู่ระบบ — ยังไม่ตั้ง = เข้าสู่ระบบบนเว็บไม่ได้ (เว้นแต่ preview ที่ใช้โหมดทดสอบ)"],
     ["PUBLIC_BLOB_READ_WRITE_TOKEN", s.env.PUBLIC_BLOB_READ_WRITE_TOKEN, "อัปโหลดรูปเว็บไซต์และรูปปกบทความ"],
     ["RESEND_API_KEY · EMAIL_FROM", s.env.EMAIL, "อีเมลแจ้ง Marketing เมื่อมีคำขอแลกรางวัล"],
   ];
@@ -47,7 +48,7 @@ export default async function SystemPage() {
       <div className="page-head" style={{ marginBottom: 0 }}>
         <Link href="/settings" className="back-link">← ตั้งค่า</Link>
         <h1 style={{ marginTop: 6 }}>สถานะระบบ</h1>
-        <p>งานตั้งเวลา ข้อความ LINE การนำเข้า และค่าระบบ · ฐานข้อมูล schema <span className="mono">{s.env.DATABASE_SCHEMA}</span></p>
+        <p>งานตั้งเวลา การแจ้งเตือนลูกค้า การนำเข้า และค่าระบบ · ฐานข้อมูล schema <span className="mono">{s.env.DATABASE_SCHEMA}</span></p>
       </div>
 
       <div className="card table-card">
@@ -75,14 +76,14 @@ export default async function SystemPage() {
       </div>
 
       <div className="card">
-        <h3>ข้อความ LINE (7 วันล่าสุด)</h3>
+        <h3>การแจ้งเตือนลูกค้า (7 วันล่าสุด)</h3>
         <dl className="kv">
           <dt>รอส่ง</dt>
           <dd>{num(s.outbox.pending)}{s.outbox.oldestPendingAt ? ` · เก่าสุด ${formatDateTime(s.outbox.oldestPendingAt)}` : ""}</dd>
           <dt>ส่งแล้ว</dt>
           <dd>{num(s.outbox.sent)}</dd>
           <dt>ข้าม</dt>
-          <dd>{num(s.outbox.skipped)} <span className="muted small">— ยังไม่เชื่อม LINE, ลูกค้าไม่มี LINE หรือปิดข้อความประเภทนั้น</span></dd>
+          <dd>{num(s.outbox.skipped)} <span className="muted small">— แสดงในหน้าการแจ้งเตือนบนเว็บเท่านั้น (ลูกค้าไม่มีอีเมล หรือปิดข้อความประเภทนั้น)</span></dd>
           <dt>ส่งไม่สำเร็จ</dt>
           <dd className={s.outbox.failed ? "danger-text" : undefined}>{num(s.outbox.failed)}</dd>
         </dl>

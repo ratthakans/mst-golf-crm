@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
-import { findMemberByLine } from "@mstgolf/core";
-import { handle, json, requireLineUser } from "@/lib/api";
+import { handle, json, requireCustomer } from "@/lib/api";
+import { customerLabel, memberFor } from "@/lib/member";
 import { getOrg } from "@/lib/org";
 import { loadCard } from "@/lib/views";
 
@@ -9,11 +9,11 @@ export const dynamic = "force-dynamic";
 // GET — who is signed in, and their member card (null before sign-up).
 export async function GET(req: NextRequest) {
   return handle(req, async () => {
-    const user = await requireLineUser();
+    const customer = await requireCustomer();
     const org = await getOrg();
-    const member = await findMemberByLine(org.id, user.sub);
+    const member = await memberFor(org.id, customer);
     return json({
-      user: { name: user.name, picture: user.picture },
+      user: { name: customerLabel(customer, member), via: customer.kind === "line" ? "LINE" : "PHONE" },
       member: member ? await loadCard(org.id, member.id) : null,
     });
   });
