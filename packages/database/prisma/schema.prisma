@@ -824,6 +824,10 @@ model Post {
   category    PostCategory @default(ARTICLE)
   status      PostStatus   @default(DRAFT)
   publishedAt DateTime?
+  startsAt    DateTime? // PROMOTION: shown from (null = as soon as published)
+  endsAt      DateTime? // PROMOTION: hidden after (null = until unpublished)
+  linkUrl     String? // PROMOTION: "shop now" link, e.g. a product on the online shop
+  linkLabel   String?
   authorId    String?
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
@@ -837,6 +841,7 @@ enum PostCategory {
   ARTICLE
   SERVICE
   NEWS
+  PROMOTION
 }
 
 enum PostStatus {

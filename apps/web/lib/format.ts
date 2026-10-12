@@ -49,10 +49,11 @@ export function formatBahtWhole(baht: number): string {
   return `฿${Math.round(baht).toLocaleString("en-US")}`;
 }
 
-export const CATEGORY_LABEL: Record<"ARTICLE" | "SERVICE" | "NEWS", string> = {
+export const CATEGORY_LABEL: Record<"ARTICLE" | "SERVICE" | "NEWS" | "PROMOTION", string> = {
   ARTICLE: "บทความ",
   SERVICE: "บริการ",
   NEWS: "ข่าวสาร",
+  PROMOTION: "โปรโมชัน",
 };
 
 /** Calendar arithmetic on "YYYY-MM-DD" keys (no time zone involved). */

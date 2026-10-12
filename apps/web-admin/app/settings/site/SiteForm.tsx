@@ -5,7 +5,7 @@ import type { SiteSettings } from "@mstgolf/shared";
 import { SaveBar, useSave } from "../useSave";
 
 export function SiteForm({ values }: { values: SiteSettings }) {
-  const [f, setF] = useState({ siteUrl: values.siteUrl ?? "", lineOaUrl: values.lineOaUrl ?? "", mapsUrl: values.mapsUrl ?? "", phone: values.phone ?? "", address: values.address ?? "" });
+  const [f, setF] = useState({ siteUrl: values.siteUrl ?? "", shopUrl: values.shopUrl ?? "", lineOaUrl: values.lineOaUrl ?? "", mapsUrl: values.mapsUrl ?? "", phone: values.phone ?? "", address: values.address ?? "" });
   const s = useSave("site");
   const field = (k: keyof typeof f, label: string, placeholder?: string) => (
     <label className="field">
@@ -17,7 +17,8 @@ export function SiteForm({ values }: { values: SiteSettings }) {
     <form className="card" onSubmit={(e) => { e.preventDefault(); void s.save(f); }}>
       <div className="form-grid">
         {field("siteUrl", "โดเมนเว็บไซต์", "https://www.mstgolf.co.th")}
-        {field("lineOaUrl", "ลิงก์เพิ่มเพื่อน LINE OA", "https://lin.ee/…")}
+        {field("shopUrl", "ร้านออนไลน์ (ลิงก์ \"ช้อปออนไลน์\" บนเว็บ)", "https://mstgolf.co.th")}
+        {field("lineOaUrl", "ลิงก์เพิ่มเพื่อน LINE OA (แสดงเมื่อเปิดใช้ LINE)", "https://lin.ee/…")}
         {field("mapsUrl", "ลิงก์ Google Maps", "https://maps.app.goo.gl/…")}
         {field("phone", "เบอร์ร้าน", "02-xxx-xxxx")}
       </div>

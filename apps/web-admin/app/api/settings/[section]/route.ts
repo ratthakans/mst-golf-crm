@@ -55,6 +55,7 @@ export async function PUT(req: Request, { params }: { params: { section: string 
           lineOaUrl: optStr(b.lineOaUrl) ?? undefined,
           mapsUrl: optStr(b.mapsUrl) ?? undefined,
           siteUrl: optStr(b.siteUrl) ?? undefined,
+          shopUrl: optStr(b.shopUrl) ?? undefined,
           phone: optStr(b.phone) ?? undefined,
           address: optStr(b.address) ?? undefined,
         });

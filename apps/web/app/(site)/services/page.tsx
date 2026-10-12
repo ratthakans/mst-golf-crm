@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 
 export default async function ServicesPage() {
   const org = await getOrg();
-  const lineOa = org.settings.site.lineOaUrl;
+  const lineOa = org.settings.features.line ? org.settings.site.lineOaUrl : null;
   const SERVICES = siteServices(org.settings.site.copy);
   const photos = sitePhotos(org.settings.site);
   const SERVICE_PHOTO = servicePhotos(photos);
@@ -84,7 +84,9 @@ export default async function ServicesPage() {
                     สอบถามทาง LINE
                   </a>
                 ) : (
-                  <p className="hint">สอบถามรายละเอียดได้ที่หน้าร้าน</p>
+                  <Link href="/contact" className="btn btn-outline">
+                    สอบถาม
+                  </Link>
                 )}
               </div>
             </div>

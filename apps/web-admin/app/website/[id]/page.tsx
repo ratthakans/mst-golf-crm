@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getPost } from "@mstgolf/core";
+import { getPost, promoDateKey } from "@mstgolf/core";
 import { allowPage } from "../../../lib/auth";
 import { currentOrg } from "../../../lib/org";
 import { webOrigin } from "../../../lib/web-origin";
@@ -22,7 +22,7 @@ export default async function PostPage({ params }: { params: { id: string } }) {
         <h1 style={{ marginTop: 6 }}>{post ? "แก้ไขบทความ" : "เขียนบทความ"}</h1>
       </div>
       <PostEditor
-        post={post ? { ...post, publishedAt: post.publishedAt?.toISOString() ?? null, updatedAt: post.updatedAt.toISOString() } : null}
+        post={post ? { ...post, publishedAt: post.publishedAt?.toISOString() ?? null, updatedAt: post.updatedAt.toISOString(), startsAt: promoDateKey(post.startsAt), endsAt: promoDateKey(post.endsAt, true) } : null}
         siteUrl={webOrigin(org.settings.site.siteUrl)}
         uploadsEnabled={!!process.env.PUBLIC_BLOB_READ_WRITE_TOKEN}
       />

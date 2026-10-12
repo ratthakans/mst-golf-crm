@@ -44,7 +44,7 @@ export const BOOKING_STATUS: Record<string, { label: string; tone: string }> = {
   CANCELLED: { label: "ยกเลิก", tone: "gray" },
 };
 
-export const CATEGORY_LABEL: Record<string, string> = { ARTICLE: "บทความ", SERVICE: "บริการ", NEWS: "ข่าวสาร" };
+export const CATEGORY_LABEL: Record<string, string> = { ARTICLE: "บทความ", SERVICE: "บริการ", NEWS: "ข่าวสาร", PROMOTION: "โปรโมชัน" };
 
 export const REDEMPTION_STATUS: Record<string, { label: string; tone: string }> = {
   ISSUED: { label: "พร้อมใช้", tone: "green" },

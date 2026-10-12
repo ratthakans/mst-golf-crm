@@ -52,7 +52,12 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
                 <a href={site.mapsUrl} rel="noopener" target="_blank">แผนที่ Google Maps</a>
               </span>
             )}
-            {site.lineOaUrl && (
+            {site.shopUrl && (
+              <span>
+                <a href={site.shopUrl} rel="noopener" target="_blank">ร้านออนไลน์</a>
+              </span>
+            )}
+            {org.settings.features.line && site.lineOaUrl && (
               <span>
                 <a href={site.lineOaUrl} rel="noopener" target="_blank">เพิ่มเพื่อน LINE OA</a>
               </span>
@@ -63,6 +68,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
               {NAV.map((n) => (
                 <Link key={n.href} href={n.href}>{n.label}</Link>
               ))}
+              <Link href="/register">สมัครสมาชิก</Link>
               <Link href="/app/member">บัตรสมาชิก</Link>
               <Link href="/app/booking">จองซิมกอล์ฟ</Link>
               <Link href="/terms">ข้อกำหนดสมาชิก</Link>

@@ -127,6 +127,7 @@ export async function saveSite(orgId: string, actor: Actor, input: SiteSettings)
     lineOaUrl: url(input.lineOaUrl, "ลิงก์ LINE OA"),
     mapsUrl: url(input.mapsUrl, "ลิงก์ Google Maps"),
     siteUrl: url(input.siteUrl, "โดเมนเว็บไซต์"),
+    shopUrl: url(input.shopUrl, "ลิงก์ร้านออนไลน์"),
     phone: input.phone?.trim() || undefined,
     address: input.address?.trim() || undefined,
   };

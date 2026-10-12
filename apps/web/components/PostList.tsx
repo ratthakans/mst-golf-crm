@@ -5,7 +5,7 @@ export interface PostItem {
   slug: string;
   title: string;
   excerpt: string;
-  category: "ARTICLE" | "SERVICE" | "NEWS";
+  category: "ARTICLE" | "SERVICE" | "NEWS" | "PROMOTION";
   publishedAt: string | null;
   coverUrl: string | null;
 }

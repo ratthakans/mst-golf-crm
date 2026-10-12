@@ -196,7 +196,8 @@ export interface SiteSettings {
   mapsUrl?: string;
   phone?: string;
   address?: string;
-  siteUrl?: string; // public website origin, e.g. https://mstgolf.co.th
+  siteUrl?: string; // public website origin
+  shopUrl?: string; // the online shop (MST Golf Thailand's Shopify store, mstgolf.co.th)
   photos?: Partial<Record<SitePhotoKey, string>>; // replaces the mockup of that slot (https:// or a /path on the website)
   copy?: SiteCopy; // website text edited in the back office; blank = the built-in placeholder
 }

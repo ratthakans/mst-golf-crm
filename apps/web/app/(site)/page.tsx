@@ -10,20 +10,21 @@ import { sitePhotos } from "@/lib/images";
 import { homeCopy, siteServices } from "@/lib/content";
 import { formatBaht, formatPoints, hoursLines, openingSpec } from "@/lib/format";
 import { getLanes, getOrg, getStore, siteOrigin } from "@/lib/org";
-import { publishedPosts } from "@/lib/posts";
+import { currentPromotions, publishedPosts } from "@/lib/posts";
+import { PromoList } from "@/components/PromoList";
 
 export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: { absolute: "MST Golf — ร้านกอล์ฟ ฟิตติ้ง อคาเดมี และ Golf Simulator ชาญอิสสระ ทาวเวอร์ 1" },
   description:
-    "Pro shop · Club fitting · Academy · Golf Simulator 3 lane ที่ชาญอิสสระ ทาวเวอร์ 1 ถนนพระราม 4 จองซิมกอล์ฟออนไลน์ สมัครสมาชิกผ่าน LINE สะสมแต้มทุกการซื้อ",
+    "Pro shop · Club fitting · Academy · Golf Simulator 3 lane ที่ชาญอิสสระ ทาวเวอร์ 1 ถนนพระราม 4 จองซิมกอล์ฟออนไลน์ สมัครสมาชิกด้วยเบอร์มือถือ สะสมแต้มทุกการซื้อ",
   alternates: { canonical: "/" },
   openGraph: { title: "MST Golf", description: "ร้านกอล์ฟที่ให้คุณลองก่อนเลือก — Pro shop · Club fitting · Academy · Golf Simulator", url: "/" },
 };
 
 export default async function HomePage() {
-  const [org, store, lanes, posts, origin] = await Promise.all([getOrg(), getStore(), getLanes(), publishedPosts(3), siteOrigin()]);
+  const [org, store, lanes, posts, origin, promos] = await Promise.all([getOrg(), getStore(), getLanes(), publishedPosts(3), siteOrigin(), currentPromotions(3)]);
   const s = org.settings;
   const photos = sitePhotos(s.site);
   const services = siteServices(s.site.copy);
@@ -49,7 +50,7 @@ export default async function HomePage() {
       : {}),
     ...(store ? { openingHoursSpecification: openingSpec(store.openHours).map((o) => ({ "@type": "OpeningHoursSpecification", ...o })) } : {}),
     ...(s.site.mapsUrl ? { hasMap: s.site.mapsUrl } : {}),
-    ...(s.site.lineOaUrl ? { sameAs: [s.site.lineOaUrl] } : {}),
+    ...(s.site.shopUrl ? { sameAs: [s.site.shopUrl] } : {}),
   };
 
   return (
@@ -127,15 +128,35 @@ export default async function HomePage() {
           <div className="ledger-copy">
             <h2 id="tiers-h">สมาชิก MST Golf</h2>
             <p>
-              สมัครฟรีด้วย LINE รับ <b className="num">{formatPoints(s.welcomeBonus)}</b> แต้มต้อนรับ แล้วใช้บัตรในมือถือที่เคาน์เตอร์ได้ทันที
+              สมัครฟรีด้วยเบอร์มือถือ รับ <b className="num">{formatPoints(s.welcomeBonus)}</b> แต้มต้อนรับ แล้วใช้บัตรในมือถือที่เคาน์เตอร์ได้ทันที
+              {s.features.rewards ? " · ใช้แต้มแลกคูปองและของรางวัล" : ""}
             </p>
-            <Link href="/app/member" className="btn btn-primary">
-              สมัครสมาชิก
-            </Link>
+            <div className="cta-row">
+              <Link href="/register" className="btn btn-primary">
+                สมัครสมาชิก
+              </Link>
+              <Link href="/rewards" className="text-link">
+                สิทธิ์และรางวัลทั้งหมด
+              </Link>
+            </div>
           </div>
           <TierTable tiers={s.tiers} pointsPerBaht={s.pointsPerBaht} />
         </div>
       </section>
+
+      {promos.length > 0 && (
+        <section className="notes-section promo-section" aria-labelledby="promo-h">
+          <div className="wrap">
+            <div className="notes-head">
+              <h2 id="promo-h">โปรโมชัน</h2>
+              <Link href="/promotions" className="text-link">
+                ทั้งหมด
+              </Link>
+            </div>
+            <PromoList promos={promos} />
+          </div>
+        </section>
+      )}
 
       <section className="notes-section" aria-labelledby="posts-h">
         <div className="wrap">
@@ -175,7 +196,10 @@ export default async function HomePage() {
                   เปิดใน Google Maps
                 </a>
               )}
-              {s.site.lineOaUrl && (
+              <Link href="/contact" className="btn btn-outline">
+                ติดต่อเรา
+              </Link>
+              {s.features.line && s.site.lineOaUrl && (
                 <a href={s.site.lineOaUrl} className="btn btn-line" target="_blank" rel="noopener">
                   เพิ่มเพื่อน LINE OA
                 </a>

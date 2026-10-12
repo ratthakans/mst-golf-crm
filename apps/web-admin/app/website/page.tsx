@@ -4,7 +4,7 @@ import { allowPage } from "../../lib/auth";
 import { currentOrg } from "../../lib/org";
 import { webOrigin } from "../../lib/web-origin";
 import { Forbidden } from "../Forbidden";
-import { CATEGORY_LABEL, formatDateTime } from "../ui/format";
+import { CATEGORY_LABEL, formatDate, formatDateTime } from "../ui/format";
 import { WebsiteTabs } from "./WebsiteTabs";
 
 export const dynamic = "force-dynamic";
@@ -53,9 +53,14 @@ export default async function WebsitePage() {
                 <tr key={p.id}>
                   <td>
                     <Link href={`/website/${p.id}`} className="member-name">{p.title}</Link>
-                    <span className="sub mono">/blog/{p.slug}</span>
+                    <span className="sub mono">{p.category === "PROMOTION" ? "/promotions" : `/blog/${p.slug}`}</span>
                   </td>
-                  <td>{CATEGORY_LABEL[p.category]}</td>
+                  <td>
+                    {CATEGORY_LABEL[p.category]}
+                    {p.category === "PROMOTION" && (p.startsAt || p.endsAt) && (
+                      <span className="sub">{p.startsAt ? formatDate(p.startsAt) : "ตอนนี้"} – {p.endsAt ? formatDate(new Date(p.endsAt.getTime() - 1)) : "ไม่มีกำหนด"}</span>
+                    )}
+                  </td>
                   <td>{p.status === "PUBLISHED" ? <span className="pill green">เผยแพร่แล้ว</span> : <span className="pill gray">ฉบับร่าง</span>}</td>
                   <td className="dim nowrap">{formatDateTime(p.updatedAt)}</td>
                 </tr>

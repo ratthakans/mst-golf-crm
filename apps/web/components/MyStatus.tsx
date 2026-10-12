@@ -44,7 +44,7 @@ export function MyStatus({ welcomePoints }: { welcomePoints: number }) {
       <span className="mine-big num">
         {formatPoints(welcomePoints)} <small>แต้ม</small>
       </span>
-      <span className="mine-cta">สมัครผ่าน LINE ใช้เวลาไม่ถึงนาที</span>
+      <span className="mine-cta">สมัครด้วยเบอร์มือถือ ใช้เวลาไม่ถึงนาที</span>
     </Link>
   );
 }

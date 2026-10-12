@@ -12,7 +12,7 @@ export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: "Golf Simulator — ราคา ส่วนลดสมาชิก และกติกาการจอง",
-  description: "Golf Simulator 3 lane ที่ MST Golf ชาญอิสสระ ทาวเวอร์ 1 จองรายชั่วโมงผ่าน LINE หรือเว็บไซต์ ส่วนลดตามระดับสมาชิก ชำระเงินที่ร้าน",
+  description: "Golf Simulator 3 lane ที่ MST Golf ชาญอิสสระ ทาวเวอร์ 1 จองรายชั่วโมงบนเว็บไซต์ ส่วนลดตามระดับสมาชิก ชำระเงินที่ร้าน",
   alternates: { canonical: "/golf-simulator" },
   openGraph: { title: "Golf Simulator | MST Golf", url: "/golf-simulator" },
 };
@@ -36,7 +36,7 @@ export default async function SimulatorPage() {
     ["ถือช่องระหว่างยืนยัน", `ระบบกันช่องไว้ให้ ${b.holdMinutes} นาที ระหว่างกดยืนยัน`],
     ["ยกเลิกเอง", `ก่อนเวลาจอง ${hoursText(b.cancelHoursBefore)} หลังจากนั้นติดต่อร้าน`],
     ["ไม่มาตามนัด", `เกิน ${b.noShowGraceMinutes} นาทีโดยไม่เช็กอิน ร้านบันทึกเป็น no-show`],
-    ["แจ้งเตือน", `ข้อความยืนยันทาง LINE และเตือนก่อนเวลา ${hoursText(b.reminderHoursBefore)}`],
+    ["แจ้งเตือน", `ยืนยันการจองในหน้าการแจ้งเตือน (และอีเมลถ้าใส่ไว้) เตือนก่อนเวลา ${hoursText(b.reminderHoursBefore)}`],
     ["ชำระเงิน", "ที่ร้านตอนเช็กอิน ไม่ต้องจ่ายออนไลน์"],
   ];
 
@@ -47,7 +47,7 @@ export default async function SimulatorPage() {
           <div>
             <h1>Golf Simulator</h1>
             <p className="lede">
-              {lanes.length || 3} lane ในร้าน ซ้อมหรือเล่นสนามจำลองได้ทุกวัน {hours[0] ? `(${hours[0]})` : ""} จองผ่าน LINE หรือเว็บไซต์ด้วยตารางเดียวกัน
+              {lanes.length || 3} lane ในร้าน ซ้อมหรือเล่นสนามจำลองได้ทุกวัน {hours[0] ? `(${hours[0]})` : ""} จองบนเว็บไซต์ด้วยตารางเดียวกับที่ร้านใช้
             </p>
             <div className="cta-row">
               <Link href="/app/booking" className="btn btn-primary">
@@ -144,7 +144,7 @@ export default async function SimulatorPage() {
         <div className="wrap two-col">
           <div>
             <h2 id="rules-h">กติกาการจอง</h2>
-            <p className="muted">ลูกค้าจองเองต้องเป็นสมาชิก (สมัครฟรีผ่าน LINE) walk-in และโทรจองติดต่อที่ร้าน</p>
+            <p className="muted">ลูกค้าจองเองต้องเป็นสมาชิก (สมัครฟรีด้วยเบอร์มือถือ) walk-in และโทรจองติดต่อที่ร้าน</p>
           </div>
           <dl className="rules">
             {rules.map(([k, v]) => (

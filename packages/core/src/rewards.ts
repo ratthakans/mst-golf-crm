@@ -230,6 +230,26 @@ function liveWhere(now: Date): Prisma.RewardWhereInput {
   };
 }
 
+/** The live catalogue for the public website — no member, so no "can you redeem it". */
+export async function publicRewards(orgId: string, now = new Date()) {
+  const { settings } = await getOrg(orgId);
+  const rows = await db(orgId).reward.findMany({ where: liveWhere(now), orderBy: [{ sortOrder: "asc" }, { costPoints: "asc" }] });
+  return rows.map((r) => ({
+    id: r.id,
+    kind: r.kind,
+    name: r.name,
+    description: r.description,
+    imageUrl: r.imageUrl,
+    costPoints: r.costPoints,
+    valueSatang: r.valueSatang,
+    minSpendSatang: r.minSpendSatang,
+    validDays: r.validDays,
+    soldOut: r.stock !== null && r.stock <= 0,
+    minTierName: r.minTier ? settings.tiers.find((t) => t.key === r.minTier)?.name ?? null : null,
+    endsAt: r.endsAt,
+  }));
+}
+
 export async function rewardCatalogue(orgId: string, memberId: string, now = new Date()): Promise<{ balance: number; items: CatalogueItem[] }> {
   const { settings } = await getOrg(orgId);
   const client = db(orgId);

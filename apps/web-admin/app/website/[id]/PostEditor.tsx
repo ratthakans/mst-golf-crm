@@ -14,7 +14,11 @@ interface Post {
   excerpt: string;
   coverUrl: string | null;
   body: string;
-  category: "ARTICLE" | "SERVICE" | "NEWS";
+  category: "ARTICLE" | "SERVICE" | "NEWS" | "PROMOTION";
+  startsAt: string; // YYYY-MM-DD or ""
+  endsAt: string;
+  linkUrl: string | null;
+  linkLabel: string | null;
   status: "DRAFT" | "PUBLISHED";
   publishedAt: string | null;
   updatedAt: string;
@@ -29,7 +33,12 @@ export function PostEditor({ post, siteUrl, uploadsEnabled }: { post: Post | nul
     coverUrl: post?.coverUrl ?? "",
     body: post?.body ?? "",
     category: post?.category ?? "ARTICLE",
+    startsAt: post?.startsAt ?? "",
+    endsAt: post?.endsAt ?? "",
+    linkUrl: post?.linkUrl ?? "",
+    linkLabel: post?.linkLabel ?? "",
   });
+  const promo = f.category === "PROMOTION";
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState<string | null>(null);
@@ -45,7 +54,7 @@ export function PostEditor({ post, siteUrl, uploadsEnabled }: { post: Post | nul
     setError(null);
     setSaved(null);
     try {
-      const body = { ...f, coverUrl: f.coverUrl || null, status };
+      const body = { ...f, coverUrl: f.coverUrl || null, startsAt: f.startsAt || null, endsAt: f.endsAt || null, linkUrl: f.linkUrl || null, linkLabel: f.linkLabel || null, status };
       const r = post
         ? await api<{ post: Post }>(`/api/posts/${post.id}`, { method: "PATCH", body })
         : await api<{ post: Post }>("/api/posts", { body });
@@ -89,7 +98,7 @@ export function PostEditor({ post, siteUrl, uploadsEnabled }: { post: Post | nul
       <div className="card">
         <div className="form-grid">
           <label className="field" style={{ gridColumn: "1 / -1" }}>
-            <span>ชื่อบทความ <b>*</b></span>
+            <span>{promo ? "ชื่อโปรโมชัน" : "ชื่อบทความ"} <b>*</b></span>
             <input value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} maxLength={160} />
           </label>
           <label className="field">
@@ -104,6 +113,26 @@ export function PostEditor({ post, siteUrl, uploadsEnabled }: { post: Post | nul
             <span>ลิงก์ (slug) <span className="hint">— a-z 0-9 และขีด เว้นว่างให้ระบบตั้งให้</span></span>
             <input value={f.slug} onChange={(e) => setF({ ...f, slug: e.target.value.toLowerCase() })} placeholder="how-to-choose-a-driver" />
           </label>
+          {promo && (
+            <>
+              <label className="field">
+                <span>เริ่มแสดง <span className="hint">— ว่าง = ทันทีที่เผยแพร่</span></span>
+                <input type="date" value={f.startsAt} onChange={(e) => setF({ ...f, startsAt: e.target.value })} />
+              </label>
+              <label className="field">
+                <span>วันสุดท้าย <span className="hint">— หลังวันนี้ซ่อนเอง</span></span>
+                <input type="date" value={f.endsAt} min={f.startsAt || undefined} onChange={(e) => setF({ ...f, endsAt: e.target.value })} />
+              </label>
+              <label className="field">
+                <span>ลิงก์ปุ่ม <span className="hint">— เช่น สินค้าบน mstgolf.co.th หรือ /app/booking</span></span>
+                <input value={f.linkUrl} onChange={(e) => setF({ ...f, linkUrl: e.target.value })} placeholder="https://mstgolf.co.th/products/…" />
+              </label>
+              <label className="field">
+                <span>ข้อความบนปุ่ม</span>
+                <input value={f.linkLabel} onChange={(e) => setF({ ...f, linkLabel: e.target.value })} maxLength={40} placeholder="ช้อปเลย" />
+              </label>
+            </>
+          )}
           <label className="field" style={{ gridColumn: "1 / -1" }}>
             <span>คำโปรย <span className="hint">— แสดงในหน้ารวมบทความและตอนแชร์</span></span>
             <textarea value={f.excerpt} onChange={(e) => setF({ ...f, excerpt: e.target.value })} maxLength={300} style={{ minHeight: 64 }} />
