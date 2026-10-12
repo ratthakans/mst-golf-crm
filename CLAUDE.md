@@ -61,16 +61,19 @@ One Neon database, one Postgres schema per environment: `public` = production, `
 ## Money and time
 Money is integer **satang** in columns ending `Satang`; convert only with `toSatang` / `formatBaht` from `@mstgolf/core/money`. Tier thresholds in settings are whole baht. Business time is Bangkok (UTC+7, no DST): use `@mstgolf/core/time` (`fromLocal`, `localDateKey`, `formatHm`…), never the server's local time. Client components import only the `/time` and `/money` subpaths (the root pulls in Prisma).
 
-## LINE
-One Rich Menu owned by the LINE agency; buttons A+B (`liff.line.me/<liffId>/member`), D (`…/booking`) and Points & Rewards (`…/rewards`) link to us. No webhook. The customer's LINE UID comes from verifying a LIFF / LINE Login ID token; messages go out through the Notification outbox (`enqueue` inside the same transaction, `processOutbox` delivers with retry keys). Credentials live encrypted in `LineChannel`, entered at Settings › LINE.
+## Customer sign-in, notifications, LINE
+- **Web-only for now (decided 12 Oct 2026).** Members sign in on the website with mobile number + 6-digit SMS code (`packages/core/src/otp.ts`, `notify/sms.ts`; ThaiBulkSMS, or `SMS_PROVIDER=mock` which shows the code outside the production schema).
+- The customer cookie `mst_member` holds a member id, a verified phone (30 min, to finish sign-up) or a LINE user (`apps/web/lib/session.ts`). Members are resolved from it with `memberFor()`, never from the request body.
+- Every notification is queued in the Notification outbox (`enqueue` inside the same transaction). The member sees it in `/app/inbox`. `processOutbox` also delivers it by email (Resend) when the member gave one, or by LINE when LINE is on.
+- **LINE is switched off with `settings.features.line` (default false).** The LIFF / Messaging API code stays, and so do the Rich Menu links (`/member`, `/booking`, `/rewards`). Don't delete it. No page may promise LINE while the flag is off.
+- Brand: the MST Golf CVI. See `design.md`.
 
 ## Roadmap (detail in MST-DEV-PLAN.md §5)
 Phase 1 is the contracted scope (quote QT-20260923-01): member system · database design · simulator booking · POS import + Summary Dashboard · website. Rewards and coupons (docs/PRODUCT.md §11) and online-order points (Shopify, `th-commerce`) were added on top in Oct 2026 and are on by default (`settings.features.rewards`). Campaigns and the intelligence pages remain out of contract — keep their code, hidden per tenant with `settings.features`.
 - **Built (Sep 2026, branch `phase1`):** all five parts, back office, website, LINE outbox, crons; previews on Vercel.
-- **Remaining:** LINE credentials (incl. LINE Login/LIFF in the OA's provider), real POS file, MST content/photos/domain, production env + GitHub secrets, UAT, go-live — checklist in MST-DEV-PLAN.md §4.
+- **Remaining:** SMS + email provider accounts, real POS file, MST content/photos/domain, production env + GitHub secrets, UAT, go-live — checklist in MST-DEV-PLAN.md §4.
 - **Go-live:** everything at once, within ~3 weeks of MST's inputs, latest 11 Dec 2026.
 
-LINE: one Rich Menu owned by the LINE team (member, booking and rewards buttons link to us), no webhook, UID from LINE Login in the OA's provider, push via the Messaging API token.
 
 ## Commands
 See `README.md`. TL;DR: `pnpm install` → `pnpm db:generate` → `pnpm db:deploy` → `pnpm db:seed` → `pnpm demo` (optional) → `pnpm --filter @mstgolf/web-admin dev`. Tests: `pnpm --filter @mstgolf/core test` and `pnpm test:db`.

@@ -65,16 +65,29 @@ Commands below run from the repo root. They need `.env.local`, and the database 
 3. Name, phone, LINE, email and photo are removed. Sales stay, with no link to the person, so the store's totals do not change.
 4. Record the date it was done in the reply to the customer.
 
-## 6. LINE messages are not going out
+## 6. A customer can't sign in, or notifications don't arrive
 
-- **Check first:** สถานะระบบ › ข้อความ LINE (7 days).
-  - **Many "ข้าม" and LINE not connected yet:** normal. Messages are sent once the credentials are in.
-  - **"ส่งไม่สำเร็จ" rising:** go to Settings › LINE and look at **ข้อความที่ส่งเดือนนี้**.
-    - It shows "อ่านไม่ได้": the token has expired or was revoked. Ask the LINE team for a new long-lived token, then enter it in Settings › LINE (leave the secret blank to keep it).
-    - The monthly quota of the OA's plan is used up: the LINE team or MST must upgrade the plan.
-  - **"รอส่ง" piling up with an old date:** the 15-minute cron is not running (Section 7).
-- **One customer only:** the member page shows the badge **LINE ส่งไม่ถึง** (they blocked the OA). Ask them to add the OA as a friend again. The flag clears on the next successful send.
-- **Note:** a message that failed 5 times is not sent again automatically. It is recorded as FAILED.
+Members sign in on the website with their mobile number and a 6-digit SMS code. LINE is switched off (`settings.features.line`).
+
+- **"ระบบส่ง SMS ยังไม่พร้อม":** the SMS provider is not set.
+  - Check สถานะระบบ for `SMS_PROVIDER`, `SMS_API_KEY`, `SMS_API_SECRET` and `SMS_SENDER`; both projects need them.
+  - Preview can use `SMS_PROVIDER=mock`, which shows the code on screen.
+  - Production never shows the code.
+- **The code never arrives:**
+  - Check the provider's dashboard: credit, the sender name approved, the number not blocked.
+  - The customer can ask for a new code after 60 seconds, at most 5 times a day.
+  - In an emergency, staff can still serve them at the counter by phone number. Points are never at risk.
+- **"ใส่รหัสผิดหลายครั้ง":** five wrong tries lock that code. Ask the customer to request a new one.
+- **"เบอร์นี้ใช้เข้าสู่ระบบไม่ได้":** the account behind that number was merged or erased. Check the member page and fix the phone if needed.
+- **Notifications:** every message is in the member's การแจ้งเตือน page on the website.
+  - Email copies go only to members who gave an email and did not switch them off.
+  - Check สถานะระบบ › การแจ้งเตือนลูกค้า. "ข้าม" there usually means "website only" (no email), which is normal.
+  - "ส่งไม่สำเร็จ" means the mail service is failing: check `RESEND_API_KEY` and `EMAIL_FROM` and the Resend dashboard.
+  - "รอส่ง" piling up means the 15-minute cron is not running (Section 7).
+- **When LINE is switched on later:**
+  - The badge **LINE ส่งไม่ถึง** means the customer blocked the OA; ask them to add the OA as a friend again.
+  - An expired token shows "อ่านไม่ได้" at Settings › LINE; ask the LINE team for a new long-lived token.
+- A message that failed 5 times is not sent again automatically. It is recorded as FAILED.
 
 ## 7. A scheduled job did not run (สถานะระบบ shows red)
 
@@ -116,7 +129,7 @@ DATABASE_SCHEMA=public pnpm --filter @mstgolf/database admin:create <email>
 
 ## 10. `ENCRYPTION_KEY` lost or different between the two projects
 
-- **Symptoms:** Settings › LINE shows "อ่านไม่ได้", or the website cannot log customers in or send messages.
+- **Symptoms:** Settings › LINE (when LINE is on) shows "อ่านไม่ได้". Stored credentials cannot be read.
 - `mst-golf-crm` and `mst-golf-web` must use the **same value**.
 - **Lost:** the LINE credentials already stored can never be read again.
   1. Set a new key in both projects and redeploy.
