@@ -49,9 +49,12 @@
   --tier-gold-sub: #5e4a17;
 
   /* type */
-  --font-body: var(--ff-lato, "Lato"), "Anuphan", "Noto Sans Thai", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-display: var(--ff-montserrat, "Montserrat"), var(--ff-kanit, "Kanit"), "Noto Sans Thai", system-ui, sans-serif; /* titles */
-  --font-mono: var(--ff-montserrat, "Montserrat"), "Anuphan", system-ui, sans-serif; /* numerals: prices, times, lane numbers (tabular) */
+  /* Futura 100 Thai (Adobe Fonts kit in app/layout.tsx). Its Book cut has only 400,
+     so anything set at 500+ uses the Medium/Bold family (--font-display) instead
+     of a synthesised bold. The rest of each stack is the fallback if the kit fails. */
+  --font-body: "futura-100-thai-book", var(--ff-lato, "Lato"), "Anuphan", "Noto Sans Thai", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "futura-100-thai", var(--ff-montserrat, "Montserrat"), var(--ff-kanit, "Kanit"), "Noto Sans Thai", system-ui, sans-serif; /* titles, labels, bold */
+  --font-mono: "futura-100-thai", var(--ff-montserrat, "Montserrat"), "Anuphan", system-ui, sans-serif; /* numerals: prices, times, lane numbers (tabular) */
   --color-grass: oklch(90% 0.060 156); /* yardage-map fairway */
   --color-grass-2: oklch(80% 0.110 156); /* yardage-map green */
   --color-sand-trap: oklch(90% 0.040 88);
@@ -99,13 +102,7 @@
   --gutter: 16px;
   --header-h: 60px;
 }
-/* MST's licensed Futura replaces Montserrat for titles and numerals once its
-   files are in public/fonts/futura (next.config.js sets the class). Futura has
-   no Thai, so Thai still falls through to Kanit. */
-:root.futura {
-  --font-display: "MST Futura", var(--ff-montserrat, "Montserrat"), var(--ff-kanit, "Kanit"), "Noto Sans Thai", system-ui, sans-serif;
-  --font-mono: "MST Futura", var(--ff-montserrat, "Montserrat"), "Anuphan", system-ui, sans-serif;
-}
+
 
 @media (min-width: 480px) {
   :root {
@@ -146,6 +143,12 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+/* Futura Book has no bold cut: bold-by-default elements take the Medium/Bold family. */
+b,
+strong,
+th {
+  font-family: var(--font-display);
+}
 h1,
 h2,
 h3,
@@ -167,6 +170,7 @@ h2 {
 }
 h3 {
   font-weight: 600;
+  font-family: var(--font-display); /* Book has no bold */
 }
 p {
   margin: 0;
@@ -247,6 +251,7 @@ textarea {
   border-radius: var(--radius-btn);
   border: 1px solid transparent;
   font-weight: 600;
+  font-family: var(--font-display); /* Book has no bold */
   font-size: var(--text-base);
   line-height: 1.2;
   white-space: nowrap;
@@ -358,6 +363,7 @@ textarea {
   gap: var(--space-1);
   min-height: 44px;
   font-weight: 600;
+  font-family: var(--font-display); /* Book has no bold */
   text-decoration: none;
   white-space: nowrap;
 }
@@ -388,6 +394,7 @@ textarea {
 }
 .notice b {
   font-weight: 600;
+  font-family: var(--font-display); /* Book has no bold */
 }
 
 /* ------------------------------------------------------------------ forms */
@@ -399,6 +406,7 @@ textarea {
 .field label,
 .field .label {
   font-weight: 600;
+  font-family: var(--font-display); /* Book has no bold */
   font-size: var(--text-sm);
   color: var(--color-ink-2);
 }

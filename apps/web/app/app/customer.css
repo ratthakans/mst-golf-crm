@@ -48,6 +48,7 @@
   color: var(--color-ink-2);
   font-size: var(--text-sm);
   font-weight: 600;
+  font-family: var(--font-display); /* Book has no bold */
   text-decoration: none;
   white-space: nowrap;
 }
@@ -148,6 +149,7 @@
 .dev-tag {
   font-size: var(--text-xs);
   font-weight: 600;
+  font-family: var(--font-display); /* Book has no bold */
   color: var(--color-warn);
 }
 .stack {
@@ -173,6 +175,7 @@
   background: none;
   color: var(--color-brand);
   font-weight: 600;
+  font-family: var(--font-display); /* Book has no bold */
   text-decoration: underline;
   text-underline-offset: 3px;
   cursor: pointer;
@@ -188,6 +191,7 @@
 .switch-label {
   display: block;
   font-weight: 600;
+  font-family: var(--font-display); /* Book has no bold */
 }
 
 .welcome {
@@ -215,6 +219,7 @@
 .welcome-points {
   font-size: var(--text-xl);
   font-weight: 600;
+  font-family: var(--font-display); /* Book has no bold */
   color: var(--color-brand-deep);
 }
 .welcome-points b {
@@ -238,6 +243,7 @@
   border-radius: 10px;
   background: transparent;
   font-weight: 600;
+  font-family: var(--font-display); /* Book has no bold */
   color: var(--color-muted);
   cursor: pointer;
   white-space: nowrap;
@@ -304,6 +310,7 @@
 }
 .mcard-mark {
   font-weight: 700;
+  font-family: var(--font-display); /* Book has no bold */
   letter-spacing: 0.14em;
   font-size: var(--text-sm);
 }
@@ -312,6 +319,7 @@
   border-radius: var(--radius-pill);
   font-size: var(--text-sm);
   font-weight: 700;
+  font-family: var(--font-display); /* Book has no bold */
   border: 1px solid currentColor;
 }
 .mcard-mid {
@@ -323,6 +331,7 @@
 .mcard-name {
   font-size: var(--text-xl);
   font-weight: 700;
+  font-family: var(--font-display); /* Book has no bold */
   line-height: 1.3;
   overflow-wrap: anywhere;
 }
@@ -404,6 +413,7 @@
 }
 .progress-top {
   font-weight: 600;
+  font-family: var(--font-display); /* Book has no bold */
   color: var(--color-brand-deep);
 }
 .perks h2 {
@@ -457,11 +467,13 @@
 .bright-code {
   font-size: var(--text-2xl);
   font-weight: 700;
+  font-family: var(--font-display); /* Book has no bold */
   letter-spacing: 0.08em;
   color: var(--color-brand-deep);
 }
 .bright-name {
   font-weight: 600;
+  font-family: var(--font-display); /* Book has no bold */
 }
 
 .balance {
@@ -497,6 +509,7 @@
 }
 .ledger-label {
   font-weight: 600;
+  font-family: var(--font-display); /* Book has no bold */
 }
 .ledger-sub {
   font-size: var(--text-xs);
@@ -505,6 +518,7 @@
 }
 .ledger-delta {
   font-weight: 700;
+  font-family: var(--font-display); /* Book has no bold */
   align-self: center;
 }
 .ledger-delta.plus {
@@ -530,6 +544,7 @@
   background: var(--color-tint);
   color: var(--color-brand-deep);
   font-weight: 600;
+  font-family: var(--font-display); /* Book has no bold */
   text-decoration: none;
 }
 .row-link:hover {
@@ -595,6 +610,7 @@
 .day-num {
   font-size: var(--text-lg);
   font-weight: 700;
+  font-family: var(--font-display); /* Book has no bold */
 }
 
 .grid-wrap {
@@ -618,6 +634,7 @@
   text-align: center;
   font-size: var(--text-xs);
   font-weight: 700;
+  font-family: var(--font-display); /* Book has no bold */
   color: var(--color-muted);
   padding-bottom: 2px;
   white-space: nowrap;
@@ -627,6 +644,7 @@
   align-items: center;
   font-size: var(--text-sm);
   font-weight: 600;
+  font-family: var(--font-display); /* Book has no bold */
   color: var(--color-ink-2);
 }
 .slot {
@@ -635,6 +653,7 @@
   border: 1px solid transparent;
   font-size: var(--text-sm);
   font-weight: 600;
+  font-family: var(--font-display); /* Book has no bold */
   white-space: nowrap;
   cursor: pointer;
   transition:
@@ -664,6 +683,7 @@
   border-color: var(--color-brand);
   color: #fff;
   font-weight: 600;
+  font-family: var(--font-display); /* Book has no bold */
   cursor: default;
 }
 .slot-blocked,
@@ -725,6 +745,7 @@
 
 .sheet-when {
   font-weight: 600;
+  font-family: var(--font-display); /* Book has no bold */
   margin-bottom: var(--space-4);
 }
 .party {
@@ -739,6 +760,7 @@
   align-items: center;
   gap: var(--space-2);
   font-weight: 600;
+  font-family: var(--font-display); /* Book has no bold */
 }
 .stepper {
   display: inline-flex;
@@ -768,6 +790,7 @@
   text-align: center;
   font-size: var(--text-xl);
   font-weight: 700;
+  font-family: var(--font-display); /* Book has no bold */
 }
 .price-row {
   display: flex;
@@ -836,6 +859,7 @@
 .summary dd {
   margin: 0;
   font-weight: 600;
+  font-family: var(--font-display); /* Book has no bold */
   text-align: right;
 }
 .summary-price dd {
@@ -848,6 +872,7 @@
 }
 .summary-price small {
   font-weight: 500;
+  font-family: var(--font-display); /* Book has no bold */
   color: var(--color-brand);
   font-size: var(--text-xs);
 }
@@ -857,6 +882,7 @@
 .done-when {
   font-size: var(--text-lg);
   font-weight: 600;
+  font-family: var(--font-display); /* Book has no bold */
 }
 
 .mine-list {
@@ -888,6 +914,7 @@
 }
 .bk-when {
   font-weight: 600;
+  font-family: var(--font-display); /* Book has no bold */
 }
 .bk-sub {
   font-size: var(--text-sm);
@@ -901,6 +928,7 @@
   color: var(--color-brand-deep);
   font-size: var(--text-xs);
   font-weight: 600;
+  font-family: var(--font-display); /* Book has no bold */
   white-space: nowrap;
 }
 .badge-cancelled,
@@ -914,10 +942,12 @@
   align-items: center;
   cursor: pointer;
   font-weight: 600;
+  font-family: var(--font-display); /* Book has no bold */
   color: var(--color-brand-deep);
 }
 .past-row .bk-when {
   font-weight: 500;
+  font-family: var(--font-display); /* Book has no bold */
   color: var(--color-ink-2);
 }
 
@@ -996,6 +1026,7 @@
 }
 .rw-name {
   font-weight: 600;
+  font-family: var(--font-display); /* Book has no bold */
   overflow-wrap: anywhere;
 }
 .rw-meta {
@@ -1005,6 +1036,7 @@
 .rw-why {
   font-size: var(--text-xs);
   font-weight: 600;
+  font-family: var(--font-display); /* Book has no bold */
   color: var(--color-sand-ink);
 }
 .rw-cost {
@@ -1012,12 +1044,14 @@
   justify-items: end;
   font-size: var(--text-lg);
   font-weight: 700;
+  font-family: var(--font-display); /* Book has no bold */
   color: var(--color-brand-deep);
   line-height: 1.1;
 }
 .rw-cost small {
   font-size: var(--text-xs);
   font-weight: 500;
+  font-family: var(--font-display); /* Book has no bold */
   color: var(--color-muted);
 }
 /* A coupon reads as a ticket stub: the value on a perforated tab. */
@@ -1030,6 +1064,7 @@
   background: var(--color-brand);
   color: var(--color-on-brand);
   font-weight: 700;
+  font-family: var(--font-display); /* Book has no bold */
   font-size: var(--text-sm);
   border-right: 2px dashed var(--color-on-brand-muted);
 }
@@ -1052,6 +1087,7 @@
 }
 .rw-delivery legend {
   font-weight: 600;
+  font-family: var(--font-display); /* Book has no bold */
   margin-bottom: var(--space-2);
 }
 .rw-choice {
@@ -1069,6 +1105,7 @@
   border-radius: var(--radius-md);
   cursor: pointer;
   font-weight: 600;
+  font-family: var(--font-display); /* Book has no bold */
 }
 .rw-option.on {
   border-color: var(--color-brand);
@@ -1104,6 +1141,7 @@
 .rw-coupon-value {
   font-size: var(--text-3xl);
   font-weight: 700;
+  font-family: var(--font-display); /* Book has no bold */
   color: var(--color-brand-deep);
   text-align: center;
 }
@@ -1137,6 +1175,7 @@
 .rw-steps li.done {
   color: var(--color-ink);
   font-weight: 600;
+  font-family: var(--font-display); /* Book has no bold */
 }
 .rw-steps small {
   font-weight: 400;
@@ -1190,6 +1229,7 @@
   color: #fff;
   font-size: 11px;
   font-weight: 700;
+  font-family: var(--font-display); /* Book has no bold */
   line-height: 18px;
   text-align: center;
 }
@@ -1224,6 +1264,7 @@
 .inbox-head h2 {
   font-size: var(--text-md);
   font-weight: 600;
+  font-family: var(--font-display); /* Book has no bold */
 }
 .inbox-head time {
   flex: none;

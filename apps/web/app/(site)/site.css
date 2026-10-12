@@ -75,6 +75,7 @@
 }
 .acct-name {
   font-weight: 600;
+  font-family: var(--font-display); /* Book has no bold */
   font-size: var(--text-sm);
   white-space: nowrap;
   overflow: hidden;
@@ -195,6 +196,7 @@
   padding: 1px var(--space-2);
   border-radius: var(--radius-pill);
   font-weight: 600;
+  font-family: var(--font-display); /* Book has no bold */
   background: var(--color-tint);
   color: var(--color-brand-deep);
 }
@@ -209,6 +211,7 @@
 .post-title {
   font-size: var(--text-lg);
   font-weight: 600;
+  font-family: var(--font-display); /* Book has no bold */
   line-height: 1.4;
 }
 .post-excerpt {
@@ -228,6 +231,7 @@
   border: 1px solid var(--color-line-strong);
   background: var(--color-surface);
   font-weight: 500;
+  font-family: var(--font-display); /* Book has no bold */
   cursor: pointer;
   white-space: nowrap;
   transition:
@@ -310,6 +314,7 @@
 }
 .table th {
   font-weight: 500;
+  font-family: var(--font-display); /* Book has no bold */
   font-size: var(--text-sm);
   color: var(--color-muted);
   border-bottom-color: var(--color-ink);
@@ -345,6 +350,7 @@
 }
 .rules dt {
   font-weight: 600;
+  font-family: var(--font-display); /* Book has no bold */
 }
 .rules dd {
   margin: 0;
@@ -460,6 +466,7 @@
 }
 .article-foot p {
   font-weight: 600;
+  font-family: var(--font-display); /* Book has no bold */
   color: var(--color-brand-deep);
 }
 .consent-doc {
@@ -585,6 +592,7 @@
   display: inline-block;
   padding-block: 3px; /* ≥ 24 px tap target (WCAG 2.2) */
   font-weight: 600;
+  font-family: var(--font-display); /* Book has no bold */
   color: var(--color-brand-deep);
   text-decoration: underline;
   text-decoration-thickness: 1px;
@@ -612,11 +620,13 @@
   margin-top: var(--space-3);
   font-size: var(--text-display);
   font-weight: 800;
+  font-family: var(--font-display); /* Book has no bold */
   line-height: 1.12;
 }
 .hole-title-strong {
   display: block;
   font-weight: 800;
+  font-family: var(--font-display); /* Book has no bold */
   color: var(--color-brand);
 }
 .hole-lede {
@@ -748,6 +758,7 @@
 .yardage-cap b {
   color: var(--color-ink);
   font-weight: 600;
+  font-family: var(--font-display); /* Book has no bold */
 }
 .y-legend {
   display: block;
@@ -837,6 +848,7 @@
 }
 .scorecard thead th {
   font-weight: 500;
+  font-family: var(--font-display); /* Book has no bold */
   font-size: var(--text-xs);
   color: var(--color-muted);
   background: var(--color-paper);
@@ -849,6 +861,7 @@
   padding: 0 var(--space-3);
   text-align: left;
   font-weight: 600;
+  font-family: var(--font-display); /* Book has no bold */
   white-space: nowrap;
   background: var(--color-surface);
 }
@@ -883,6 +896,7 @@
   display: inline-block;
   padding-block: var(--space-1);
   font-weight: 600;
+  font-family: var(--font-display); /* Book has no bold */
   color: var(--color-brand-deep);
   white-space: nowrap;
 }
@@ -937,6 +951,7 @@
 }
 .tier-sheet tbody th {
   font-weight: 500;
+  font-family: var(--font-display); /* Book has no bold */
   color: var(--color-ink-2);
   font-size: var(--text-sm);
 }
@@ -1161,6 +1176,7 @@
 }
 .earn-steps b {
   font-weight: 600;
+  font-family: var(--font-display); /* Book has no bold */
 }
 .earn-steps span {
   color: var(--color-ink-2);
@@ -1202,11 +1218,13 @@
   place-items: center;
   font-size: var(--text-2xl);
   font-weight: 600;
+  font-family: var(--font-display); /* Book has no bold */
   color: var(--color-brand-deep);
 }
 .reward-cost {
   color: var(--color-brand);
   font-weight: 500;
+  font-family: var(--font-display); /* Book has no bold */
 }
 .reward-meta {
   font-size: var(--text-sm);
@@ -1244,6 +1262,7 @@
 .promo-title {
   font-size: var(--text-lg);
   font-weight: 600;
+  font-family: var(--font-display); /* Book has no bold */
 }
 .promo-excerpt {
   color: var(--color-ink-2);
@@ -1511,6 +1530,7 @@
 .sh-title {
   font-size: clamp(2.25rem, 4.2vw + 1rem, 4.25rem);
   font-weight: 800;
+  font-family: var(--font-display); /* Book has no bold */
   line-height: 1.08;
   letter-spacing: -0.02em;
   text-wrap: balance;
@@ -1678,6 +1698,7 @@ a.ps-row:hover .ps-title,
 .ps-full .ps-title {
   font-size: var(--text-2xl);
   font-weight: 800;
+  font-family: var(--font-display); /* Book has no bold */
 }
 .ps-full .ps-text {
   font-size: var(--text-base);
@@ -1716,6 +1737,7 @@ a.ps-row:hover .ps-title,
 .h-shelf-h {
   font-size: var(--text-sm);
   font-weight: 600;
+  font-family: var(--font-display); /* Book has no bold */
   color: var(--color-muted);
   letter-spacing: 0;
 }
@@ -1752,6 +1774,7 @@ a.ps-row:hover .ps-title,
 .h-club h2 {
   font-size: var(--text-3xl);
   font-weight: 800;
+  font-family: var(--font-display); /* Book has no bold */
   text-wrap: balance;
 }
 .h-lanes-cta {
@@ -1807,6 +1830,7 @@ a.ps-row:hover .ps-title,
 .dir-thai {
   grid-area: thai;
   font-weight: 600;
+  font-family: var(--font-display); /* Book has no bold */
   font-size: var(--text-sm);
   color: var(--color-brand-deep);
 }
@@ -1882,6 +1906,7 @@ a.ps-row:hover .ps-title,
 .h-notes-head h2 {
   font-size: var(--text-2xl);
   font-weight: 800;
+  font-family: var(--font-display); /* Book has no bold */
 }
 
 /* the store */
@@ -1902,6 +1927,7 @@ a.ps-row:hover .ps-title,
 .h-visit h2 {
   font-size: var(--text-2xl);
   font-weight: 800;
+  font-family: var(--font-display); /* Book has no bold */
 }
 .h-visit-addr {
   font-size: var(--text-lg);
@@ -1967,6 +1993,7 @@ a.ps-row:hover .ps-title,
 .two-col h2,
 .section-h {
   font-weight: 800;
+  font-family: var(--font-display); /* Book has no bold */
   letter-spacing: -0.01em;
   text-wrap: balance;
 }
@@ -2013,6 +2040,7 @@ a.ps-row:hover .ps-title,
 .svc-name {
   font-size: clamp(2rem, 2.4vw + 1.2rem, 3rem);
   font-weight: 800;
+  font-family: var(--font-display); /* Book has no bold */
   letter-spacing: -0.02em;
 }
 .svc-thai {
@@ -2152,4 +2180,5 @@ a.ps-row:hover .ps-title,
   margin-bottom: var(--space-2);
   font-size: var(--text-xl);
   font-weight: 800;
+  font-family: var(--font-display); /* Book has no bold */
 }

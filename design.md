@@ -51,16 +51,17 @@ These stay as they are:
 The Member card is drawn in the CVI green.
 
 ## Typography
-- **Titles, labels and numerals: Futura.** Decided by the owner on 13 Oct 2026. This overrides the CVI PDF, which names Montserrat.
-  - The face is MST's licensed **webfont**, self-hosted from `apps/web/public/fonts/futura/futura-{400…800}.woff2` (see the README there).
-  - When `futura-700.woff2` is present at build time, `next.config.js` sets `<html class="futura">` and `--font-display` / `--font-mono` switch to "MST Futura".
-  - Until the files arrive, titles fall back to **Montserrat**, the CVI face.
-  - Never ship the Futura that comes with macOS: it isn't licensed for the web.
-  - Weights: 800 (Heavy) for hero and page titles, 700 (Bold) for section titles, 600 (Demi) for labels.
-- **Thai:** neither Futura nor Montserrat has Thai glyphs, so Thai text in titles falls through to **Kanit** at the same weight. This pairing is ours; the guideline doesn't cover Thai.
-- **Body:** Lato 400/700 (the CVI secondary face), with Thai falling through to **Anuphan**.
-- **Numerals in tables and markers:** the display face with `tabular-nums` (the `.mono` class).
-- **Loading:** Montserrat, Lato and Kanit through `next/font/google` (self-hosted at build). Anuphan and MST Futura are in `public/fonts`.
+- **Typeface: Futura 100 Thai, from MST's Adobe Fonts kit `sxs5ann`.** The owner decided on 13 Oct 2026; this overrides the CVI PDF, which names Montserrat and Lato.
+  - The kit is loaded in `apps/web/app/layout.tsx` with `<link rel="stylesheet" href="https://use.typekit.net/sxs5ann.css">`.
+  - It carries both Thai and Latin, so one family covers the whole page.
+- **Families and cuts:**
+  - `futura-100-thai`: Medium (400) and Bold (700). This is `--font-display`, for titles, labels, buttons, numerals (`--font-mono`), and **anything set at weight 500 or above**.
+  - `futura-100-thai-book`: Book (400). This is `--font-body`, for running text.
+  - Book has no bold cut. Every rule that sets `font-weight` ≥ 500 also sets `font-family: var(--font-display)`, and so do `b`, `strong` and `th`. That keeps the browser from faking a bold.
+  - New CSS must do the same.
+- **Weights:** asking for 600–900 renders Bold (700) and 500 renders Medium. The kit has no Heavy cut.
+- **Fallbacks, only if the kit fails:** Montserrat, Lato and Kanit through `next/font` (not preloaded), plus Anuphan self-hosted.
+- **Adobe kit settings:** the production domain and the Vercel domains must be allowed in the kit, and font-display should be set to `swap` there.
 
 ## Logo and tagline (CVI)
 - **Logo:** `public/mst-logo.png`, the horizontal logo.

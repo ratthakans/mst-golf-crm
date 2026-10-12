@@ -1,17 +1,10 @@
-const fs = require("node:fs");
 const path = require("node:path");
-
-// MST's licensed Futura webfont is switched on by dropping the files into
-// public/fonts/futura (see the README there). Decided at build time, because
-// public/ is served from the CDN and isn't inside the server bundle.
-const hasFutura = fs.existsSync(path.join(__dirname, "public/fonts/futura/futura-700.woff2"));
 const { PrismaPlugin } = require("@prisma/nextjs-monorepo-workaround-plugin");
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
-  env: { NEXT_PUBLIC_FUTURA: hasFutura ? "1" : "" },
   // Photos MST uploads in the back office live in the public Blob store.
   images: { remotePatterns: [{ protocol: "https", hostname: "*.public.blob.vercel-storage.com" }] },
   // Workspace packages are shipped as TypeScript source — let Next transpile them.

@@ -4,13 +4,13 @@ import "./fonts.css";
 import "./globals.css";
 import { siteOrigin } from "@/lib/org";
 
-// Titles: MST's licensed Futura (fonts.css, switched on by the class below
-// once the files are in public/fonts/futura), otherwise Montserrat from the
-// CVI. Body: Lato. None has Thai glyphs, so Thai falls back per character to
-// Kanit (titles) and Anuphan (body, self-hosted in fonts.css).
-const montserrat = Montserrat({ subsets: ["latin"], weight: ["600", "700", "800", "900"], variable: "--ff-montserrat", display: "swap" });
-const lato = Lato({ subsets: ["latin"], weight: ["400", "700"], variable: "--ff-lato", display: "swap" });
-const kanit = Kanit({ subsets: ["thai", "latin"], weight: ["500", "600", "700"], variable: "--ff-kanit", display: "swap" });
+// Type: MST's Futura 100 Thai from Adobe Fonts (kit sxs5ann, loaded below) —
+// it carries Thai and Latin, Book for running text, Medium/Bold for titles and
+// anything set heavier. Montserrat / Lato / Kanit / Anuphan stay as fallbacks
+// should the kit fail to load.
+const montserrat = Montserrat({ subsets: ["latin"], weight: ["600", "700", "800", "900"], variable: "--ff-montserrat", display: "swap", preload: false });
+const lato = Lato({ subsets: ["latin"], weight: ["400", "700"], variable: "--ff-lato", display: "swap", preload: false });
+const kanit = Kanit({ subsets: ["thai", "latin"], weight: ["500", "600", "700"], variable: "--ff-kanit", display: "swap", preload: false });
 
 export async function generateMetadata(): Promise<Metadata> {
   const origin = await siteOrigin();
@@ -34,7 +34,13 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="th" className={`${montserrat.variable} ${lato.variable} ${kanit.variable}${process.env.NEXT_PUBLIC_FUTURA ? " futura" : ""}`}>
+    <html lang="th" className={`${montserrat.variable} ${lato.variable} ${kanit.variable}`}>
+      <head>
+        <link rel="preconnect" href="https://use.typekit.net" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://p.typekit.net" crossOrigin="anonymous" />
+        {/* eslint-disable-next-line @next/next/no-css-tags -- Adobe Fonts kits are served as a stylesheet */}
+        <link rel="stylesheet" href="https://use.typekit.net/sxs5ann.css" />
+      </head>
       <body>{children}</body>
     </html>
   );
