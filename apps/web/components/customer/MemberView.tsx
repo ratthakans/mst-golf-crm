@@ -6,6 +6,7 @@ import { IconArrow, IconCalendar, IconClose, IconGift, IconSun } from "@/compone
 import { api } from "@/lib/client";
 import { formatBahtWhole, formatPoints, formatThaiDate } from "@/lib/format";
 import type { CardData, PointRow } from "@/lib/types";
+import { SwingArc } from "@/components/SwingArc";
 
 type Tab = "card" | "points" | "profile";
 const TABS: Array<{ key: Tab; label: string }> = [
@@ -122,6 +123,7 @@ function CardPanel({ card, qrSrc, topTierName }: { card: CardData; qrSrc: string
   return (
     <>
       <article className={`mcard mcard-${tierClass(card.tierKey)}`} aria-label={`บัตรสมาชิก ระดับ ${card.tierName}`}>
+        <SwingArc className="mcard-arc" />
         <div className="mcard-top">
           <span className="mcard-mark">MST GOLF</span>
           <span className="mcard-tier">{card.tierName}</span>
@@ -156,7 +158,7 @@ function CardPanel({ card, qrSrc, topTierName }: { card: CardData; qrSrc: string
               </span>
               <span className="num muted">{Math.round(card.next.pct * 100)}%</span>
             </div>
-            <div className="progress" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(card.next.pct * 100)}>
+            <div className="progress" role="progressbar" aria-label={`ความคืบหน้าสู่ระดับ ${card.next.name}`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(card.next.pct * 100)}>
               <i style={{ transform: `scaleX(${Math.max(0.02, card.next.pct)})` }} />
             </div>
             <p className="hint">ยอดซื้อสะสม 12 เดือนล่าสุด {formatBahtWhole(card.spend12mBaht)} · ระดับคิดจากยอดซื้อ ไม่ใช่แต้ม</p>

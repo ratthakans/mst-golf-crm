@@ -125,3 +125,15 @@ export const IconChevronRight = (p: P) => (
     <path d="M9 5l7 7-7 7" />
   </Stroke>
 );
+export const IconUser = (p: P) => (
+  <Stroke {...p}>
+    <circle cx="12" cy="8.5" r="3.75" />
+    <path d="M4.5 20c1.2-3.6 4.2-5.5 7.5-5.5s6.3 1.9 7.5 5.5" />
+  </Stroke>
+);
+export const IconCard = (p: P) => (
+  <Stroke {...p}>
+    <rect x="3" y="5.5" width="18" height="13" rx="2" />
+    <path d="M6.5 14.5h4M14 9h3.5v3.5H14z" />
+  </Stroke>
+);

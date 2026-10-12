@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { SwingArc } from "@/components/SwingArc";
 
 // The head of every public page, set like the top of a printed sheet: a line
 // of where-you-are and one live fact over a 1 px ink rule, then the title.
@@ -59,7 +60,13 @@ export function SheetHead({
             {lede && <p className="sh-lede">{lede}</p>}
             {actions && <div className="sh-actions">{actions}</div>}
           </div>
-          {aside && <div className="sh-aside">{aside}</div>}
+          {aside && (
+            <div className="sh-aside">
+              {aside}
+              {/* CVI: the green Swing Arc laid over the photograph's corner */}
+              <SwingArc className="sh-arc" />
+            </div>
+          )}
         </div>
       </div>
     </section>

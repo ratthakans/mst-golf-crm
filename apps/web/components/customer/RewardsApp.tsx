@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { IconCheck, IconClose, IconGift } from "@/components/icons";
+import { IconCheck, IconClose } from "@/components/icons";
 import { api } from "@/lib/client";
 import { formatBaht, formatPoints, formatThaiDate } from "@/lib/format";
 import type { RedemptionRow, RedemptionStatus, RewardItem, RewardsData } from "@/lib/types";
@@ -195,14 +195,14 @@ function metaLine(i: RewardItem): string {
   return [i.fulfilment ? `ได้รับใน ${i.fulfilment}` : "ของรางวัล", i.stockLeft !== null && i.stockLeft > 0 && i.stockLeft <= 10 ? `เหลือ ${i.stockLeft} ชิ้น` : null].filter(Boolean).join(" · ");
 }
 
-function RewardThumb({ item }: { item: { imageUrl: string | null; kind: string; name: string } }) {
+function RewardThumb({ item }: { item: { imageUrl: string | null; kind: string; name: string; valueSatang?: number | null } }) {
   if (item.imageUrl) {
     // eslint-disable-next-line @next/next/no-img-element
     return <img className="rw-thumb" src={item.imageUrl} alt="" width={64} height={64} loading="lazy" />;
   }
   return (
     <span className="rw-thumb rw-thumb-blank" aria-hidden="true">
-      {item.kind === "COUPON" ? "฿" : <IconGift size={26} />}
+      {item.kind === "COUPON" ? (item.valueSatang ? formatBaht(item.valueSatang) : "คูปอง") : "ของรางวัล"}
     </span>
   );
 }

@@ -28,7 +28,11 @@ The back office (`apps/web-admin`) keeps its own UI. It only takes the CVI accen
   - **`/rewards`:** how to earn, the tier sheet, then the catalogue as a ruled list. A reward with no picture shows its value or "ของรางวัล" as type, never an emoji.
   - **Articles and `/promotions/[slug]`:** the meta line in the reading column, then the title, cover and body. They close with a ruled line, not a tinted box.
   - **Categories are words in dark green, not pills.** The current page in the nav is underlined, not boxed.
-- **App pages** (`/app/*`): function first. They share tokens, type and buttons; no enrichment.
+- **App pages** (`/app/*`): function first, with the same sale-sheet voice.
+  - Ruled sections over an ink rule, not boxed cards. Tabs are underlined, not pills. Values are set as type, with no icon tiles.
+  - The member card stays an object and carries the Swing Arc.
+  - Navigation: on phones, a bottom bar (บัตรสมาชิก · จองซิม · รางวัล · แจ้งเตือน), rendered outside the sticky header. Wider screens use underlined header tabs.
+  - The booking grid is grouped by part of day (เช้า / บ่าย / เย็น). Free slots are outlined; taken slots are hatched.
 
 ## Colour (CVI)
 | Token | Value | Role |
@@ -62,6 +66,14 @@ The Member card is drawn in the CVI green.
 - **Weights:** asking for 600–900 renders Bold (700) and 500 renders Medium. The kit has no Heavy cut.
 - **Fallbacks, only if the kit fails:** Montserrat, Lato and Kanit through `next/font` (not preloaded), plus Anuphan self-hosted.
 - **Adobe kit settings:** the production domain and the Vercel domains must be allowed in the kit, and font-display should be set to `swap` there.
+
+## The Swing Arc (CVI)
+- `components/SwingArc.tsx` is the site's only decorative mark. It is the curve from the logo.
+- Where it appears:
+  - In #00A35F over the bottom-right corner of every sheet-head photo.
+  - As a 10 % white watermark in the green membership band on the home page.
+  - Inside the member card.
+- Don't add it anywhere else, and never put it behind text.
 
 ## Logo and tagline (CVI)
 - **Logo:** `public/mst-logo.png`, the horizontal logo.

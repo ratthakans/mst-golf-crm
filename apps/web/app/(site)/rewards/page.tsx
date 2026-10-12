@@ -89,20 +89,20 @@ export default async function RewardsInfoPage() {
         <section className="section section-rule" aria-labelledby="rewards-h">
           <div className="wrap">
             <h2 id="rewards-h" className="section-h">รางวัลที่แลกได้ตอนนี้</h2>
-            <ul className="rw">
+            <ul className="rl">
               {rewards.map((r) => (
-                <li key={r.id} className={`rw-row${r.soldOut ? " sold-out" : ""}`}>
-                  <span className="rw-tag" aria-hidden="true">
+                <li key={r.id} className={`rl-row${r.soldOut ? " sold-out" : ""}`}>
+                  <span className="rl-tag" aria-hidden="true">
                     {r.imageUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element -- catalogue images live in MST's public Blob store
                       <img src={r.imageUrl} alt="" loading="lazy" width={240} height={180} />
                     ) : (
-                      <span className="rw-value">{r.kind === "COUPON" && r.valueSatang ? formatBaht(r.valueSatang) : "ของรางวัล"}</span>
+                      <span className="rl-value">{r.kind === "COUPON" && r.valueSatang ? formatBaht(r.valueSatang) : "ของรางวัล"}</span>
                     )}
                   </span>
-                  <span className="rw-main">
-                    <b className="rw-name">{r.name}</b>
-                    <span className="rw-meta">
+                  <span className="rl-main">
+                    <b className="rl-name">{r.name}</b>
+                    <span className="rl-meta">
                       {[
                         r.kind === "COUPON" ? (r.minSpendSatang ? `คูปองใช้ที่ร้าน เมื่อซื้อครบ ${formatBaht(r.minSpendSatang)}` : "คูปองใช้ที่ร้าน") : "ของรางวัล ร้านจัดส่งหรือรับที่ร้าน",
                         r.minTierName ? `${r.minTierName} ขึ้นไป` : null,
@@ -111,11 +111,11 @@ export default async function RewardsInfoPage() {
                         .join(" · ")}
                     </span>
                   </span>
-                  <span className="rw-cost">
+                  <span className="rl-cost">
                     <span>
                       <span className="mono">{formatPoints(r.costPoints)}</span> แต้ม
                     </span>
-                    {r.soldOut && <span className="rw-out">หมดแล้ว</span>}
+                    {r.soldOut && <span className="rl-out">หมดแล้ว</span>}
                   </span>
                 </li>
               ))}

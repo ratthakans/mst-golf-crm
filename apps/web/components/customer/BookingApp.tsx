@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { IconCheck, IconClock, IconMinus, IconPlus, IconUsers } from "@/components/icons";
 import { api, looksLikeLineApp } from "@/lib/client";
 import { addDaysToKey, formatBaht, formatHm, formatThaiDate, keyLongLabel, keyParts } from "@/lib/format";
@@ -21,6 +21,8 @@ interface Props {
   tierName: string;
   simDiscountPct: number;
   initial: AvailabilityData | null;
+  /** Opened from a free slot on the website: offer that slot straight away. */
+  initialPick?: { startAt: string; laneId: string } | null;
   unavailable: string | null;
   bookings: { upcoming: BookingRow[]; past: BookingRow[] };
   rules: Rules;
@@ -48,6 +50,11 @@ const STATUS_TEXT: Record<BookingRow["status"], string> = {
   CANCELLED: "ยกเลิกแล้ว",
 };
 
+/** Morning / afternoon / evening heading for a slot's "HH:MM" label. */
+const dayPart = (label: string) => {
+  const h = Number(label.slice(0, 2));
+  return h < 12 ? "ช่วงเช้า" : h < 17 ? "ช่วงบ่าย" : "ช่วงเย็น";
+};
 const hoursText = (h: number) => (Number.isInteger(h) ? `${h} ชม.` : `${Math.round(h * 60)} นาที`);
 const priceAfter = (hourly: number, pct: number) => Math.round((hourly * (100 - pct)) / 100);
 const when = (b: { startAt: string; endAt: string }) =>
@@ -149,6 +156,29 @@ export function BookingApp(props: Props) {
     setParty((n) => Math.min(Math.max(1, n), p.capacity));
     setSheetError(null);
   };
+
+  // Opened from a free slot on the website's scorecard: offer that slot once,
+  // as if it had been tapped (openPick still checks it's free right now).
+  const offered = useRef(false);
+  useEffect(() => {
+    const want = props.initialPick;
+    if (offered.current || !want || !props.initial) return;
+    offered.current = true;
+    window.history.replaceState(null, "", "/app/booking");
+    const at = new Date(want.startAt).getTime();
+    const slot = props.initial.slots.find((x) => new Date(x.startAt).getTime() === at);
+    const lane = props.initial.lanes.find((l) => l.id === want.laneId);
+    if (!slot || !lane) return;
+    void openPick({
+      laneId: lane.id,
+      laneName: lane.name,
+      capacity: lane.capacity,
+      hourlyPriceSatang: lane.hourlyPriceSatang,
+      startAt: slot.startAt,
+      label: `${slot.label}–${formatHm(new Date(at + 60 * 60_000))}`,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once, on arrival
+  }, []);
 
   const backToGrid = (m: Msg) => {
     setView("grid");
@@ -402,9 +432,16 @@ export function BookingApp(props: Props) {
                   {l.name}
                 </span>
               ))}
-              {avail.slots.map((s) => (
-                <SlotRow key={s.startAt} slot={s} avail={avail} mine={mineKeys} onPick={openPick} />
-              ))}
+              {avail.slots.map((s, i) => {
+                const part = dayPart(s.label);
+                const first = i === 0 || dayPart(avail.slots[i - 1]!.label) !== part;
+                return (
+                  <Fragment key={s.startAt}>
+                    {first && <span className="slots-part">{part}</span>}
+                    <SlotRow slot={s} avail={avail} mine={mineKeys} onPick={openPick} />
+                  </Fragment>
+                );
+              })}
             </div>
             {allPast && <p className="hint center">ช่วงเวลาของวันนี้ผ่านไปหมดแล้ว เลือกวันถัดไปได้เลย</p>}
             <ul className="legend" aria-label="คำอธิบายสี">

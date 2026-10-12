@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 };
 
 // /app/booking — Rich Menu button D in LINE, "จองซิม" on the website.
-export default async function BookingPage() {
+export default async function BookingPage({ searchParams }: { searchParams: { date?: string; at?: string; lane?: string } }) {
   const org = await getOrg();
   const [setup, { customer, member }] = await Promise.all([loginSetup(org.id), currentMember()]);
 
@@ -37,13 +37,22 @@ export default async function BookingPage() {
   let initialDate = todayKey;
   let initial: AvailabilityData | null = null;
   let unavailable: string | null = null;
+  // A link from the website's scorecard: open on that day, then on that slot.
+  const lastKey = localDateKey(addDays(new Date(), card.tier.bookingDaysAhead));
+  const asked = typeof searchParams.date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(searchParams.date) && searchParams.date >= todayKey && searchParams.date <= lastKey ? searchParams.date : null;
+  const initialPick = asked && searchParams.at && searchParams.lane ? { startAt: String(searchParams.at), laneId: String(searchParams.lane) } : null;
   try {
+    if (asked) {
+      initialDate = asked;
+      initial = await availability(org.id, asked);
+    } else {
     initial = await availability(org.id, todayKey);
     // Late in the day (or on a closed day) open on tomorrow instead of an empty grid.
     const nothingLeft = !initial.open || initial.slots.every((s) => s.lanes.every((l) => l.state === "past"));
     if (nothingLeft && card.tier.bookingDaysAhead >= 1) {
       initialDate = localDateKey(addDays(new Date(), 1));
       initial = await availability(org.id, initialDate);
+    }
     }
   } catch (e) {
     if (!isCoreError(e)) throw e;
@@ -59,6 +68,7 @@ export default async function BookingPage() {
       tierName={card.tierName}
       simDiscountPct={card.tier.simDiscountPct}
       initial={initial}
+      initialPick={initialPick}
       unavailable={unavailable}
       bookings={bookings}
       rules={{

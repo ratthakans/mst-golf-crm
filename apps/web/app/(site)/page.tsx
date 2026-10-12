@@ -4,6 +4,7 @@ import { PostList } from "@/components/PostList";
 import { PromoSheet } from "@/components/PromoSheet";
 import { ServiceDirectory } from "@/components/ServiceDirectory";
 import { SheetHead } from "@/components/SheetHead";
+import { SwingArc } from "@/components/SwingArc";
 import { SimScorecard } from "@/components/SimScorecard";
 import { TierTable } from "@/components/TierTable";
 import { Photo } from "@/components/Photo";
@@ -172,6 +173,7 @@ export default async function HomePage() {
       </section>
 
       <section className="h-club" aria-labelledby="club-h">
+        <SwingArc className="h-club-arc" />
         <div className="wrap h-club-grid">
           <div className="h-club-copy">
             <h2 id="club-h">
@@ -180,7 +182,7 @@ export default async function HomePage() {
               รับ <span className="mono">{formatPoints(s.welcomeBonus)}</span> แต้มทันที
             </h2>
             <p>สมัครด้วยเบอร์มือถือ บัตรสมาชิกอยู่ในมือถือ ใช้สะสมแต้ม รับส่วนลด แลกคูปอง และจองซิม</p>
-            <Link href="/register" className="btn btn-primary">
+            <Link href="/register" className="btn btn-on-dark">
               สมัครสมาชิก
             </Link>
           </div>

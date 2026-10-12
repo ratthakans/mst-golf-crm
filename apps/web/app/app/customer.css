@@ -1283,3 +1283,288 @@
   letter-spacing: 0.4em;
   text-align: center;
 }
+
+/* ======================================================= the sale sheet, member side */
+/* Hallmark · design-system: design.md · the customer pages read like the public
+ * site: ruled lists over an ink rule instead of boxed cards, underline tabs,
+ * values as type (no icon tiles), and a bottom bar on phones. The member card
+ * stays an object — it's the one thing customers hold up at the counter. */
+
+/* navigation: header tabs on wide screens, a bottom bar on phones */
+.capp-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 40;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  padding: 0 var(--space-2) env(safe-area-inset-bottom);
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-line-strong);
+}
+.bar-item {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 2px;
+  min-height: 60px;
+  color: var(--color-muted);
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: var(--text-xs);
+  text-decoration: none;
+}
+.bar-item[aria-current="page"] {
+  color: var(--color-brand-deep);
+}
+.bar-item[aria-current="page"]::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: 22%;
+  right: 22%;
+  height: 3px;
+  border-radius: 0 0 3px 3px;
+  background: var(--color-brand-bright);
+}
+.bar-icon {
+  position: relative;
+  display: inline-flex;
+}
+.bar-icon .inbox-dot {
+  position: absolute;
+  top: -6px;
+  right: -10px;
+}
+@media (max-width: 719px) {
+  .app-tabs-wrap {
+    display: none;
+  }
+  .capp-main {
+    padding-bottom: calc(var(--space-10) + 64px + env(safe-area-inset-bottom));
+  }
+  .capp-footer {
+    padding-bottom: calc(var(--space-6) + 64px + env(safe-area-inset-bottom));
+  }
+}
+@media (min-width: 720px) {
+  .capp-bar {
+    display: none;
+  }
+}
+/* header tabs: words with an underline, not a pill */
+.app-tabs {
+  gap: var(--space-1);
+  padding: 0;
+  border-radius: 0;
+  background: none;
+}
+.app-tab {
+  border-radius: 0;
+  font-weight: 400;
+}
+.app-tab[aria-current="page"] {
+  background: none;
+  box-shadow: none;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 8px;
+  text-decoration-color: var(--color-brand-bright);
+}
+
+/* panels become sheet sections: an ink rule on top, no box */
+.panel {
+  padding: var(--space-5) 0 0;
+  border: 0;
+  border-top: 1px solid var(--color-ink);
+  border-radius: 0;
+  background: none;
+}
+.panel h1,
+.panel-title {
+  font-size: clamp(1.75rem, 1.3rem + 2vw, 2.25rem);
+  font-weight: 800;
+}
+
+/* member tabs: underline, not a segmented pill */
+.tabs {
+  gap: 0;
+  padding: 0;
+  border-radius: 0;
+  background: none;
+  border-bottom: var(--rule);
+}
+.tab {
+  border-radius: 0;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  font-weight: 400;
+}
+.tab[aria-selected="true"] {
+  background: none;
+  box-shadow: none;
+  color: var(--color-ink);
+  border-bottom-color: var(--color-brand-bright);
+}
+
+/* the member card carries the CVI Swing Arc */
+.mcard-arc {
+  position: absolute;
+  z-index: -1;
+  left: -12%;
+  bottom: -26%;
+  width: 92%;
+  color: currentColor;
+  opacity: 0.1;
+  pointer-events: none;
+}
+
+/* boxed blocks on the member, points and booking pages read as ruled sections */
+.progress-block,
+.perks {
+  padding: var(--space-4) 0 0;
+  border: 0;
+  border-top: var(--rule);
+  border-radius: 0;
+  background: none;
+}
+.balance,
+.ledger,
+.bk-list {
+  border: 0;
+  border-top: 1px solid var(--color-ink);
+  border-radius: 0;
+  background: none;
+}
+.row-link {
+  border-radius: 0;
+  background: none;
+  border-bottom: var(--rule);
+  padding-inline: 0;
+}
+.row-link:hover {
+  background: none;
+  color: var(--color-brand);
+}
+.member-foot {
+  border-top: 1px solid var(--color-ink);
+}
+
+/* booking: lighter grid — free slots outlined, taken ones hatched, grouped by part of day */
+.slots {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  border-top: 1px solid var(--color-ink);
+  padding-top: var(--space-3);
+}
+.slots-part {
+  grid-column: 1 / -1;
+  margin-top: var(--space-3);
+  padding-bottom: var(--space-1);
+  border-bottom: var(--rule);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--text-sm);
+  color: var(--color-brand-deep);
+}
+.slot {
+  border-radius: var(--radius-sm);
+  font-weight: 400;
+}
+.slot-free {
+  background: var(--color-surface);
+  border-color: var(--color-line-green);
+  color: var(--color-brand-deep);
+}
+.slot-free:hover {
+  background: var(--color-tint);
+  border-color: var(--color-brand);
+}
+.slot-taken {
+  background: repeating-linear-gradient(135deg, var(--color-line) 0 2px, var(--color-paper-2) 2px 7px);
+  color: var(--color-muted);
+}
+.lg-free {
+  background: var(--color-surface);
+  border: 1px solid var(--color-line-green);
+}
+.lg-taken {
+  background: repeating-linear-gradient(135deg, var(--color-line-strong) 0 2px, var(--color-paper-2) 2px 5px);
+}
+.day {
+  border-radius: var(--radius-sm);
+}
+.pay-note {
+  padding: var(--space-3) 0 0;
+  border-radius: 0;
+  background: none;
+  border-top: var(--rule);
+}
+
+/* rewards: ruled rows, the value as type instead of an icon tile */
+.rw-item {
+  border: 0;
+  border-bottom: var(--rule);
+  border-radius: 0;
+  background: none;
+  padding-inline: 0;
+}
+.rw-list {
+  border-top: 1px solid var(--color-ink);
+}
+.rw-thumb-blank {
+  padding-inline: var(--space-1);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--text-sm);
+  line-height: 1.15;
+  text-align: center;
+  color: var(--color-brand-deep);
+}
+
+/* inbox: ruled entries, not cards */
+.inbox-item {
+  border: 0;
+  border-bottom: var(--rule);
+  border-radius: 0;
+  background: none;
+  padding-inline: 0;
+}
+.rw-list,
+.inbox-list,
+.member-foot {
+  gap: 0;
+}
+.inbox-list {
+  border-top: 1px solid var(--color-ink);
+}
+.inbox-item {
+  padding-block: var(--space-4);
+}
+.balance {
+  padding-inline: 0;
+}
+.rw-why {
+  color: var(--color-danger);
+}
+/* a reward you can't take yet: say why in words, keep every line readable */
+.rw-item.is-blocked .rw-thumb,
+.rw-item.is-blocked .rw-cost {
+  opacity: 1;
+}
+.rw-item.is-blocked .rw-name,
+.rw-item.is-blocked .rw-cost {
+  color: var(--color-muted);
+}
+.rw-item.is-blocked .rw-cost small {
+  color: var(--color-muted);
+}
+.rw-item.is-blocked .rw-thumb-blank {
+  color: var(--color-ink-2);
+  background: var(--color-paper-2);
+}

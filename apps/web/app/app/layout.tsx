@@ -2,7 +2,7 @@ import { headers } from "next/headers";
 import Link from "next/link";
 import { unreadCount } from "@mstgolf/core";
 import "./customer.css";
-import { AppTabs } from "@/components/customer/AppTabs";
+import { AppBar, AppTabs } from "@/components/customer/AppTabs";
 import { LogoutButton } from "@/components/customer/LogoutButton";
 import { Logo } from "@/components/Logo";
 import { currentMember, customerLabel } from "@/lib/member";
@@ -50,6 +50,7 @@ export default async function CustomerLayout({ children }: { children: React.Rea
           <Link href="/privacy">ความเป็นส่วนตัว</Link>
         </nav>
       </footer>
+      <AppBar unread={unread} signedIn={!!member} />
     </div>
   );
 }

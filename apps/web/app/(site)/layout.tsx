@@ -27,13 +27,13 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
           <span aria-hidden="true">→</span>
         </Link>
       )}
-      {/* Logo left, page links in the middle (a menu button on phones), booking and account right. */}
+      {/* Logo left, page links in the middle (a menu button on phones); booking is the primary action on every width, the account sits next to it. */}
       <header className="site-header">
         <div className="wrap site-header-row">
           <Logo height={22} />
           <SiteMenu shopUrl={site.shopUrl ?? null} />
           <div className="site-account">
-            <Link href="/app/booking" className="btn btn-outline btn-sm head-book">
+            <Link href="/app/booking" className="btn btn-primary btn-sm head-book">
               จองซิม
             </Link>
             <HeaderAccount />
