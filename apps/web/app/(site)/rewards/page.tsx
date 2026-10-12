@@ -2,11 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { publicRewards } from "@mstgolf/core";
 import { earnRateText } from "@mstgolf/shared/tiers";
-import { PromoList } from "@/components/PromoList";
+import { SheetHead } from "@/components/SheetHead";
 import { TierTable } from "@/components/TierTable";
 import { formatBaht, formatPoints } from "@/lib/format";
 import { getOrg } from "@/lib/org";
-import { currentPromotions } from "@/lib/posts";
 
 export const revalidate = 300;
 
@@ -23,25 +22,37 @@ export const metadata: Metadata = {
 export default async function RewardsInfoPage() {
   const org = await getOrg();
   const s = org.settings;
-  const [rewards, promos] = await Promise.all([s.features.rewards ? publicRewards(org.id) : Promise.resolve([]), currentPromotions(6)]);
+  const rewards = s.features.rewards ? await publicRewards(org.id) : [];
   const birthday = Math.max(...s.tiers.map((t) => t.benefits.birthdayPointMultiplier));
 
   return (
     <>
-      <section className="page-head">
-        <div className="wrap">
-          <h1>สิทธิ์สมาชิกและรางวัล</h1>
-          <p className="lede">สมัครฟรีด้วยเบอร์มือถือ สะสมแต้มทุกการซื้อ แล้วใช้แต้มแลกคูปองและของรางวัล</p>
-          <div className="cta-row">
+      <SheetHead
+        crumb="สิทธิ์สมาชิก"
+        fact={
+          <>
+            สมัครฟรี · {s.tiers.map((t) => t.name).join(" / ")}
+            {rewards.length ? (
+              <>
+                {" "}
+                · รางวัล <span className="mono">{rewards.length}</span> รายการ
+              </>
+            ) : null}
+          </>
+        }
+        title="สิทธิ์สมาชิกและรางวัล"
+        lede="สมัครฟรีด้วยเบอร์มือถือ สะสมแต้มทุกการซื้อ แล้วใช้แต้มแลกคูปองและของรางวัล"
+        actions={
+          <>
             <Link href="/register" className="btn btn-primary">
               สมัครสมาชิก รับ {formatPoints(s.welcomeBonus)} แต้ม
             </Link>
-            <Link href="/app/rewards" className="btn btn-outline">
+            <Link href="/app/rewards" className="text-link">
               ดูแต้มและแลกรางวัล
             </Link>
-          </div>
-        </div>
-      </section>
+          </>
+        }
+      />
 
       <section className="section section-tight" aria-labelledby="earn-h">
         <div className="wrap">
@@ -49,7 +60,7 @@ export default async function RewardsInfoPage() {
           <ol className="earn-steps">
             <li>
               <b>สมัครฟรี</b>
-              <span>ใส่เบอร์มือถือ รับรหัสทาง SMS ได้บัตรสมาชิกพร้อม QR ทันที และแต้มต้อนรับ {formatPoints(s.welcomeBonus)} แต้ม</span>
+              <span>ใส่เบอร์มือถือ{s.features.otp ? " รับรหัสทาง SMS" : ""} ได้บัตรสมาชิกพร้อม QR ทันที และแต้มต้อนรับ {formatPoints(s.welcomeBonus)} แต้ม</span>
             </li>
             <li>
               <b>แจ้งเบอร์หรือแสดง QR ตอนจ่ายเงิน</b>
@@ -78,25 +89,33 @@ export default async function RewardsInfoPage() {
         <section className="section section-rule" aria-labelledby="rewards-h">
           <div className="wrap">
             <h2 id="rewards-h" className="section-h">รางวัลที่แลกได้ตอนนี้</h2>
-            <ul className="reward-grid">
+            <ul className="rw">
               {rewards.map((r) => (
-                <li key={r.id} className={`reward-card${r.soldOut ? " sold-out" : ""}`}>
-                  {r.imageUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element -- catalogue images live in MST's public Blob store
-                    <img src={r.imageUrl} alt="" loading="lazy" width={320} height={240} />
-                  ) : (
-                    <span className="reward-blank" aria-hidden="true">{r.kind === "COUPON" && r.valueSatang ? formatBaht(r.valueSatang) : "🎁"}</span>
-                  )}
-                  <b>{r.name}</b>
-                  <span className="reward-cost mono">{formatPoints(r.costPoints)} แต้ม</span>
-                  <span className="reward-meta">
-                    {[
-                      r.kind === "COUPON" ? (r.minSpendSatang ? `ใช้เมื่อซื้อครบ ${formatBaht(r.minSpendSatang)}` : "คูปองใช้ที่ร้าน") : "ของรางวัล",
-                      r.minTierName ? `${r.minTierName} ขึ้นไป` : null,
-                      r.soldOut ? "หมดแล้ว" : null,
-                    ]
-                      .filter(Boolean)
-                      .join(" · ")}
+                <li key={r.id} className={`rw-row${r.soldOut ? " sold-out" : ""}`}>
+                  <span className="rw-tag" aria-hidden="true">
+                    {r.imageUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element -- catalogue images live in MST's public Blob store
+                      <img src={r.imageUrl} alt="" loading="lazy" width={240} height={180} />
+                    ) : (
+                      <span className="rw-value">{r.kind === "COUPON" && r.valueSatang ? formatBaht(r.valueSatang) : "ของรางวัล"}</span>
+                    )}
+                  </span>
+                  <span className="rw-main">
+                    <b className="rw-name">{r.name}</b>
+                    <span className="rw-meta">
+                      {[
+                        r.kind === "COUPON" ? (r.minSpendSatang ? `คูปองใช้ที่ร้าน เมื่อซื้อครบ ${formatBaht(r.minSpendSatang)}` : "คูปองใช้ที่ร้าน") : "ของรางวัล ร้านจัดส่งหรือรับที่ร้าน",
+                        r.minTierName ? `${r.minTierName} ขึ้นไป` : null,
+                      ]
+                        .filter(Boolean)
+                        .join(" · ")}
+                    </span>
+                  </span>
+                  <span className="rw-cost">
+                    <span>
+                      <span className="mono">{formatPoints(r.costPoints)}</span> แต้ม
+                    </span>
+                    {r.soldOut && <span className="rw-out">หมดแล้ว</span>}
                   </span>
                 </li>
               ))}
@@ -108,19 +127,6 @@ export default async function RewardsInfoPage() {
         </section>
       )}
 
-      {promos.length > 0 && (
-        <section className="section section-rule" aria-labelledby="promo-h">
-          <div className="wrap">
-            <div className="notes-head">
-              <h2 id="promo-h" className="section-h">โปรโมชันตอนนี้</h2>
-              <Link href="/promotions" className="text-link">
-                ทั้งหมด
-              </Link>
-            </div>
-            <PromoList promos={promos} />
-          </div>
-        </section>
-      )}
     </>
   );
 }

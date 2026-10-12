@@ -42,6 +42,9 @@
   }
 }
 /* Narrow phones: the login button drops "/ สมัคร" so the row fits at 320 px. */
+.acct-login {
+  gap: 0.3em;
+}
 @media (max-width: 359px) {
   .acct-login-more {
     display: none;
@@ -579,6 +582,8 @@
  * today's lanes, a tier sheet, notes. Hairlines, not cards. */
 
 .text-link {
+  display: inline-block;
+  padding-block: 3px; /* ≥ 24 px tap target (WCAG 2.2) */
   font-weight: 600;
   color: var(--color-brand-deep);
   text-decoration: underline;
@@ -1358,10 +1363,17 @@
   text-decoration: none;
   white-space: nowrap;
 }
-.site-nav-link:hover,
-.site-nav-link[aria-current="page"] {
-  color: var(--color-brand);
+.site-nav-link:hover {
+  color: var(--color-brand-deep);
   background: var(--color-tint);
+}
+/* the current page: dark green and underlined, like a marked line on the sheet */
+.site-nav-link[aria-current="page"] {
+  color: var(--color-brand-deep);
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 8px;
+  text-decoration-color: var(--color-brand-bright);
 }
 .menu-btn {
   display: inline-grid;
@@ -1441,16 +1453,17 @@
   margin-top: auto;
 }
 
-/* ===================================================== home: the sale sheet */
+/* ===================================================== the sale sheet */
 /* Hallmark · genre: editorial (retail) · macrostructure: Catalogue (sale sheet) · design-system: design.md · designed-as-app
- * Set like the promotion sheet at a shop counter: the lead offer large, the rest
- * as a ruled list with end dates, then live data (today's lanes, tiers). No text
- * over photos, no carousel, no marquee. */
+ * Every public page is set like the promotion sheet at a shop counter: a meta
+ * line over a 1 px ink rule, a large roman title, ruled lists with the facts on
+ * the right. No text over photos, no carousel, no marquee, no pill badges. */
 
-.h-window {
+/* sheet head (components/SheetHead.tsx) */
+.sh {
   padding-block: var(--space-8) var(--space-12);
 }
-.h-window-meta {
+.sh-meta {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
@@ -1463,28 +1476,39 @@
   font-size: var(--text-sm);
   color: var(--color-ink-2);
 }
-.h-window-lead {
+.sh-crumb a {
+  color: inherit;
+  text-decoration: none;
+}
+.sh-crumb a:hover {
+  color: var(--color-brand);
+  text-decoration: underline;
+}
+.sh-fact {
+  font-variant-numeric: tabular-nums;
+}
+.sh-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: var(--space-8);
   align-items: center;
 }
-.h-window-copy {
+.sh-copy {
   min-width: 0;
 }
-.h-window-until {
+.sh-kicker {
+  margin-bottom: var(--space-3);
   font-family: var(--font-display);
   font-weight: 700;
   font-size: var(--text-sm);
   color: var(--color-brand);
   font-variant-numeric: tabular-nums;
 }
-.h-window-until.soon,
-.h-sheet-until.soon {
+.sh-kicker.soon,
+.ps-until.soon {
   color: var(--color-danger);
 }
-.h-window-title {
-  margin-top: var(--space-3);
+.sh-title {
   font-size: clamp(2.25rem, 4.2vw + 1rem, 4.25rem);
   font-weight: 800;
   line-height: 1.08;
@@ -1493,55 +1517,67 @@
   overflow-wrap: anywhere;
   min-width: 0;
 }
-.h-window-lead.no-img .h-window-title {
-  max-width: 18ch;
+.sh-grid:not(.has-aside) .sh-title {
+  max-width: 20ch;
 }
-.h-window-text {
+.sh-lede {
   margin-top: var(--space-4);
-  max-width: 46ch;
+  max-width: 52ch;
   font-size: var(--text-lg);
   color: var(--color-ink-2);
 }
-.h-window-cta {
+.sh-actions {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-3) var(--space-6);
   margin-top: var(--space-6);
 }
-.h-window-img {
+.sh-aside {
+  min-width: 0;
+}
+.sh-aside .photo {
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+.sh-img {
   display: block;
   border-radius: var(--radius-lg);
   overflow: hidden;
   background: var(--color-paper-2);
 }
-.h-window-img img {
+.sh-img {
+  margin: 0;
+}
+.sh-img img {
   display: block;
   width: 100%;
+  height: auto;
   aspect-ratio: 4 / 3;
   object-fit: cover;
 }
 @media (min-width: 900px) {
-  .h-window {
+  .sh {
     padding-block: var(--space-10) var(--space-16);
   }
-  .h-window-lead {
+  .sh-grid.has-aside {
     grid-template-columns: minmax(0, 6fr) minmax(0, 5fr);
     gap: var(--space-12);
   }
-  .h-window-lead.no-img {
-    grid-template-columns: minmax(0, 1fr);
-  }
 }
 
-/* the rest of the month's promotions: a ruled list, end date at the right */
-.h-sheet {
+/* promotions as a ruled list (components/PromoSheet.tsx) */
+.h-more {
+  margin-top: calc(var(--space-6) * -1);
+  padding-bottom: var(--space-12);
+}
+.ps {
   list-style: none;
-  margin: var(--space-12) 0 0;
+  margin: 0;
   padding: 0;
   border-top: 1px solid var(--color-ink);
 }
-.h-sheet-row {
+.ps-row {
   display: grid;
   grid-template-columns: 72px minmax(0, 1fr);
   grid-template-areas: "thumb main" "thumb until";
@@ -1553,40 +1589,48 @@
   color: var(--color-ink);
   text-decoration: none;
 }
-.h-sheet-thumb {
+.ps-thumb,
+.ps-thumb-link {
   grid-area: thumb;
+}
+.ps-thumb {
+  display: block;
   width: 72px;
   aspect-ratio: 4 / 3;
   border-radius: var(--radius-sm);
   overflow: hidden;
   background: var(--color-paper-2);
 }
-.h-sheet-thumb img {
+.ps-thumb img {
   display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
-.h-sheet-main {
+.ps-main {
   grid-area: main;
   display: grid;
   gap: 2px;
   min-width: 0;
 }
-.h-sheet-title {
+.ps-title {
   font-family: var(--font-display);
   font-weight: 700;
   font-size: var(--text-lg);
   line-height: 1.3;
 }
-.h-sheet-text {
+.ps-title a {
+  color: inherit;
+  text-decoration: none;
+}
+.ps-text {
   font-size: var(--text-sm);
   color: var(--color-muted);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.h-sheet-until {
+.ps-until {
   grid-area: until;
   font-family: var(--font-display);
   font-weight: 600;
@@ -1595,19 +1639,65 @@
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
-.h-sheet-row:hover .h-sheet-title {
+a.ps-row:hover .ps-title,
+.ps-title a:hover {
   color: var(--color-brand);
 }
-.h-sheet-all {
+.ps-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-5);
+  margin-top: var(--space-3);
+}
+.ps-all {
   margin-top: var(--space-4);
 }
 @media (min-width: 720px) {
-  .h-sheet-row {
+  .ps-row {
     grid-template-columns: 96px minmax(0, 1fr) auto;
     grid-template-areas: "thumb main until";
   }
-  .h-sheet-thumb {
+  .ps-thumb {
     width: 96px;
+  }
+}
+/* /promotions: bigger picture, the full line, and the promotion's own button */
+.ps-full .ps-row {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: "thumb" "until" "main";
+  row-gap: var(--space-2);
+  align-items: start;
+  padding-block: var(--space-6);
+}
+.ps-full .ps-thumb {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-md);
+}
+.ps-full .ps-title {
+  font-size: var(--text-2xl);
+  font-weight: 800;
+}
+.ps-full .ps-text {
+  font-size: var(--text-base);
+  color: var(--color-ink-2);
+  white-space: normal;
+}
+@media (min-width: 720px) {
+  .ps-full .ps-row {
+    grid-template-columns: 240px minmax(0, 1fr) auto;
+    grid-template-areas: "thumb main until";
+    column-gap: var(--space-6);
+  }
+  .ps-full .ps-thumb {
+    aspect-ratio: 4 / 3;
+  }
+}
+@media (min-width: 1040px) {
+  .ps-full .ps-row {
+    grid-template-columns: 320px minmax(0, 1fr) auto;
+    column-gap: var(--space-8);
   }
 }
 
@@ -1678,7 +1768,7 @@
   }
 }
 
-/* in the store: a directory, not photo tiles */
+/* the services as a store directory (components/ServiceDirectory.tsx) */
 .h-instore {
   padding-block: var(--space-12) var(--space-16);
   border-top: var(--rule);
@@ -1688,13 +1778,16 @@
   max-width: 60ch;
   color: var(--color-ink-2);
 }
-.h-instore-list {
+.h-instore .dir {
+  margin-top: var(--space-8);
+}
+.dir {
   list-style: none;
-  margin: var(--space-8) 0 0;
+  margin: 0;
   padding: 0;
   border-top: 1px solid var(--color-ink);
 }
-.h-instore-row {
+.dir-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   grid-template-areas: "name go" "thai thai" "short short";
@@ -1704,24 +1797,24 @@
   color: var(--color-ink);
   text-decoration: none;
 }
-.h-instore-name {
+.dir-name {
   grid-area: name;
   font-family: var(--font-display);
   font-weight: 800;
   font-size: var(--text-xl);
   letter-spacing: -0.01em;
 }
-.h-instore-thai {
+.dir-thai {
   grid-area: thai;
   font-weight: 600;
   font-size: var(--text-sm);
   color: var(--color-brand-deep);
 }
-.h-instore-short {
+.dir-short {
   grid-area: short;
   color: var(--color-ink-2);
 }
-.h-instore-go {
+.dir-go {
   grid-area: go;
   align-self: center;
   font-family: var(--font-display);
@@ -1730,14 +1823,14 @@
   color: var(--color-brand);
   transition: transform var(--dur-fast) var(--ease-out);
 }
-.h-instore-row:hover .h-instore-name {
+.dir-row:hover .dir-name {
   color: var(--color-brand);
 }
-.h-instore-row:hover .h-instore-go {
+.dir-row:hover .dir-go {
   transform: translateX(4px);
 }
 @media (min-width: 900px) {
-  .h-instore-row {
+  .dir-row {
     grid-template-columns: 15rem 9rem minmax(0, 1fr) auto;
     grid-template-areas: "name thai short go";
     align-items: baseline;
@@ -1829,4 +1922,234 @@
     gap: var(--space-12);
     align-items: center;
   }
+}
+
+/* ---------------------------------------------- sale sheet: the other pages */
+
+/* the body under a sheet head; the head already carries the top rule */
+.pg-body {
+  padding-bottom: var(--space-12);
+}
+.pg-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2) var(--space-5);
+  margin-top: var(--space-6);
+  color: var(--color-ink-2);
+}
+.pg-doc {
+  max-width: 720px;
+}
+.pg-doc .pg-foot {
+  padding-top: var(--space-5);
+  border-top: var(--rule);
+}
+/* closing line under an article — a rule, not a tinted box */
+.pg-close {
+  display: grid;
+  gap: var(--space-4);
+  margin-top: var(--space-12);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--color-ink);
+}
+.pg-close > p {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--text-xl);
+  line-height: 1.35;
+}
+.pg-close .cta-row {
+  align-items: center;
+}
+
+/* section heads on the long pages read like the home page */
+.two-col h2,
+.section-h {
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+/* articles: the sheet meta line sits in the reading column */
+.article .sh-meta {
+  margin-bottom: var(--space-6);
+}
+.article-head .sh-title {
+  font-size: clamp(2rem, 2.6vw + 1.1rem, 3.25rem);
+  text-wrap: pretty;
+}
+.pg-body .post-list {
+  border-top: 1px solid var(--color-ink);
+}
+.article-head .sh-lede {
+  margin-top: 0;
+}
+
+/* categories are words, not pills */
+.cat,
+.cat-service,
+.cat-news,
+.cat-promotion {
+  padding: 0;
+  border-radius: 0;
+  background: none;
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--color-brand-deep);
+}
+
+/* services: one section per service, photo only when there is one */
+.svc {
+  padding-block: var(--space-12);
+  border-top: var(--rule);
+  scroll-margin-top: calc(var(--header-h) + var(--space-4));
+}
+.svc-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-6);
+}
+.svc-name {
+  font-size: clamp(2rem, 2.4vw + 1.2rem, 3rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.svc-thai {
+  margin-top: var(--space-1);
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--color-brand-deep);
+}
+.svc-photo {
+  margin-top: var(--space-6);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+.svc-body {
+  display: grid;
+  gap: var(--space-4);
+  align-content: start;
+  color: var(--color-ink-2);
+  max-width: 62ch;
+}
+.svc-points {
+  list-style: none;
+  margin: var(--space-2) 0 0;
+  padding: 0;
+  border-top: 1px solid var(--color-ink);
+}
+.svc-points li {
+  padding-block: var(--space-3);
+  border-bottom: var(--rule);
+  color: var(--color-ink);
+}
+.svc-body .cta-row {
+  margin-top: var(--space-2);
+}
+@media (min-width: 900px) {
+  .svc {
+    padding-block: var(--space-16);
+  }
+  .svc-grid {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: var(--space-12);
+  }
+}
+
+/* rewards catalogue as a ruled list: tag, what it is, what it costs */
+.rw {
+  list-style: none;
+  margin: var(--space-6) 0 var(--space-5);
+  padding: 0;
+  border-top: 1px solid var(--color-ink);
+}
+.rw-row {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
+  grid-template-areas: "tag main" "tag cost";
+  column-gap: var(--space-4);
+  row-gap: var(--space-1);
+  align-items: center;
+  padding-block: var(--space-4);
+  border-bottom: var(--rule);
+}
+.rw-tag {
+  grid-area: tag;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--color-tint);
+}
+.rw-tag img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.rw-value {
+  padding-inline: var(--space-2);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: var(--text-md);
+  color: var(--color-brand-deep);
+  text-align: center;
+  line-height: 1.2;
+}
+.rw-main {
+  grid-area: main;
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.rw-name {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--text-lg);
+}
+.rw-meta {
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+}
+.rw-cost {
+  grid-area: cost;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-1) var(--space-3);
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--color-brand-deep);
+  white-space: nowrap;
+}
+.rw-out {
+  color: var(--color-danger);
+  font-size: var(--text-sm);
+}
+.rw-row.sold-out .rw-name {
+  color: var(--color-muted);
+}
+@media (min-width: 720px) {
+  .rw-row {
+    grid-template-columns: 120px minmax(0, 1fr) auto;
+    grid-template-areas: "tag main cost";
+    column-gap: var(--space-6);
+  }
+  .rw-value {
+    font-size: var(--text-xl);
+  }
+}
+
+/* contact: the online form isn't open yet — say so plainly */
+.contact-note {
+  align-self: start;
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-ink);
+  color: var(--color-ink-2);
+}
+.contact-note h2 {
+  margin-bottom: var(--space-2);
+  font-size: var(--text-xl);
+  font-weight: 800;
 }

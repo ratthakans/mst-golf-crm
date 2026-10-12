@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { availability, localDateKey } from "@mstgolf/core";
 import { PostList } from "@/components/PostList";
+import { PromoSheet } from "@/components/PromoSheet";
+import { ServiceDirectory } from "@/components/ServiceDirectory";
+import { SheetHead } from "@/components/SheetHead";
 import { SimScorecard } from "@/components/SimScorecard";
 import { TierTable } from "@/components/TierTable";
 import { Photo } from "@/components/Photo";
@@ -9,7 +11,9 @@ import { sitePhotos } from "@/lib/images";
 import { homeCopy, siteServices } from "@/lib/content";
 import { formatBaht, formatPoints, formatThaiDate, hoursLines, openingSpec } from "@/lib/format";
 import { getLanes, getOrg, getStore, siteOrigin } from "@/lib/org";
-import { currentPromotions, publishedPosts, type PromoItem } from "@/lib/posts";
+import { lanesToShow } from "@/lib/lanes";
+import { currentPromotions, publishedPosts } from "@/lib/posts";
+import { endsSoon, promoHref, untilText } from "@/lib/promo";
 
 export const revalidate = 300;
 
@@ -20,22 +24,6 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" },
   openGraph: { title: "MST Golf", description: "โปรโมชันล่าสุด ไม้กอล์ฟ อุปกรณ์ ฟิตติ้ง อคาเดมี และ Golf Simulator", url: "/" },
 };
-
-const daysLeft = (iso: string | null, now: Date): number | null => (iso ? Math.max(0, Math.ceil((new Date(iso).getTime() - now.getTime()) / 86_400_000)) : null);
-
-function promoHref(p: PromoItem): { href: string; external: boolean } {
-  if (p.linkUrl) return { href: p.linkUrl, external: /^https:\/\//.test(p.linkUrl) };
-  return { href: `/promotions/${p.slug}`, external: false };
-}
-
-/** "ถึง 31 ต.ค." — or the countdown when it is close, the way a shelf tag says it. */
-function untilText(p: PromoItem, now: Date): string {
-  const left = daysLeft(p.endsAt, now);
-  if (left === null) return "ไม่มีกำหนดสิ้นสุด";
-  if (left === 0) return "วันสุดท้าย";
-  if (left <= 7) return `เหลืออีก ${left} วัน`;
-  return `ถึง ${formatThaiDate(new Date(p.endsAt!))}`;
-}
 
 const MONTH = new Intl.DateTimeFormat("th-TH", { month: "long", timeZone: "Asia/Bangkok" });
 
@@ -54,20 +42,7 @@ export default async function HomePage() {
   const hours = store ? hoursLines(store.openHours) : [];
   const prices = Array.from(new Set(lanes.map((l) => l.hourlyPriceSatang))).sort((x, y) => x - y);
   const now = new Date();
-  // Today's lanes; once the store has closed (or every hour has passed) the
-  // section shows tomorrow instead, so it never sits empty in the evening.
-  const dayAvail = async (at: Date) => availability(org.id, localDateKey(at), now).catch(() => null);
-  const hasHoursLeft = (a: Awaited<ReturnType<typeof dayAvail>>) => !!a?.open && a.slots.some((sl) => sl.lanes.some((l) => l.state !== "past"));
-  const tomorrowAt = new Date(now.getTime() + 86_400_000);
-  let lanesDay: { avail: NonNullable<Awaited<ReturnType<typeof dayAvail>>>; at: Date; word: string } | null = null;
-  if (s.features.booking && lanes.length) {
-    const t = await dayAvail(now);
-    if (t && hasHoursLeft(t)) lanesDay = { avail: t, at: now, word: "วันนี้" };
-    else {
-      const n = await dayAvail(tomorrowAt);
-      if (n && hasHoursLeft(n)) lanesDay = { avail: n, at: tomorrowAt, word: "พรุ่งนี้" };
-    }
-  }
+  const lanesDay = s.features.booking && lanes.length ? await lanesToShow(org.id, now) : null;
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -91,86 +66,64 @@ export default async function HomePage() {
 
       <h1 className="visually-hidden">{org.name} — ร้านกอล์ฟ ชาญอิสสระ ทาวเวอร์ 1</h1>
 
-      <section className="h-window" aria-labelledby="window-h">
-        <div className="wrap">
-          <p className="h-window-meta">
-            <span>{store?.name ?? org.name}</span>
-            <span>
+      {lead ? (
+        <SheetHead
+          crumb={null}
+          place={store?.name ?? org.name}
+          fact={
+            <>
               โปรโมชันเดือน{MONTH.format(now)} · <span className="mono">{promos.length}</span> รายการ
-            </span>
-          </p>
-
-          {lead ? (
-            <div className={`h-window-lead${lead.coverUrl ? "" : " no-img"}`}>
-              <div className="h-window-copy">
-                <p className={`h-window-until${(daysLeft(lead.endsAt, now) ?? 99) <= 3 ? " soon" : ""}`}>{untilText(lead, now)}</p>
-                <h2 id="window-h" className="h-window-title">
-                  {lead.title}
-                </h2>
-                {lead.excerpt && <p className="h-window-text">{lead.excerpt}</p>}
-                <div className="h-window-cta">
-                  {leadCta!.external ? (
-                    <a href={leadCta!.href} className="btn btn-primary" target="_blank" rel="noopener">
-                      {lead.linkLabel || "ดูโปรโมชัน"}
-                    </a>
-                  ) : (
-                    <Link href={leadCta!.href} className="btn btn-primary">
-                      {lead.linkLabel || "ดูรายละเอียด"}
-                    </Link>
-                  )}
-                  {lead.linkUrl && lead.hasBody && (
-                    <Link href={`/promotions/${lead.slug}`} className="text-link">
-                      เงื่อนไข
-                    </Link>
-                  )}
-                </div>
-              </div>
-              {lead.coverUrl && (
-                <Link href={`/promotions/${lead.slug}`} className="h-window-img" tabIndex={-1} aria-hidden="true">
-                  {/* eslint-disable-next-line @next/next/no-img-element -- promotion covers come from MST's uploads */}
-                  <img src={lead.coverUrl} alt="" />
+            </>
+          }
+          kicker={untilText(lead.endsAt, now)}
+          kickerSoon={endsSoon(lead.endsAt, now)}
+          titleAs="h2"
+          titleId="window-h"
+          title={lead.title}
+          lede={lead.excerpt || null}
+          actions={
+            <>
+              {leadCta!.external ? (
+                <a href={leadCta!.href} className="btn btn-primary" target="_blank" rel="noopener">
+                  {lead.linkLabel || "ดูโปรโมชัน"}
+                </a>
+              ) : (
+                <Link href={leadCta!.href} className="btn btn-primary">
+                  {lead.linkLabel || "ดูรายละเอียด"}
                 </Link>
               )}
-            </div>
-          ) : (
-            <div className="h-window-lead no-img">
-              <div className="h-window-copy">
-                <h2 id="window-h" className="h-window-title">
-                  {copy.heroHighlight ? `${copy.heroTitle} ${copy.heroHighlight}` : copy.heroTitle}
-                </h2>
-                <p className="h-window-text">{copy.heroLede}</p>
-              </div>
-            </div>
-          )}
+              {lead.linkUrl && lead.hasBody && (
+                <Link href={`/promotions/${lead.slug}`} className="text-link">
+                  เงื่อนไข
+                </Link>
+              )}
+            </>
+          }
+          aside={
+            lead.coverUrl ? (
+              <Link href={`/promotions/${lead.slug}`} className="sh-img" tabIndex={-1} aria-hidden="true">
+                {/* eslint-disable-next-line @next/next/no-img-element -- promotion covers come from MST's uploads */}
+                <img src={lead.coverUrl} alt="" />
+              </Link>
+            ) : null
+          }
+        />
+      ) : (
+        <SheetHead crumb={null} place={store?.name ?? org.name} titleAs="h2" titleId="window-h" title={copy.heroHighlight ? `${copy.heroTitle} ${copy.heroHighlight}` : copy.heroTitle} lede={copy.heroLede} />
+      )}
 
-          {rest.length > 0 && (
-            <ol className="h-sheet" aria-label="โปรโมชันอื่นที่กำลังมี">
-              {rest.slice(0, 6).map((p) => (
-                <li key={p.slug}>
-                  <Link href={`/promotions/${p.slug}`} className="h-sheet-row">
-                    <span className="h-sheet-thumb" aria-hidden="true">
-                      {/* eslint-disable-next-line @next/next/no-img-element -- promotion covers come from MST's uploads */}
-                      {p.coverUrl ? <img src={p.coverUrl} alt="" loading="lazy" /> : null}
-                    </span>
-                    <span className="h-sheet-main">
-                      <span className="h-sheet-title">{p.title}</span>
-                      {p.excerpt && <span className="h-sheet-text">{p.excerpt}</span>}
-                    </span>
-                    <span className={`h-sheet-until${(daysLeft(p.endsAt, now) ?? 99) <= 3 ? " soon" : ""}`}>{untilText(p, now)}</span>
-                  </Link>
-                </li>
-              ))}
-            </ol>
-          )}
-          {promos.length > 0 && (
-            <p className="h-sheet-all">
+      {rest.length > 0 && (
+        <section className="h-more" aria-label="โปรโมชันอื่นที่กำลังมี">
+          <div className="wrap">
+            <PromoSheet promos={rest.slice(0, 6)} now={now} label="โปรโมชันอื่นที่กำลังมี" />
+            <p className="ps-all">
               <Link href="/promotions" className="text-link">
                 ทุกโปรโมชันและเงื่อนไข
               </Link>
             </p>
-          )}
-        </div>
-      </section>
+          </div>
+        </section>
+      )}
 
       {copy.brands.length > 0 && (
         <section className="h-shelf" aria-labelledby="shelf-h">
@@ -214,23 +167,7 @@ export default async function HomePage() {
         <div className="wrap">
           <h2 id="instore-h">{copy.servicesTitle}</h2>
           <p className="h-instore-lede">{copy.servicesLede}</p>
-          <ul className="h-instore-list">
-            {services.map((svc) => {
-              const sim = svc.slug === "golf-simulator";
-              return (
-                <li key={svc.slug}>
-                  <Link href={sim ? "/golf-simulator" : `/services#${svc.slug}`} className="h-instore-row">
-                    <span className="h-instore-name">{svc.name}</span>
-                    <span className="h-instore-thai">{svc.thai}</span>
-                    <span className="h-instore-short">{svc.short}</span>
-                    <span className="h-instore-go" aria-hidden="true">
-                      →
-                    </span>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
+          <ServiceDirectory services={services} />
         </div>
       </section>
 

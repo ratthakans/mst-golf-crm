@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { availability, formatThaiDate, localDateKey, priceFor } from "@mstgolf/core";
+import { formatThaiDate, priceFor } from "@mstgolf/core";
+import { SheetHead } from "@/components/SheetHead";
 import { SimScorecard } from "@/components/SimScorecard";
+import { lanesToShow } from "@/lib/lanes";
 import { Photo } from "@/components/Photo";
 import { sitePhotos } from "@/lib/images";
 import { tierClass } from "@/components/TierCards";
@@ -27,7 +29,8 @@ export default async function SimulatorPage() {
   const samePrice = lanes.every((l) => l.hourlyPriceSatang === base);
   const hours = store ? hoursLines(store.openHours) : [];
   const now = new Date();
-  const today = lanes.length ? await availability(org.id, localDateKey(now), now).catch(() => null) : null;
+  const day = lanes.length ? await lanesToShow(org.id, now) : null;
+  const prices = Array.from(new Set(lanes.map((l) => l.hourlyPriceSatang))).sort((x, y) => x - y);
 
   const rules: Array<[string, string]> = [
     ["ช่องเวลา", `ครั้งละ ${b.slotMinutes} นาที ตรงชั่วโมง ตามเวลาเปิดร้าน จองติดกันได้`],
@@ -42,33 +45,36 @@ export default async function SimulatorPage() {
 
   return (
     <>
-      <section className="page-head sim-head">
-        <div className="wrap sim-head-grid">
-          <div>
-            <h1>Golf Simulator</h1>
-            <p className="lede">
-              {lanes.length || 3} lane ในร้าน ซ้อมหรือเล่นสนามจำลองได้ทุกวัน {hours[0] ? `(${hours[0]})` : ""} จองบนเว็บไซต์ด้วยตารางเดียวกับที่ร้านใช้
-            </p>
-            <div className="cta-row">
-              <Link href="/app/booking" className="btn btn-primary">
-                จองซิม
-              </Link>
-            </div>
-          </div>
-          <div className="sim-head-visual">
-            <Photo photo={sitePhotos(s.site).simBays} ratio="16 / 10" priority className="sim-photo" />
-          </div>
-        </div>
-      </section>
+      <SheetHead
+        crumb="Golf Simulator"
+        fact={
+          <>
+            <span className="mono">{lanes.length || 3}</span> lane{prices.length ? ` · ${prices.map((p) => formatBaht(p)).join(" / ")} ต่อชั่วโมง` : ""}
+          </>
+        }
+        title="Golf Simulator"
+        lede={`ซ้อมหรือเล่นสนามจำลองได้ทุกวัน${hours[0] ? ` (${hours[0]})` : ""} จองบนเว็บไซต์ด้วยตารางเดียวกับที่ร้านใช้ ช่องว่างจองได้ทันที`}
+        actions={
+          <>
+            <Link href="/app/booking" className="btn btn-primary">
+              จองซิม
+            </Link>
+            <a href="#rules-h" className="text-link">
+              กติกาการจอง
+            </a>
+          </>
+        }
+        aside={<Photo photo={sitePhotos(s.site).simBays} ratio="4 / 3" priority sizes="(min-width: 900px) 45vw, 100vw" />}
+      />
 
-      {today && (
-        <section className="section" aria-labelledby="today-h">
+      {day && (
+        <section className="section section-rule" aria-labelledby="today-h">
           <div className="wrap two-col">
             <div>
-              <h2 id="today-h">ช่องว่างวันนี้</h2>
-              <p className="muted">อัปเดตทุก 5 นาที · ช่องล่าสุดดูได้ที่หน้าจอง</p>
+              <h2 id="today-h">ช่องว่าง{day.word}</h2>
+              <p className="muted">ตารางเดียวกับหน้าจอง · กดช่องว่างที่หน้าจองแล้วยืนยันได้ทันที</p>
             </div>
-            <SimScorecard avail={today} dateLabel={formatThaiDate(now, { weekday: true, year: false })} />
+            <SimScorecard avail={day.avail} dateLabel={`${day.word} · ${formatThaiDate(day.at, { weekday: true, year: false })}`} />
           </div>
         </section>
       )}

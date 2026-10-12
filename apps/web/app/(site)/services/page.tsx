@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Photo } from "@/components/Photo";
+import { ServiceDirectory } from "@/components/ServiceDirectory";
+import { SheetHead } from "@/components/SheetHead";
+import { hoursLines } from "@/lib/format";
 import { siteServices } from "@/lib/content";
 import { servicePhotos, sitePhotos } from "@/lib/images";
-import { getOrg } from "@/lib/org";
+import { getOrg, getStore } from "@/lib/org";
 
 export const revalidate = 300;
 
@@ -15,56 +18,48 @@ export const metadata: Metadata = {
 };
 
 export default async function ServicesPage() {
-  const org = await getOrg();
+  const [org, store] = await Promise.all([getOrg(), getStore()]);
   const lineOa = org.settings.features.line ? org.settings.site.lineOaUrl : null;
   const SERVICES = siteServices(org.settings.site.copy);
   const photos = sitePhotos(org.settings.site);
   const SERVICE_PHOTO = servicePhotos(photos);
+  const hours = store ? hoursLines(store.openHours) : [];
 
   return (
     <>
-      <section className="page-head book-head">
+      <SheetHead
+        crumb="บริการ"
+        fact={
+          <>
+            <span className="mono">{SERVICES.length}</span> บริการในร้านเดียว{hours[0] ? ` · ${hours[0]}` : ""}
+          </>
+        }
+        title="บริการในร้าน"
+        lede="ทุกบริการใช้ห้องซิมเป็นเครื่องมือเดียวกัน คุณจึงเห็นตัวเลขวงสวิงของตัวเองตั้งแต่ลองไม้ ฟิตติ้ง ไปจนถึงเรียนกับโปร"
+        aside={<Photo photo={photos.hero} ratio="4 / 3" priority sizes="(min-width: 900px) 45vw, 100vw" />}
+      />
+
+      <section className="pg-body" aria-label="บริการทั้งหมด">
         <div className="wrap">
-          <h1>บริการ</h1>
-          <p className="lede">ทุกบริการใช้ห้องซิมเป็นเครื่องมือเดียวกัน คุณจึงเห็นตัวเลขวงสวิงของตัวเองตั้งแต่ลองไม้ ฟิตติ้ง ไปจนถึงเรียนกับโปร</p>
-          <nav className="stops" aria-label="ไปยังบริการ">
-            {SERVICES.map((s, i) => (
-              <a key={s.slug} href={`#${s.slug}`} className="stop-link">
-                <span className="y-dot mono" aria-hidden="true">
-                  {i + 1}
-                </span>
-                {s.name}
-              </a>
-            ))}
-          </nav>
-          <figure className="book-hero">
-            <Photo photo={photos.hero} ratio="21 / 9" priority sizes="(min-width: 1120px) 1120px, 100vw" />
-          </figure>
+          <ServiceDirectory services={SERVICES} onPage />
         </div>
       </section>
 
-      {SERVICES.map((svc, i) => (
-        <section key={svc.slug} id={svc.slug} className="book-page" aria-labelledby={`${svc.slug}-h`}>
-          <div className="wrap book-grid">
-            <div className="book-side">
-              <h2 id={`${svc.slug}-h`}>
-                <span className="y-dot mono" aria-hidden="true">
-                  {i + 1}
-                </span>
+      {SERVICES.map((svc) => (
+        <section key={svc.slug} id={svc.slug} className="svc" aria-labelledby={`${svc.slug}-h`}>
+          <div className="wrap svc-grid">
+            <div className="svc-side">
+              <h2 id={`${svc.slug}-h`} className="svc-name">
                 {svc.name}
               </h2>
-              <p className="book-thai">{svc.thai}</p>
-              {SERVICE_PHOTO[svc.slug] && (
-                <figure className="book-figure">
-                  <Photo photo={SERVICE_PHOTO[svc.slug]!} ratio="4 / 3" sizes="(min-width: 900px) 34vw, 100vw" />
-                </figure>
-              )}
+              <p className="svc-thai">{svc.thai}</p>
+              {SERVICE_PHOTO[svc.slug] && <Photo photo={SERVICE_PHOTO[svc.slug]!} ratio="4 / 3" className="svc-photo" sizes="(min-width: 900px) 34vw, 100vw" />}
             </div>
-            <div className="book-body">
+            <div className="svc-body">
               {svc.body.map((p) => (
                 <p key={p.slice(0, 24)}>{p}</p>
               ))}
-              <ul className="book-points">
+              <ul className="svc-points">
                 {svc.points.map((p) => (
                   <li key={p}>{p}</li>
                 ))}

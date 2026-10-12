@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { PromoList } from "@/components/PromoList";
+import { PromoSheet } from "@/components/PromoSheet";
+import { SheetHead } from "@/components/SheetHead";
 import { getOrg } from "@/lib/org";
 import { currentPromotions } from "@/lib/posts";
 
@@ -13,33 +14,39 @@ export const metadata: Metadata = {
   openGraph: { title: "โปรโมชัน | MST Golf", url: "/promotions" },
 };
 
+const MONTH = new Intl.DateTimeFormat("th-TH", { month: "long", timeZone: "Asia/Bangkok" });
+
 export default async function PromotionsPage() {
   const [promos, org] = await Promise.all([currentPromotions(30), getOrg()]);
   const shop = org.settings.site.shopUrl;
+  const now = new Date();
   return (
     <>
-      <section className="page-head">
-        <div className="wrap">
-          <h1>โปรโมชัน</h1>
-          <p className="lede">ข้อเสนอที่ใช้ได้ตอนนี้ที่ร้าน{shop ? "และร้านออนไลน์" : ""} · สมาชิกได้แต้มทุกการซื้อ</p>
-        </div>
-      </section>
-      <section className="section section-tight">
+      <SheetHead
+        crumb="โปรโมชัน"
+        fact={
+          <>
+            เดือน{MONTH.format(now)} · <span className="mono">{promos.length}</span> รายการ
+          </>
+        }
+        title="โปรโมชัน"
+        lede={`ข้อเสนอที่ใช้ได้ตอนนี้ที่ร้าน${shop ? "และร้านออนไลน์" : ""} · สมาชิกได้แต้มทุกการซื้อ`}
+      />
+      <section className="pg-body">
         <div className="wrap">
           {promos.length ? (
-            <PromoList promos={promos} />
+            <PromoSheet promos={promos} now={now} full label="โปรโมชันที่กำลังมี" />
           ) : (
             <p className="empty">ยังไม่มีโปรโมชันในช่วงนี้ — ดูสิทธิ์สมาชิกและรางวัลที่แลกได้ระหว่างนี้</p>
           )}
-          <p className="promo-foot">
-            <Link href="/rewards" className="text-link">สิทธิ์สมาชิกและรางวัล</Link>
+          <p className="pg-foot">
+            <Link href="/rewards" className="text-link">
+              สิทธิ์สมาชิกและรางวัล
+            </Link>
             {shop && (
-              <>
-                {" · "}
-                <a href={shop} className="text-link" target="_blank" rel="noopener">
-                  ช้อปออนไลน์
-                </a>
-              </>
+              <a href={shop} className="text-link" target="_blank" rel="noopener">
+                ช้อปออนไลน์
+              </a>
             )}
           </p>
         </div>

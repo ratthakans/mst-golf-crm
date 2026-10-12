@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { CONTACT_TOPICS, emailConfigured } from "@mstgolf/core";
 import { ContactForm } from "@/components/ContactForm";
+import { SheetHead } from "@/components/SheetHead";
 import { hoursLines } from "@/lib/format";
 import { getOrg, getStore } from "@/lib/org";
 
@@ -23,13 +24,13 @@ export default async function ContactPage() {
 
   return (
     <>
-      <section className="page-head">
-        <div className="wrap">
-          <h1>ติดต่อเรา</h1>
-          <p className="lede">แวะมาลองไม้ ฟิตติ้ง หรือจองซิมกอล์ฟ · สอบถามได้ทางโทรศัพท์{formOpen ? " หรือฝากข้อความด้านล่าง" : ""}</p>
-        </div>
-      </section>
-      <section className="section section-tight">
+      <SheetHead
+        crumb="ติดต่อเรา"
+        fact={hours[0] ?? null}
+        title="ติดต่อเรา"
+        lede={`แวะมาลองไม้ ฟิตติ้ง หรือจองซิมกอล์ฟ · สอบถามได้ทางโทรศัพท์${formOpen ? " หรือฝากข้อความด้านล่าง" : ""}`}
+      />
+      <section className="pg-body">
         <div className="wrap contact-grid">
           <div className="contact-facts">
             <dl className="card-facts">
@@ -87,7 +88,10 @@ export default async function ContactPage() {
           {formOpen ? (
             <ContactForm topics={[...CONTACT_TOPICS]} />
           ) : (
-            <p className="empty">{site.phone ? `ระหว่างนี้ติดต่อเราทางโทรศัพท์ ${site.phone}` : "ระหว่างนี้ติดต่อเราที่ร้านหรือทางโทรศัพท์"}</p>
+            <div className="contact-note">
+              <h2>ฝากข้อความออนไลน์</h2>
+              <p>{site.phone ? `ยังไม่เปิดรับทางเว็บ ระหว่างนี้โทรหาเราได้ที่ ${site.phone} หรือแวะมาที่ร้าน` : "ยังไม่เปิดรับทางเว็บ ระหว่างนี้แวะมาที่ร้านหรือโทรหาเราได้ตามเวลาเปิด"}</p>
+            </div>
           )}
         </div>
       </section>

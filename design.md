@@ -20,8 +20,14 @@ The back office (`apps/web-admin`) keeps its own UI. It only takes the CVI accen
   9. The store: name, address, hours, phone, map, photo.
 - **Never on the home page:** text over photos, carousels, a marquee, photo-tile grids, pill badges, or a CTA band with two buttons. Those read as generated.
 - **Header:** logo, page links (desktop) or a full-screen menu (phone), "จองซิม" and the account on the right.
-- **Other marketing pages** (`/services`, `/golf-simulator`, `/rewards`, `/promotions`, `/promotions/[slug]`) keep the yardage-book pieces: the hole drawing on Services, the lane scorecard, the tier sheet.
-- **Content pages** (`/blog`, `/blog/[slug]`, `/contact`, `/terms`, `/privacy`): typography first, one measured column (contact: facts + form).
+- **Every other public page uses the same sale sheet** (Oct 2026):
+  - **Head (`components/SheetHead.tsx`):** "MST Golf / page" on the left and one live fact on the right (counts, hours, price, end date), over a 1 px ink rule. Then a large roman title, a lede, one primary button plus a text link. An optional photo sits beside it, never behind it.
+  - **Lists are ruled:** promotions (`PromoSheet`, with a `full` variant on `/promotions`), services (`ServiceDirectory`), the rewards catalogue (`.rw`), articles, rules and prices. Each list opens with a 1 px ink rule and puts the fact on the right (end date, points, price).
+  - **`/services`:** the directory, then one section per service (name, Thai name, photo if there is one, ruled points). No numbered circles.
+  - **`/golf-simulator`:** the head, then the live scorecard (today, or tomorrow after closing), lanes and prices, tier discounts and rules.
+  - **`/rewards`:** how to earn, the tier sheet, then the catalogue as a ruled list. A reward with no picture shows its value or "ของรางวัล" as type, never an emoji.
+  - **Articles and `/promotions/[slug]`:** the meta line in the reading column, then the title, cover and body. They close with a ruled line, not a tinted box.
+  - **Categories are words in dark green, not pills.** The current page in the nav is underlined, not boxed.
 - **App pages** (`/app/*`): function first. They share tokens, type and buttons; no enrichment.
 
 ## Colour (CVI)

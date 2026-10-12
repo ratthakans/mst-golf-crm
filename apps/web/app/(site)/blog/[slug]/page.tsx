@@ -5,7 +5,6 @@ import { cache } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { getPost } from "@mstgolf/core";
-import { IconBack } from "@/components/icons";
 import { CATEGORY_LABEL, formatThaiDate } from "@/lib/format";
 import { getOrg } from "@/lib/org";
 
@@ -45,17 +44,25 @@ export default async function PostPage({ params }: { params: { slug: string } })
   return (
     <article className="article">
       <div className="wrap article-wrap">
-        <Link href="/blog" className="link-arrow back">
-          <IconBack size={18} />
-          <span>บทความทั้งหมด</span>
-        </Link>
+        <p className="sh-meta">
+          <span className="sh-crumb">
+            <Link href="/">MST Golf</Link>
+            <span aria-hidden="true"> / </span>
+            <Link href="/blog">บทความ</Link>
+          </span>
+          <span className="sh-fact">
+            {CATEGORY_LABEL[post.category]}
+            {post.publishedAt && (
+              <>
+                {" · "}
+                <time dateTime={post.publishedAt.toISOString()}>{formatThaiDate(post.publishedAt)}</time>
+              </>
+            )}
+          </span>
+        </p>
         <header className="article-head">
-          <p className="post-meta">
-            <span className={`cat cat-${post.category.toLowerCase()}`}>{CATEGORY_LABEL[post.category]}</span>
-            {post.publishedAt && <time dateTime={post.publishedAt.toISOString()}>{formatThaiDate(post.publishedAt)}</time>}
-          </p>
-          <h1>{post.title}</h1>
-          {post.excerpt && <p className="lede">{post.excerpt}</p>}
+          <h1 className="sh-title">{post.title}</h1>
+          {post.excerpt && <p className="sh-lede">{post.excerpt}</p>}
         </header>
         {post.coverUrl && (
           <figure className="article-cover">
@@ -82,13 +89,13 @@ export default async function PostPage({ params }: { params: { slug: string } })
             {post.body}
           </ReactMarkdown>
         </div>
-        <aside className="article-foot">
+        <aside className="pg-close">
           <p>อยากลองของจริง? จองซิมหรือนัดฟิตติ้งได้ทุกวัน</p>
           <div className="cta-row">
             <Link href="/app/booking" className="btn btn-primary">
               จองซิม
             </Link>
-            <Link href="/services" className="btn btn-secondary">
+            <Link href="/services" className="text-link">
               ดูบริการ
             </Link>
           </div>
