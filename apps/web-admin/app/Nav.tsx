@@ -16,7 +16,7 @@ const PRIMARY: Item[] = [
   { href: "/simulator", label: "ซิมกอล์ฟ", icon: "⛳", perm: "booking.view" },
   { href: "/rewards", label: "รางวัล", icon: "🎁", perm: "rewards.view" },
   { href: "/coupons", label: "ตรวจคูปอง", icon: "🎟", perm: "coupons.use" },
-  { href: "/website", label: "เว็บไซต์", icon: "📝", perm: "posts.manage" },
+  { href: "/website/promotions", label: "เว็บไซต์ · โปรโมชัน", icon: "📝", perm: "posts.manage" },
   { href: "/reviews", label: "คิวตรวจสอบ", icon: "🗂", perm: "reviews.request" },
   { href: "/playbook", label: "แผนลงมือ", icon: "🎬", perm: "playbook.view" },
 ];
@@ -30,7 +30,7 @@ const TOOLS: Item[] = [
 ];
 
 const isActive = (href: string, pathname: string) =>
-  href === "/" ? pathname === "/" : href === "/settings" ? pathname === "/settings" || /^\/settings\/(tiers|points|booking|consent|line|site|rewards)/.test(pathname) : pathname.startsWith(href);
+  href === "/website/promotions" ? pathname.startsWith("/website") : href === "/" ? pathname === "/" : href === "/settings" ? pathname === "/settings" || /^\/settings\/(tiers|points|booking|consent|line|site|rewards)/.test(pathname) : pathname.startsWith(href);
 
 function NavLink({ item, pathname }: { item: Item; pathname: string }) {
   if (item.soon) {

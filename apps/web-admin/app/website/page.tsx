@@ -14,7 +14,7 @@ export default async function WebsitePage() {
   const user = await allowPage("posts.manage");
   if (!user) return <Forbidden />;
   const org = await currentOrg();
-  const posts = await listPosts(org.id, { limit: 200 });
+  const posts = await listPosts(org.id, { excludeCategory: "PROMOTION", limit: 200 });
   const site = webOrigin(org.settings.site.siteUrl);
   return (
     <>

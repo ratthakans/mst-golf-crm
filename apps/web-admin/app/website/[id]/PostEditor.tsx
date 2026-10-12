@@ -24,7 +24,7 @@ interface Post {
   updatedAt: string;
 }
 
-export function PostEditor({ post, siteUrl, uploadsEnabled }: { post: Post | null; siteUrl: string | null; uploadsEnabled: boolean }) {
+export function PostEditor({ post, siteUrl, uploadsEnabled, defaultCategory = "ARTICLE" }: { post: Post | null; siteUrl: string | null; uploadsEnabled: boolean; defaultCategory?: Post["category"] }) {
   const router = useRouter();
   const [f, setF] = useState({
     title: post?.title ?? "",
@@ -32,7 +32,7 @@ export function PostEditor({ post, siteUrl, uploadsEnabled }: { post: Post | nul
     excerpt: post?.excerpt ?? "",
     coverUrl: post?.coverUrl ?? "",
     body: post?.body ?? "",
-    category: post?.category ?? "ARTICLE",
+    category: post?.category ?? defaultCategory,
     startsAt: post?.startsAt ?? "",
     endsAt: post?.endsAt ?? "",
     linkUrl: post?.linkUrl ?? "",
@@ -149,7 +149,7 @@ export function PostEditor({ post, siteUrl, uploadsEnabled }: { post: Post | nul
           </div>
           <div className="stack" style={{ gap: 8, flex: 1, minWidth: 220 }}>
             <label className="field" style={{ margin: 0 }}>
-              <span>รูปปก <span className="hint">— อัตราส่วน 16:9</span></span>
+              <span>รูปปก <span className="hint">{promo ? "— แนวนอน 16:9 อย่างน้อย 1600 px กว้าง · โปรโมชันที่มีรูปปกขึ้นแบนเนอร์หน้าแรก" : "— อัตราส่วน 16:9"}</span></span>
               <input value={f.coverUrl} onChange={(e) => setF({ ...f, coverUrl: e.target.value })} placeholder="https://… หรืออัปโหลด" />
             </label>
             <div className="row">
@@ -182,7 +182,7 @@ export function PostEditor({ post, siteUrl, uploadsEnabled }: { post: Post | nul
           {post ? (post.status === "PUBLISHED" ? `เผยแพร่แล้ว ${formatDateTime(post.publishedAt)}` : "ฉบับร่าง — ยังไม่ขึ้นเว็บ") : "ยังไม่ได้บันทึก"}
           {post?.status === "PUBLISHED" && siteUrl && (
             <>
-              {" "}· <a href={`${siteUrl}/blog/${f.slug}`} target="_blank" rel="noreferrer">ดูบนเว็บ ↗</a>
+              {" "}· <a href={`${siteUrl}/${promo ? "promotions" : "blog"}/${f.slug}`} target="_blank" rel="noreferrer">ดูบนเว็บ ↗</a>
             </>
           )}
         </span>
