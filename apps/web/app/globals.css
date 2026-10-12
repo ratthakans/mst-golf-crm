@@ -99,6 +99,13 @@
   --gutter: 16px;
   --header-h: 60px;
 }
+/* MST's licensed Futura replaces Montserrat for titles and numerals once its
+   files are in public/fonts/futura (next.config.js sets the class). Futura has
+   no Thai, so Thai still falls through to Kanit. */
+:root.futura {
+  --font-display: "MST Futura", var(--ff-montserrat, "Montserrat"), var(--ff-kanit, "Kanit"), "Noto Sans Thai", system-ui, sans-serif;
+  --font-mono: "MST Futura", var(--ff-montserrat, "Montserrat"), "Anuphan", system-ui, sans-serif;
+}
 
 @media (min-width: 480px) {
   :root {

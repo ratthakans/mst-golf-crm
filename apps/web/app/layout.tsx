@@ -4,9 +4,10 @@ import "./fonts.css";
 import "./globals.css";
 import { siteOrigin } from "@/lib/org";
 
-// MST Golf Corporate Visual Identity: Montserrat for titles, Lato for body.
-// Neither has Thai glyphs, so Thai falls back per character to Kanit
-// (titles) and Anuphan (body, self-hosted in fonts.css).
+// Titles: MST's licensed Futura (fonts.css, switched on by the class below
+// once the files are in public/fonts/futura), otherwise Montserrat from the
+// CVI. Body: Lato. None has Thai glyphs, so Thai falls back per character to
+// Kanit (titles) and Anuphan (body, self-hosted in fonts.css).
 const montserrat = Montserrat({ subsets: ["latin"], weight: ["600", "700", "800", "900"], variable: "--ff-montserrat", display: "swap" });
 const lato = Lato({ subsets: ["latin"], weight: ["400", "700"], variable: "--ff-lato", display: "swap" });
 const kanit = Kanit({ subsets: ["thai", "latin"], weight: ["500", "600", "700"], variable: "--ff-kanit", display: "swap" });
@@ -33,7 +34,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="th" className={`${montserrat.variable} ${lato.variable} ${kanit.variable}`}>
+    <html lang="th" className={`${montserrat.variable} ${lato.variable} ${kanit.variable}${process.env.NEXT_PUBLIC_FUTURA ? " futura" : ""}`}>
       <body>{children}</body>
     </html>
   );

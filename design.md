@@ -50,13 +50,17 @@ These stay as they are:
 
 The Member card is drawn in the CVI green.
 
-## Typography (CVI)
-- **Titles:** Montserrat.
-  - Weights: 800 for the hero, 700 for section and page titles, 600 for labels.
-  - Montserrat has no Thai glyphs, so Thai text in titles falls through to **Kanit** at the same weight. This pairing is ours; the guideline doesn't cover Thai.
-- **Body:** Lato 400/700, with Thai falling through to **Anuphan**.
-- **Numerals in tables and markers:** Montserrat 600 with `tabular-nums` (the `.mono` class).
-- **Loading:** Montserrat, Lato and Kanit through `next/font/google` (self-hosted at build). Anuphan is in `public/fonts`.
+## Typography
+- **Titles, labels and numerals: Futura.** Decided by the owner on 13 Oct 2026. This overrides the CVI PDF, which names Montserrat.
+  - The face is MST's licensed **webfont**, self-hosted from `apps/web/public/fonts/futura/futura-{400…800}.woff2` (see the README there).
+  - When `futura-700.woff2` is present at build time, `next.config.js` sets `<html class="futura">` and `--font-display` / `--font-mono` switch to "MST Futura".
+  - Until the files arrive, titles fall back to **Montserrat**, the CVI face.
+  - Never ship the Futura that comes with macOS: it isn't licensed for the web.
+  - Weights: 800 (Heavy) for hero and page titles, 700 (Bold) for section titles, 600 (Demi) for labels.
+- **Thai:** neither Futura nor Montserrat has Thai glyphs, so Thai text in titles falls through to **Kanit** at the same weight. This pairing is ours; the guideline doesn't cover Thai.
+- **Body:** Lato 400/700 (the CVI secondary face), with Thai falling through to **Anuphan**.
+- **Numerals in tables and markers:** the display face with `tabular-nums` (the `.mono` class).
+- **Loading:** Montserrat, Lato and Kanit through `next/font/google` (self-hosted at build). Anuphan and MST Futura are in `public/fonts`.
 
 ## Logo and tagline (CVI)
 - **Logo:** `public/mst-logo.png`, the horizontal logo.
