@@ -126,6 +126,8 @@ export async function saveSite(orgId: string, actor: Actor, input: SiteSettings)
     ...settings.site, // photos and copy are saved by saveSiteContent
     lineOaUrl: url(input.lineOaUrl, "ลิงก์ LINE OA"),
     mapsUrl: url(input.mapsUrl, "ลิงก์ Google Maps"),
+    facebookUrl: url(input.facebookUrl, "ลิงก์ Facebook"),
+    instagramUrl: url(input.instagramUrl, "ลิงก์ Instagram"),
     siteUrl: url(input.siteUrl, "โดเมนเว็บไซต์"),
     shopUrl: url(input.shopUrl, "ลิงก์ร้านออนไลน์"),
     phone: input.phone?.trim() || undefined,

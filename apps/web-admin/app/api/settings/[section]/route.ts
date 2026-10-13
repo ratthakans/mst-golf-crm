@@ -58,6 +58,8 @@ export async function PUT(req: Request, { params }: { params: { section: string 
         await saveSite(org.id, actor, {
           lineOaUrl: optStr(b.lineOaUrl) ?? undefined,
           mapsUrl: optStr(b.mapsUrl) ?? undefined,
+          facebookUrl: optStr(b.facebookUrl) ?? undefined,
+          instagramUrl: optStr(b.instagramUrl) ?? undefined,
           siteUrl: optStr(b.siteUrl) ?? undefined,
           shopUrl: optStr(b.shopUrl) ?? undefined,
           phone: optStr(b.phone) ?? undefined,

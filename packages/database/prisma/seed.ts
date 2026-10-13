@@ -66,7 +66,15 @@ async function main() {
       BIRTHDAY: true,
     },
     pos: { memberTag: "MSTMEMBER", pointExcludedSkus: [], pointExcludedCategories: [] },
-    site: { address: "ชาญอิสสระ ทาวเวอร์ 1 ถนนพระราม 4 กรุงเทพฯ" },
+    // Store details as published on mstgolf.co.th (MST Golf Thailand), Oct 2026.
+    site: {
+      address: "ชั้น P อาคารชาญอิสสระ ทาวเวอร์ 1 เลขที่ 942 ถนนพระรามที่ 4 แขวงสุริยวงศ์ เขตบางรัก กรุงเทพมหานคร 10500",
+      phone: "063-878-8046",
+      mapsUrl: "https://maps.app.goo.gl/eCssiMGaNbcdszLq6",
+      facebookUrl: "https://www.facebook.com/mstgolf.th",
+      instagramUrl: "https://www.instagram.com/mstgolf_th",
+      shopUrl: "https://mstgolf.co.th",
+    },
   };
 
   const existing = await prisma.organization.findUnique({ where: { slug: "mst-golf" } });
@@ -97,7 +105,7 @@ async function main() {
   // Store and simulator lanes. Opening hours are a placeholder until MST
   // confirms them (docs/PRODUCT.md §6 #3) — editable in Settings.
   // -------------------------------------------------------------------------
-  const hours: [string, string] = ["10:00", "22:00"];
+  const hours: [string, string] = ["10:00", "21:00"]; // open every day 10 AM – 9 PM (mstgolf.co.th)
   const store = await prisma.store.upsert({
     where: { orgId_code: { orgId: org.id, code: "CIT1" } },
     update: {},
@@ -105,7 +113,7 @@ async function main() {
       orgId: org.id,
       code: "CIT1",
       name: "MST Golf ชาญอิสสระ ทาวเวอร์ 1",
-      address: "ชาญอิสสระ ทาวเวอร์ 1 ถนนพระราม 4 กรุงเทพฯ",
+      address: "ชั้น P อาคารชาญอิสสระ ทาวเวอร์ 1 เลขที่ 942 ถนนพระรามที่ 4 แขวงสุริยวงศ์ เขตบางรัก กรุงเทพมหานคร 10500",
       openHours: { mon: hours, tue: hours, wed: hours, thu: hours, fri: hours, sat: hours, sun: hours },
     },
   });

@@ -5,6 +5,7 @@ import { SectionHead } from "@/components/SectionHead";
 import { SheetHead } from "@/components/SheetHead";
 import { Photo } from "@/components/Photo";
 import { servicePhotos, sitePhotos } from "@/lib/images";
+import { EXCLUSIVE_BRANDS } from "@mstgolf/shared/site";
 import { homeCopy, siteServices } from "@/lib/content";
 import { CATEGORY_LABEL, formatBaht, formatBahtWhole, formatHm, formatPoints, formatThaiDate, hoursLines, openingSpec } from "@/lib/format";
 import { getLanes, getOrg, getStore, siteOrigin } from "@/lib/org";
@@ -142,6 +143,31 @@ export default async function HomePage() {
           </div>
         </section>
       )}
+
+      <section className="q-sec q-alt" aria-labelledby="excl-h">
+        <div className="wrap">
+          <SectionHead
+            id="excl-h"
+            label="Exclusive at MST Golf"
+            title="แบรนด์ที่มีเฉพาะที่ MST Golf"
+            link={s.site.shopUrl ? { href: s.site.shopUrl, text: "ดูสินค้าทั้งหมด" } : undefined}
+          />
+          <ul className="q-cards q-cards-2" tabIndex={0} aria-label="แบรนด์ที่มีเฉพาะที่ MST Golf">
+            {EXCLUSIVE_BRANDS.map((b) => (
+              <li key={b.name} className="q-card">
+                <span className="q-card-img q-card-img-wide">
+                  {/* eslint-disable-next-line @next/next/no-img-element -- MST Golf Thailand's brand photography */}
+                  <img src={b.image} alt="" loading="lazy" style={b.position ? { objectPosition: b.position } : undefined} />
+                </span>
+                <span className="q-card-title" lang="en">
+                  {b.name}
+                </span>
+                <span className="q-card-text">{b.line}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
 
       {copy.brands.length > 0 && (
         <section className="q-brands" aria-labelledby="brands-h">
@@ -317,7 +343,7 @@ export default async function HomePage() {
 
       <section className="q-sec q-alt" aria-labelledby="visit-h">
         <div className="wrap q-split q-split-flip">
-          <Photo photo={photos.store} ratio="4 / 3" className="q-split-img" sizes="(min-width: 900px) 50vw, 100vw" />
+          <Photo photo={photos.store} ratio="4 / 3" className="q-split-img q-store-img" sizes="(min-width: 900px) 50vw, 100vw" />
           <div className="q-split-copy">
             <SectionHead
               id="visit-h"

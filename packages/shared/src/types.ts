@@ -196,6 +196,8 @@ export interface PosSettings {
 export interface SiteSettings {
   lineOaUrl?: string; // https://lin.ee/… — "add friend" link
   mapsUrl?: string;
+  facebookUrl?: string; // the store's Facebook page
+  instagramUrl?: string; // the store's Instagram
   phone?: string;
   address?: string;
   siteUrl?: string; // public website origin

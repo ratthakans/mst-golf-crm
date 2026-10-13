@@ -6,7 +6,9 @@ import { SITE_PHOTO_LABEL as M } from "@mstgolf/shared/site";
 // - /public/photos/mst: MST Golf Group's own imagery from mstgolf.com, used only
 //   where the picture isn't tied to a place (coaching, workshop, clubs, a swing);
 // - /public/mock: AI-generated MOCKUPS (Higgsfield · gpt_image_2_5, 26 Sep 2026)
-//   for the Bangkok store and simulator room, which only MST's photos can show.
+//   for the simulator room, which only MST's photos can show.
+// - /public/photos/mst-th: MST Golf Thailand's own photos from mstgolf.co.th
+//   (the Charn Issara store front, the exclusive brands).
 
 export interface SitePhoto {
   src: string;
@@ -25,7 +27,7 @@ export const PHOTOS = {
   academy: photo(M.academy.mock, "นักกอล์ฟตีลูกบนสนาม", 1122, 838),
   simulator: photo(M.simulator.mock, "เพื่อนสามคนเล่น Golf Simulator ด้วยกันในห้องซิม"),
   simBays: photo(M.simBays.mock, "ห้อง Golf Simulator สามช่องเรียงกัน", 1600, 895),
-  store: photo(M.store.mock, "หน้าร้าน MST Golf ยามเย็น", 1600, 895),
+  store: photo(M.store.mock, "หน้าร้าน MST Golf อาคารชาญอิสสระ ทาวเวอร์ 1 ถนนพระรามที่ 4", 2400, 1146),
 } as const;
 
 export type Photos = Record<SitePhotoKey, SitePhoto>;

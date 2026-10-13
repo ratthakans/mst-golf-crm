@@ -17,12 +17,13 @@ The back office (`apps/web-admin`) keeps its own UI. It only takes the CVI accen
 - **Home:**
   1. Hero (the lead promotion).
   2. Promotions as 3 cards.
-  3. Simulator: free count, price and hours, plus the next 4 free times, each linking straight to that slot.
-  4. Services as 4 portrait tiles.
-  5. Membership: copy, plus the 3 tiers as columns (no table).
-  6. Journal as 3 cards.
-  7. Brands in one quiet tracked line.
-  8. Visit.
+  3. Exclusive at MST Golf: the four exclusive brands as 2-up cards (`EXCLUSIVE_BRANDS` in `@mstgolf/shared/site`).
+  4. Brands in store: a labelled, centred list of names (logos when MST sends them).
+  5. Simulator: free count, price and hours, plus the next 4 free times, each linking straight to that slot.
+  6. Services as 4 portrait tiles.
+  7. Membership: copy, plus the 3 tiers as columns (no table).
+  8. Journal as 3 cards.
+  9. Visit: the Charn Issara front, address, hours, phone, with Google Maps as the primary button.
 - **Never on the home page:** a promo bar, a meta line, green panels or bands (other than the CVI footer band), text in boxes on photos, carousels, marquees, block grids of bright green, tables inside cards, or pill badges.
 - **App pages** (`/app/*`): function first, in the same voice. Ruled sections, underlined tabs, a bottom bar on phones, and the member card as the one object.
 
@@ -91,10 +92,11 @@ The Member card is drawn in the CVI green.
   - No pill buttons, no dark CTA bands.
 - **Photos:**
   - Framed only by 4 px corners.
-  - Default order: MST's uploads in the back office always win. Until then, use MST Golf Group imagery from mstgolf.com, kept in `apps/web/public/photos/mst` (coaching, workshop, irons, a swing, course walk, driver, balls).
-    - Only use that imagery where the picture isn't tied to a place. mstgolf.com is the Malaysia/Singapore group site, so never present its MST Golf Plaza or Arena photos as the Bangkok store.
-  - The Bangkok shop front and simulator room stay AI mockups (`/public/mock`) until MST sends real photos. The site must not go live with them.
-  - The CVI's own style, black-and-white photography with the green Swing Arc over it, applies to MST's real photos when they arrive.
+  - Default order: MST's uploads in the back office always win. Until then:
+    - `apps/web/public/photos/mst-th` holds **MST Golf Thailand's own photos** from mstgolf.co.th: the Charn Issara store front, and the campaign images for the exclusive brands (Sun Day Red, Fore All, WAAC, ONOFF).
+    - `apps/web/public/photos/mst` holds MST Golf Group imagery from mstgolf.com (coaching, workshop, irons, a swing, course walk, driver, balls). Use it only where the picture isn't tied to a place. mstgolf.com is the Malaysia/Singapore group site, so never present its Plaza or Arena photos as the Bangkok store.
+  - Only the **simulator room** is still an AI mockup (`/public/mock`), until MST sends a photo of the Bangkok sim room.
+  - The CVI's style for MST's own shoots is black-and-white photography with the green Swing Arc over it.
 
 ## Motion
 Allowed: hover colour shifts, the → nudging 4 px on directory rows, sheet/menu fade-ins. The home carousel and brand marquee were removed in the sale-sheet redesign. Everything stops under `prefers-reduced-motion`. Nothing scrolls in.

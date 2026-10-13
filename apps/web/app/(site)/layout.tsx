@@ -69,6 +69,20 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
                 <a href={site.mapsUrl} rel="noopener" target="_blank">เปิดแผนที่ Google Maps ↗</a>
               </p>
             )}
+            {(site.facebookUrl || site.instagramUrl) && (
+              <p className="colophon-social">
+                {site.facebookUrl && (
+                  <a href={site.facebookUrl} rel="noopener" target="_blank">
+                    Facebook ↗
+                  </a>
+                )}
+                {site.instagramUrl && (
+                  <a href={site.instagramUrl} rel="noopener" target="_blank">
+                    Instagram ↗
+                  </a>
+                )}
+              </p>
+            )}
             {org.settings.features.line && site.lineOaUrl && (
               <p>
                 <a href={site.lineOaUrl} rel="noopener" target="_blank">เพิ่มเพื่อน LINE OA</a>

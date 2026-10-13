@@ -2250,7 +2250,32 @@ a.ps-row:hover .ps-title,
   }
 }
 .q-tiers:focus-visible,
+.q-cards-2:focus-visible,
 .q-brands ul:focus-visible {
   outline: 2px solid var(--color-focus);
   outline-offset: 4px;
+}
+/* two-up cards (exclusive brands) */
+@media (min-width: 640px) {
+  .q-cards-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.q-sec + .q-brands {
+  border-top: 0;
+}
+/* brands: centred rows that wrap, so no single name is left alone on a line */
+@media (min-width: 900px) {
+  .q-brands ul {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-5) var(--space-10);
+    max-width: 62rem;
+    margin-inline: auto;
+  }
+}
+/* the Charn Issara front: keep the MST GOLF sign (right of centre) in the 4:3 crop */
+.q-store-img img {
+  object-position: 80% 50%;
 }

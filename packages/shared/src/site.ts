@@ -20,7 +20,7 @@ export const SITE_PHOTO_LABEL: Record<SitePhotoKey, { label: string; where: stri
   academy: { label: "Academy", where: "บริการ · หน้าแรกและหน้าบริการ", mock: "/photos/mst/swing.jpg" },
   simulator: { label: "Golf Simulator (บริการ)", where: "บริการ · หน้าแรกและหน้าบริการ", mock: "/mock/simulator.jpg" },
   simBays: { label: "ห้องซิม", where: "หน้า Golf Simulator", mock: "/mock/sim-bays.jpg" },
-  store: { label: "หน้าร้าน", where: "หน้าแรก · แวะมาที่ร้าน", mock: "/mock/store.jpg" },
+  store: { label: "หน้าร้าน", where: "หน้าแรก · แวะมาที่ร้าน", mock: "/photos/mst-th/charn-issara.jpg" },
 };
 
 /** Services on the website. */
@@ -90,5 +90,14 @@ export const DEFAULT_HOME_COPY = {
   servicesTitle: "ครบตั้งแต่เลือกไม้ จนถึงวันออกรอบ",
   servicesLede: "สี่บริการที่ต่อกันเป็นเส้นเดียว ลองไม้บนซิม ฟิตติ้งให้เข้ากับวงสวิง แล้วซ้อมต่อกับโปรได้ในที่เดียว",
   // Placeholder from the MST Golf group's line-up — MST Thailand confirms what this store carries.
-  brands: ["TaylorMade", "Callaway", "Titleist", "PING", "Cobra", "Mizuno", "Srixon", "Honma", "FootJoy", "G/FORE", "Sun Day Red", "adidas", "PUMA", "Under Armour"].join("\n"),
+  // The brands on mstgolf.co.th ("The biggest brands in golf, all in one store"), Oct 2026.
+  brands: ["Titleist", "TaylorMade", "Callaway", "PING", "Mizuno", "Srixon", "XXIO", "ONOFF", "Majesty", "Fourteen", "Bettinardi", "FootJoy", "ECCO", "adidas", "Under Armour", "PUMA", "Sun Day Red", "Fore All", "WAAC", "Malbon", "Cutter & Buck", "Disney"].join("\n"),
 };
+
+/** Brands MST Golf Thailand carries exclusively (mstgolf.co.th, Oct 2026). */
+export const EXCLUSIVE_BRANDS: Array<{ name: string; line: string; image: string; position?: string }> = [
+  { name: "Sun Day Red", line: "แบรนด์ของ Tiger Woods เสื้อผ้ากอล์ฟสายเพอร์ฟอร์มานซ์", image: "/photos/mst-th/sun-day-red.jpg", position: "25% 30%" },
+  { name: "Fore All", line: "เสื้อผ้ากอล์ฟผู้หญิง ออกแบบมาเพื่อนักกอล์ฟหญิงทุกคน", image: "/photos/mst-th/fore-all.jpg", position: "50% 30%" },
+  { name: "WAAC", line: "แบรนด์เสื้อผ้ากอล์ฟที่มาแรงที่สุดจากเกาหลี", image: "/photos/mst-th/waac.jpg" },
+  { name: "ONOFF", line: "ไม้กอล์ฟจากญี่ปุ่น สมดุลระหว่างประสิทธิภาพกับเทคโนโลยีพรีเมียม", image: "/photos/mst-th/onoff.jpg" },
+];
