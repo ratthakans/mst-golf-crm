@@ -21,6 +21,7 @@ export default async function PromotionsPage() {
   return (
     <>
       <SheetHead
+        label="Promotions"
         title="โปรโมชัน"
         lede={`ข้อเสนอที่ใช้ได้ตอนนี้ที่ร้าน${shop ? "และร้านออนไลน์" : ""} · สมาชิกได้แต้มทุกการซื้อ`}
       />

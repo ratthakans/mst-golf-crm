@@ -1,13 +1,12 @@
 import type { ReactNode } from "react";
-import { SwingArc } from "@/components/SwingArc";
 
 // The head of every public page.
-// - `full` (a page with a photo): a full-width hero. The photo runs edge to
-//   edge, the title sits on a solid CVI-green panel over its lower-left corner
-//   (no gradient over the picture), and the Swing Arc sweeps across it.
-// - otherwise: a large roman title, a lede and the page's actions on white.
+// - `full` (a page with a photo): a full-bleed hero — the photo edge to edge
+//   under an even dark veil, white type set low on the left, one light button.
+// - otherwise: a small tracked label, a large title and a lede on white.
 export function SheetHead({
   full = false,
+  label,
   kicker,
   kickerSoon = false,
   title,
@@ -18,6 +17,8 @@ export function SheetHead({
   media,
 }: {
   full?: boolean;
+  /** Small tracked English label above the title ("Promotion", "Services"). */
+  label?: string;
   kicker?: ReactNode;
   kickerSoon?: boolean;
   title: ReactNode;
@@ -31,7 +32,12 @@ export function SheetHead({
   const Title = titleAs;
   const copy = (
     <>
-      {kicker && <p className={`sh-kicker${kickerSoon ? " soon" : ""}`}>{kicker}</p>}
+      {(label || kicker) && (
+        <p className="sh-label">
+          {label && <span lang="en">{label}</span>}
+          {kicker && <span className={`sh-kicker${kickerSoon ? " soon" : ""}`}>{kicker}</span>}
+        </p>
+      )}
       <Title id={titleId} className="sh-title">
         {title}
       </Title>
@@ -43,13 +49,9 @@ export function SheetHead({
   if (full && media) {
     return (
       <section className="hero" aria-labelledby={titleId}>
-        <div className="hero-media">
-          {media}
-          {/* CVI: the green Swing Arc over the photograph */}
-          <SwingArc className="hero-arc" />
-        </div>
+        <div className="hero-media">{media}</div>
         <div className="wrap hero-row">
-          <div className="hero-panel">{copy}</div>
+          <div className="hero-copy">{copy}</div>
         </div>
       </section>
     );

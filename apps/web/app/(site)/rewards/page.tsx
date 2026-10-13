@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { publicRewards } from "@mstgolf/core";
 import { earnRateText } from "@mstgolf/shared/tiers";
+import { SectionHead } from "@/components/SectionHead";
 import { SheetHead } from "@/components/SheetHead";
 import { TierTable } from "@/components/TierTable";
 import { formatBaht, formatPoints } from "@/lib/format";
@@ -28,6 +29,7 @@ export default async function RewardsInfoPage() {
   return (
     <>
       <SheetHead
+        label="Membership"
         title="สิทธิ์สมาชิกและรางวัล"
         lede="สมัครฟรีด้วยเบอร์มือถือ สะสมแต้มทุกการซื้อ แล้วใช้แต้มแลกคูปองและของรางวัล"
         actions={
@@ -42,9 +44,9 @@ export default async function RewardsInfoPage() {
         }
       />
 
-      <section className="section section-tight" aria-labelledby="earn-h">
+      <section className="q-sec q-sec-first" aria-labelledby="earn-h">
         <div className="wrap">
-          <h2 id="earn-h" className="section-h">สะสมแต้ม</h2>
+          <SectionHead id="earn-h" label="How it works" title="สะสมแต้ม 3 ขั้น" />
           <ol className="earn-steps">
             <li>
               <b>สมัครฟรี</b>
@@ -65,18 +67,17 @@ export default async function RewardsInfoPage() {
         </div>
       </section>
 
-      <section className="section section-rule" aria-labelledby="tiers-h">
+      <section className="q-sec q-alt" aria-labelledby="tiers-h">
         <div className="wrap">
-          <h2 id="tiers-h" className="section-h">ระดับสมาชิก</h2>
-          <p className="section-lede">ระดับคิดจากยอดซื้อสุทธิ 12 เดือนล่าสุด ไม่ใช่แต้มคงเหลือ แลกรางวัลแล้วระดับไม่ลด</p>
+          <SectionHead id="tiers-h" label="Tiers" title="ระดับสมาชิก" lede="ระดับคิดจากยอดซื้อสุทธิ 12 เดือนล่าสุด ไม่ใช่แต้มคงเหลือ แลกรางวัลแล้วระดับไม่ลด" />
           <TierTable tiers={s.tiers} pointsPerBaht={s.pointsPerBaht} />
         </div>
       </section>
 
       {rewards.length > 0 && (
-        <section className="section section-rule" aria-labelledby="rewards-h">
+        <section className="q-sec" aria-labelledby="rewards-h">
           <div className="wrap">
-            <h2 id="rewards-h" className="section-h">รางวัลที่แลกได้ตอนนี้</h2>
+            <SectionHead id="rewards-h" label="Rewards" title="รางวัลที่แลกได้ตอนนี้" link={{ href: "/app/rewards", text: "แลกในหน้าสมาชิก" }} />
             <ul className="rl">
               {rewards.map((r) => (
                 <li key={r.id} className={`rl-row${r.soldOut ? " sold-out" : ""}`}>
@@ -108,9 +109,6 @@ export default async function RewardsInfoPage() {
                 </li>
               ))}
             </ul>
-            <Link href="/app/rewards" className="text-link">
-              แลกรางวัลในหน้าสมาชิก
-            </Link>
           </div>
         </section>
       )}

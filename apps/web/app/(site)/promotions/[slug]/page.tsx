@@ -45,6 +45,7 @@ export default async function PromotionPage({ params }: { params: { slug: string
   return (
     <>
       <SheetHead
+        label="Promotion"
         kicker={lastDay ? untilText(lastDay, now) : null}
         kickerSoon={!!lastDay && endsSoon(lastDay, now)}
         title={p.title}
@@ -52,11 +53,11 @@ export default async function PromotionPage({ params }: { params: { slug: string
         actions={
           p.linkUrl ? (
             external ? (
-              <a href={p.linkUrl} className={p.coverUrl ? "btn btn-on-dark" : "btn btn-primary"} target="_blank" rel="noopener">
+              <a href={p.linkUrl} className={p.coverUrl ? "btn btn-light" : "btn btn-primary"} target="_blank" rel="noopener">
                 {p.linkLabel || "ดูรายละเอียด"}
               </a>
             ) : (
-              <Link href={p.linkUrl} className={p.coverUrl ? "btn btn-on-dark" : "btn btn-primary"}>
+              <Link href={p.linkUrl} className={p.coverUrl ? "btn btn-light" : "btn btn-primary"}>
                 {p.linkLabel || "ดูรายละเอียด"}
               </Link>
             )

@@ -3,14 +3,12 @@ import "./site.css";
 import { HeaderAccount } from "@/components/HeaderAccount";
 import { Logo } from "@/components/Logo";
 import { SiteMenu } from "@/components/SiteMenu";
-import { currentPromotions } from "@/lib/posts";
 import { NAV } from "@/lib/nav";
 import { hoursLines } from "@/lib/format";
 import { getOrg, getStore } from "@/lib/org";
 
 export default async function SiteLayout({ children }: { children: React.ReactNode }) {
-  const [org, store, promos] = await Promise.all([getOrg(), getStore(), currentPromotions(1).catch(() => [])]);
-  const top = promos[0] ?? null;
+  const [org, store] = await Promise.all([getOrg(), getStore()]);
   const site = org.settings.site;
   const address = site.address ?? store?.address ?? null;
   const hours = store ? hoursLines(store.openHours) : [];
@@ -20,13 +18,6 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
       <a href="#main" className="skip-link">
         ข้ามไปเนื้อหา
       </a>
-      {top && (
-        <Link href={`/promotions/${top.slug}`} className="promo-bar">
-          <span className="promo-bar-tag">โปรโมชัน</span>
-          <span className="promo-bar-text">{top.title}</span>
-          <span aria-hidden="true">→</span>
-        </Link>
-      )}
       {/* Logo left, page links in the middle (a menu button on phones); booking is the primary action on every width, the account sits next to it. */}
       <header className="site-header">
         <div className="wrap site-header-row">

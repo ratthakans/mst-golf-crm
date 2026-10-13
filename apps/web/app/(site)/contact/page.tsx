@@ -25,6 +25,7 @@ export default async function ContactPage() {
   return (
     <>
       <SheetHead
+        label="Contact"
         title="ติดต่อเรา"
         lede={`แวะมาลองไม้ ฟิตติ้ง หรือจองซิมกอล์ฟ · สอบถามได้ทางโทรศัพท์${formOpen ? " หรือฝากข้อความด้านล่าง" : ""}`}
       />

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Photo } from "@/components/Photo";
-import { ServiceDirectory } from "@/components/ServiceDirectory";
+import { SectionHead } from "@/components/SectionHead";
 import { SheetHead } from "@/components/SheetHead";
 import { hoursLines } from "@/lib/format";
 import { siteServices } from "@/lib/content";
@@ -28,38 +28,30 @@ export default async function ServicesPage() {
   return (
     <>
       <SheetHead
+        label="Services"
         title="บริการในร้าน"
         lede="ทุกบริการใช้ห้องซิมเป็นเครื่องมือเดียวกัน คุณจึงเห็นตัวเลขวงสวิงของตัวเองตั้งแต่ลองไม้ ฟิตติ้ง ไปจนถึงเรียนกับโปร"
         full
         media={<Photo photo={photos.hero} ratio="16 / 9" priority sizes="100vw" />}
       />
 
-      <section className="pg-body" aria-label="บริการทั้งหมด">
-        <div className="wrap">
-          <ServiceDirectory services={SERVICES} onPage />
-        </div>
-      </section>
-
-      {SERVICES.map((svc) => (
-        <section key={svc.slug} id={svc.slug} className="svc" aria-labelledby={`${svc.slug}-h`}>
-          <div className="wrap svc-grid">
-            <div className="svc-side">
-              <h2 id={`${svc.slug}-h`} className="svc-name">
-                {svc.name}
-              </h2>
-              <p className="svc-thai">{svc.thai}</p>
-              {SERVICE_PHOTO[svc.slug] && <Photo photo={SERVICE_PHOTO[svc.slug]!} ratio="4 / 3" className="svc-photo" sizes="(min-width: 900px) 34vw, 100vw" />}
-            </div>
-            <div className="svc-body">
-              {svc.body.map((p) => (
-                <p key={p.slice(0, 24)}>{p}</p>
+      {SERVICES.map((svc, i) => (
+        <section key={svc.slug} id={svc.slug} className={`q-sec${i % 2 ? " q-alt" : ""}`} aria-labelledby={`${svc.slug}-h`}>
+          <div className={`wrap q-split${i % 2 ? " q-split-flip" : ""}`}>
+            {SERVICE_PHOTO[svc.slug] && <Photo photo={SERVICE_PHOTO[svc.slug]!} ratio="4 / 5" className="q-split-img" sizes="(min-width: 900px) 50vw, 100vw" />}
+            <div className="q-split-copy">
+              <SectionHead id={`${svc.slug}-h`} label={svc.name} title={svc.thai} lede={svc.body[0]} />
+              {svc.body.slice(1).map((p) => (
+                <p key={p.slice(0, 24)} className="q-body">
+                  {p}
+                </p>
               ))}
-              <ul className="svc-points">
+              <ul className="q-points">
                 {svc.points.map((p) => (
                   <li key={p}>{p}</li>
                 ))}
               </ul>
-              <div className="cta-row">
+              <div className="q-actions">
                 {svc.slug === "golf-simulator" ? (
                   <>
                     <Link href="/app/booking" className="btn btn-primary">

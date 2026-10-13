@@ -6,33 +6,25 @@ The locked design system for `apps/web`: the public site and the customer pages 
 
 The back office (`apps/web-admin`) keeps its own UI. It only takes the CVI accent colour.
 
-## Genre and layout
-- **Genre:** a golf shop's website, promotion-led (no e-commerce: visitors see offers, they don't buy online). Clean CVI sans-serif on white, photography first.
-- **Home (`/`): the sale sheet** (Hallmark macrostructure *Catalogue*, Oct 2026). Set like the promotion sheet at a shop counter. In order:
-  1. A promotion bar.
-  2. **Full-width hero:** the lead promotion's photo runs edge to edge. Its end date, title, line and one white button sit on a solid `#00854D` panel over the lower-left corner (on phones, the panel sits full width under the photo). The CVI Swing Arc sweeps across the photo. There is no gradient over the picture and no meta line above it (owner, 13 Oct 2026).
-  3. **The rest of the month's promotions as a ruled list:** thumbnail, title, short line, end date on the right. Then a "ทุกโปรโมชันและเงื่อนไข" link.
-  4. **Brands on the shelves:** one static line, no marquee.
-  5. **Free sim lanes:** the live scorecard for today, or for tomorrow once the store has closed. Price from settings, plus a "จองซิม" button.
-  6. **In the store:** a ruled directory of the services (name · Thai name · one line · →), no photo tiles.
-  7. **Membership:** the real tier sheet (`TierTable`) and one button.
-  8. Articles.
-  9. The store: name, address, hours, phone, map, photo.
-- **Never on the home page:** text over photos, carousels, a marquee, photo-tile grids, pill badges, or a CTA band with two buttons. Those read as generated.
-- **Header:** logo, page links (desktop) or a full-screen menu (phone), "จองซิม" and the account on the right.
-- **Every other public page uses the same sale sheet** (Oct 2026):
-  - **Head (`components/SheetHead.tsx`):** pages with a photo (home, /services, /golf-simulator, a promotion with a cover) use the same full-width hero. Pages without one get a large roman title, a lede and actions on white. No breadcrumb or meta line.
-  - **Lists are ruled:** promotions (`PromoSheet`, with a `full` variant on `/promotions`), services (`ServiceDirectory`), the rewards catalogue (`.rw`), articles, rules and prices. Each list opens with a 1 px ink rule and puts the fact on the right (end date, points, price).
-  - **`/services`:** the directory, then one section per service (name, Thai name, photo if there is one, ruled points). No numbered circles.
-  - **`/golf-simulator`:** the head, then the live scorecard (today, or tomorrow after closing), lanes and prices, tier discounts and rules.
-  - **`/rewards`:** how to earn, the tier sheet, then the catalogue as a ruled list. A reward with no picture shows its value or "ของรางวัล" as type, never an emoji.
-  - **Articles and `/promotions/[slug]`:** the meta line in the reading column, then the title, cover and body. They close with a ruled line, not a tinted box.
-  - **Categories are words in dark green, not pills.** The current page in the nav is underlined, not boxed.
-- **App pages** (`/app/*`): function first, with the same sale-sheet voice.
-  - Ruled sections over an ink rule, not boxed cards. Tabs are underlined, not pills. Values are set as type, with no icon tiles.
-  - The member card stays an object and carries the Swing Arc.
-  - Navigation: on phones, a bottom bar (บัตรสมาชิก · จองซิม · รางวัล · แจ้งเตือน), rendered outside the sticky header. Wider screens use underlined header tabs.
-  - The booking grid is grouped by part of day (เช้า / บ่าย / เย็น). Free slots are outlined; taken slots are hatched.
+## Genre and layout: "quiet premium" (owner, 13 Oct 2026)
+- **Genre:** a premium golf shop, promotion-led, no e-commerce. White and near-black carry the page, photography leads, and green is kept for the primary action. Reference: premium golf brands (Titleist, PXG), not promotion flyers.
+- **One system on every public page:**
+  - **Hero (`SheetHead full`):** the photo is full-bleed under an even veil (`--color-veil`, not a gradient). White type sits low-left: a small tracked label (PROMOTION · countdown), a large title, a lede, one light button and a text link. Pages without a photo get the same head in ink on white.
+  - **Section head (`SectionHead`):** a tracked English label, then the title (one size site-wide), an optional lede, and "ดูทั้งหมด →" on the right. Every section uses it.
+  - **Rhythm:** `.q-sec` sections are 72 px on phones and 120 px on desktop. Sections alternate white and `--color-stone`; they are not separated by rules or coloured bands.
+  - **Cards:** photo on top (4:5 for promotions and services, 3:2 for articles), with 4 px corners. Meta, title and line go under the photo, never on it.
+  - **Split modules (`.q-split`):** photo and copy at half and half, with facts as a hairline list. Used for the simulator, the store and each service.
+- **Home:**
+  1. Hero (the lead promotion).
+  2. Promotions as 3 cards.
+  3. Simulator: free count, price and hours, plus the next 4 free times, each linking straight to that slot.
+  4. Services as 4 portrait tiles.
+  5. Membership: copy, plus the 3 tiers as columns (no table).
+  6. Journal as 3 cards.
+  7. Brands in one quiet tracked line.
+  8. Visit.
+- **Never on the home page:** a promo bar, a meta line, green panels or bands (other than the CVI footer band), text in boxes on photos, carousels, marquees, block grids of bright green, tables inside cards, or pill badges.
+- **App pages** (`/app/*`): function first, in the same voice. Ruled sections, underlined tabs, a bottom bar on phones, and the member card as the one object.
 
 ## Colour (CVI)
 | Token | Value | Role |
@@ -68,12 +60,7 @@ The Member card is drawn in the CVI green.
 - **Adobe kit settings:** the production domain and the Vercel domains must be allowed in the kit, and font-display should be set to `swap` there.
 
 ## The Swing Arc (CVI)
-- `components/SwingArc.tsx` is the site's only decorative mark. It is the curve from the logo.
-- Where it appears:
-  - In #00A35F across the full-width hero photo.
-  - As a 10 % white watermark in the green membership band on the home page.
-  - Inside the member card.
-- Don't add it anywhere else, and never put it behind text.
+- `components/SwingArc.tsx` is used inside the member card only. The CVI footer band carries the logo and Let's Golf. Keep the arc off the public pages; at hero scale it read as a cartoon.
 
 ## Logo and tagline (CVI)
 - **Logo:** `public/mst-logo.png`, the horizontal logo.

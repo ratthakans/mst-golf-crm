@@ -46,11 +46,12 @@ export default async function SimulatorPage() {
   return (
     <>
       <SheetHead
+        label="Golf Simulator"
         title="Golf Simulator"
         lede={`ซ้อมหรือเล่นสนามจำลองได้ทุกวัน${hours[0] ? ` (${hours[0]})` : ""} จองบนเว็บไซต์ด้วยตารางเดียวกับที่ร้านใช้ ช่องว่างจองได้ทันที`}
         actions={
           <>
-            <Link href="/app/booking" className="btn btn-on-dark">
+            <Link href="/app/booking" className="btn btn-light">
               จองซิม
             </Link>
             <a href="#rules-h" className="text-link">
