@@ -1996,3 +1996,8 @@ a.ps-row:hover .ps-title,
 .menu-sheet-info + .menu-sheet-cta {
   margin-top: 0;
 }
+/* A name set word by word: each space-separated part stays whole, so Thai
+   names like ชาญอิสสระ aren't split by the browser's dictionary breaks. */
+.word {
+  white-space: nowrap;
+}

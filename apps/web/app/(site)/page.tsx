@@ -293,7 +293,16 @@ export default async function HomePage() {
         <div className="wrap q-split q-split-flip">
           <Photo photo={photos.store} ratio="4 / 3" className="q-split-img" sizes="(min-width: 900px) 50vw, 100vw" />
           <div className="q-split-copy">
-            <SectionHead id="visit-h" label="Visit" title={store?.name ?? org.name} />
+            <SectionHead
+              id="visit-h"
+              label="Visit"
+              title={(store?.name ?? org.name).split(" ").map((w, i) => (
+                <span key={i}>
+                  {i > 0 && " "}
+                  <span className="word">{w}</span>
+                </span>
+              ))}
+            />
             <dl className="q-facts">
               {address && (
                 <div>
