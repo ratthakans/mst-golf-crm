@@ -1,6 +1,6 @@
 import type { Prisma } from "@mstgolf/database";
 import { prisma } from "@mstgolf/database";
-import { SITE_PHOTO_KEYS } from "@mstgolf/shared";
+import { SITE_PHOTO_KEYS, SITE_PHOTO_LABEL, aiPhotoSlots } from "@mstgolf/shared";
 import { earnRateText } from "@mstgolf/shared/tiers";
 import { smsProvider } from "./notify/sms";
 import { writeAudit } from "./audit";
@@ -169,7 +169,7 @@ export async function readiness(orgId: string, now = new Date()): Promise<ReadyI
   ]);
   const store = stores.find((s) => s.isActive) ?? null;
   const lanes = store?.lanes.filter((l) => l.isActive) ?? [];
-  const realPhotos = SITE_PHOTO_KEYS.filter((k) => site.photos?.[k]).length;
+  const aiLeft = aiPhotoSlots(site.photos);
   const edited = !!(site.copy && (site.copy.heroTitle || site.copy.heroLede || Object.keys(site.copy.services ?? {}).length));
   const b = settings.booking;
   const items: ReadyItem[] = [];
@@ -178,7 +178,7 @@ export async function readiness(orgId: string, now = new Date()): Promise<ReadyI
 
   // Website
   add({ key: "site.domain", group: "website", label: "โดเมนเว็บไซต์", owner: "MST", href: "/settings/site", state: site.siteUrl ? "ok" : "waiting", detail: site.siteUrl ?? "ยังไม่มี — เว็บยังอยู่ที่ *.vercel.app" });
-  add({ key: "site.photos", group: "website", label: "รูปจริงของร้านแทนรูปตัวอย่าง", owner: "MST", href: "/website/content", state: realPhotos === SITE_PHOTO_KEYS.length ? "ok" : "waiting", detail: `รูปจริง ${realPhotos} จาก ${SITE_PHOTO_KEYS.length} รูป — ที่เหลือยังเป็นภาพ AI` });
+  add({ key: "site.photos", group: "website", label: "รูปจริงของร้านแทนรูปตัวอย่าง", owner: "MST", href: "/website/content", state: aiLeft.length === 0 ? "ok" : "waiting", detail: aiLeft.length ? `ยังเป็นภาพ AI ${aiLeft.length} จาก ${SITE_PHOTO_KEYS.length} รูป: ${aiLeft.map((k) => SITE_PHOTO_LABEL[k].label).join(" · ")}` : "ไม่มีภาพ AI แล้ว" });
   add({ key: "site.copy", group: "website", label: "ข้อความหน้าเว็บ", owner: "MST", href: "/website/content", state: confirmState("site.copy"), detail: edited ? "แก้แล้วบางส่วนในหลังบ้าน" : "ยังใช้ข้อความตั้งต้นของเรา", confirmed: c("site.copy") });
   add({ key: "site.contact", group: "website", label: "เบอร์ร้าน · ลิงก์ Google Maps", owner: "MST", href: "/settings/site", state: site.phone && site.mapsUrl ? "ok" : "waiting", detail: [site.phone ? `โทร ${site.phone}` : "ยังไม่มีเบอร์", site.mapsUrl ? "มีลิงก์แผนที่" : "ยังไม่มีลิงก์แผนที่"].join(" · ") });
   add({ key: "site.posts", group: "website", label: "บทความตั้งต้น", owner: "MST", href: "/website", state: posts >= 3 ? "ok" : "waiting", detail: `เผยแพร่แล้ว ${posts} บทความ (แนะนำอย่างน้อย 3)` });

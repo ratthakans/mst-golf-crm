@@ -1,5 +1,5 @@
 import { listLanes } from "@mstgolf/core";
-import { DEFAULT_HOME_COPY, DEFAULT_SERVICES, SITE_PHOTO_KEYS, SITE_PHOTO_LABEL } from "@mstgolf/shared/site";
+import { DEFAULT_HOME_COPY, DEFAULT_SERVICES, SITE_PHOTO_KEYS, SITE_PHOTO_LABEL, aiPhotoSlots } from "@mstgolf/shared/site";
 import { allowPage } from "../../../lib/auth";
 import { currentOrg } from "../../../lib/org";
 import { webOrigin } from "../../../lib/web-origin";
@@ -18,7 +18,7 @@ export default async function SiteContentPage() {
   const lanes = await listLanes(org.id);
   const site = org.settings.site;
   const origin = webOrigin(site.siteUrl);
-  const mockLeft = SITE_PHOTO_KEYS.filter((k) => !site.photos?.[k]).length;
+  const aiLeft = aiPhotoSlots(site.photos);
   return (
     <>
       <div className="page-head">
@@ -33,9 +33,9 @@ export default async function SiteContentPage() {
         </p>
       </div>
       <WebsiteTabs on="content" />
-      {mockLeft > 0 && (
+      {aiLeft.length > 0 && (
         <div className="notice warn" style={{ marginBottom: 16 }}>
-          ยังเป็นรูปตัวอย่าง (AI mockup) {mockLeft} จาก {SITE_PHOTO_KEYS.length} รูป — ต้องเปลี่ยนเป็นรูปจริงของร้านก่อนเปิดเว็บ
+          ยังเป็นภาพ AI {aiLeft.length} จาก {SITE_PHOTO_KEYS.length} รูป ({aiLeft.map((k) => SITE_PHOTO_LABEL[k].label).join(" · ")}) — ต้องเปลี่ยนเป็นรูปจริงของร้านก่อนเปิดเว็บ
         </div>
       )}
       <ContentForm

@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { Nav } from "./Nav";
 import { CommandHint } from "./CommandHint";
-import { ThemeToggle } from "./ThemeToggle";
 import { isPublicPath } from "../lib/public-paths";
 import type { Permission } from "../lib/permissions";
 
@@ -114,7 +113,6 @@ export function AppShell({
               </div>
             </div>
           )}
-          <ThemeToggle />
         </aside>
         <main className="main">{children}</main>
       </div>

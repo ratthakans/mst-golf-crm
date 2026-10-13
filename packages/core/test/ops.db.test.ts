@@ -11,13 +11,14 @@ describe("website content", () => {
   it("saves photos and copy, and contact settings keep them", async () => {
     await saveSiteContent(t.orgId, t.actor, {
       photos: { hero: "https://x.public.blob.vercel-storage.com/site/a.jpg", store: "/mock/store.jpg", nope: "https://evil.example/x.jpg" },
-      copy: { heroTitle: "  หัวข้อใหม่  ", services: { academy: { points: "ข้อ 1\nข้อ 2" }, "pro-shop": { short: "" } } },
+      copy: { heroTitle: "  หัวข้อใหม่  ", services: { "club-fitting": { points: "ข้อ 1\nข้อ 2" }, "pro-shop": { short: "" }, academy: { short: "ไม่มีแล้ว" } } },
     });
     await saveSite(t.orgId, t.actor, { phone: "02-000-0000" });
     const { settings } = await getOrg(t.orgId);
     expect(settings.site.photos).toEqual({ hero: "https://x.public.blob.vercel-storage.com/site/a.jpg", store: "/mock/store.jpg" });
     expect(settings.site.copy?.heroTitle).toBe("หัวข้อใหม่");
-    expect(settings.site.copy?.services).toEqual({ academy: { points: "ข้อ 1\nข้อ 2" } });
+    // empty fields and services the site no longer has (academy, 13 Oct 2026) are dropped
+    expect(settings.site.copy?.services).toEqual({ "club-fitting": { points: "ข้อ 1\nข้อ 2" } });
     expect(settings.site.phone).toBe("02-000-0000");
   });
 
@@ -33,7 +34,7 @@ describe("readiness", () => {
     const hours = before.find((i) => i.key === "store.hours")!;
     expect(hours.state).toBe("confirm");
     expect(hours.detail).toContain("10:00–22:00");
-    expect(before.find((i) => i.key === "site.photos")).toMatchObject({ state: "waiting", detail: expect.stringContaining("2 จาก 7") });
+    expect(before.find((i) => i.key === "site.photos")).toMatchObject({ state: "waiting", detail: expect.stringContaining("ยังเป็นภาพ AI 3 จาก 6") });
     await confirmReadiness(t.orgId, t.actor, "store.hours", true);
     const after = await readiness(t.orgId);
     expect(after.find((i) => i.key === "store.hours")).toMatchObject({ state: "ok", confirmed: { by: expect.any(String) } });

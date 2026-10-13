@@ -22,6 +22,14 @@ export const SITE_PHOTO_LABEL: Record<SitePhotoKey, { label: string; where: stri
   store: { label: "หน้าร้าน", where: "หน้าแรก · แวะมาที่ร้าน", mock: "/photos/mst-th/charn-issara.jpg" },
 };
 
+/** AI mockups live in /mock; MST Golf imagery under /photos is real, just not the store's own upload. */
+export const isAiPhoto = (src: string) => src.startsWith("/mock/");
+
+/** The photo slots still showing an AI mockup (an upload or a /photos default is real). */
+export function aiPhotoSlots(photos: Partial<Record<SitePhotoKey, string>> | undefined): SitePhotoKey[] {
+  return SITE_PHOTO_KEYS.filter((k) => isAiPhoto(photos?.[k] || SITE_PHOTO_LABEL[k].mock));
+}
+
 /** Services on the website. */
 // MST Golf Thailand runs no golf lessons (owner, 13 Oct 2026): three services.
 export const SITE_SERVICE_SLUGS = ["pro-shop", "club-fitting", "golf-simulator"] as const;

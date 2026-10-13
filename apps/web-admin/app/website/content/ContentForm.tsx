@@ -85,18 +85,19 @@ export function ContentForm({ initial, slots, services, defaults, origin, upload
       <div className="card">
         <h3>รูปบนหน้าเว็บ</h3>
         <p className="muted small">
-          {uploadsEnabled ? "อัปโหลด JPG/PNG/WebP ไม่เกิน 5 MB แนวนอน กว้างอย่างน้อย 1,600 px" : "ยังไม่ได้เปิดที่เก็บรูป — วางลิงก์รูป (https://…) แทนได้"} · เว้นว่าง = ใช้รูปตัวอย่างเดิม
+          {uploadsEnabled ? "อัปโหลด JPG/PNG/WebP ไม่เกิน 5 MB แนวนอน กว้างอย่างน้อย 1,600 px" : "ยังไม่ได้เปิดที่เก็บรูป — วางลิงก์รูป (https://…) แทนได้"} · เว้นว่าง = ใช้รูปตั้งต้น
         </p>
         <div className="photo-slots">
           {slots.map((s) => {
             const src = photos[s.key] || s.mock;
             const mock = !photos[s.key];
+            const ai = src.startsWith("/mock/");
             return (
               <div key={s.key} className="photo-slot">
                 <div className="photo-slot-img">
                   {/* eslint-disable-next-line @next/next/no-img-element -- preview of a website asset */}
                   <img src={asset(src, origin)} alt="" />
-                  {mock && <span className="badge-mock">รูปตัวอย่าง</span>}
+                  {mock && <span className={ai ? "badge-mock" : "badge-mock badge-default"}>{ai ? "ภาพ AI" : "รูปตั้งต้น MST Golf"}</span>}
                 </div>
                 <b>{s.label}</b>
                 <span className="muted small">{s.where}</span>
@@ -110,7 +111,7 @@ export function ContentForm({ initial, slots, services, defaults, origin, upload
                   )}
                   {!mock && (
                     <button type="button" className="link-btn" onClick={() => setPhotos((p) => ({ ...p, [s.key]: "" }))}>
-                      กลับไปใช้รูปตัวอย่าง
+                      กลับไปใช้รูปตั้งต้น
                     </button>
                   )}
                 </div>
