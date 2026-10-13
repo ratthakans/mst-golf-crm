@@ -36,8 +36,8 @@ export function LoginForm({ next }: { next: string }) {
     <form className="join-card" onSubmit={submit}>
       {error && <div className="form-error" role="alert">{error}</div>}
       <label className="field">
-        <span>อีเมล</span>
-        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="username" required autoFocus />
+        <span>อีเมลหรือชื่อผู้ใช้</span>
+        <input type="text" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="username" autoCapitalize="none" autoCorrect="off" spellCheck={false} required autoFocus />
       </label>
       <label className="field">
         <span>รหัสผ่าน</span>

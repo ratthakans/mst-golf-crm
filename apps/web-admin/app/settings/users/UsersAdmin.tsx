@@ -7,6 +7,7 @@ import type { Role } from "../../../lib/permissions";
 export interface UserRow {
   id: string;
   email: string;
+  username: string | null;
   name: string;
   role: Role;
   isActive: boolean;
@@ -27,6 +28,7 @@ export function UsersAdmin({
 }) {
   const router = useRouter();
   const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [name, setName] = useState("");
   const [role, setRole] = useState<Role>("STORE_STAFF");
   const [busy, setBusy] = useState<string | null>(null);
@@ -53,10 +55,11 @@ export function UsersAdmin({
 
   async function create(e: React.FormEvent) {
     e.preventDefault();
-    const data = await call("create", "/api/admin/users", { method: "POST", body: JSON.stringify({ email, name, role }) });
+    const data = await call("create", "/api/admin/users", { method: "POST", body: JSON.stringify({ email, username, name, role }) });
     if (data?.tempPassword) {
       setIssued({ email: email.trim().toLowerCase(), password: String(data.tempPassword) });
       setEmail("");
+      setUsername("");
       setName("");
     }
   }
@@ -94,6 +97,10 @@ export function UsersAdmin({
             <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="name@mstgolf.com" />
           </label>
           <label className="field">
+            <span>ชื่อผู้ใช้ (ไม่บังคับ)</span>
+            <input value={username} onChange={(e) => setUsername(e.target.value)} autoCapitalize="none" spellCheck={false} placeholder="ใช้เข้าระบบแทนอีเมลได้" />
+          </label>
+          <label className="field">
             <span>ชื่อ</span>
             <input value={name} onChange={(e) => setName(e.target.value)} placeholder="ชื่อที่แสดงในระบบ" />
           </label>
@@ -122,7 +129,10 @@ export function UsersAdmin({
                   <tr key={u.id} className={u.isActive ? undefined : "row-muted"}>
                     <td>
                       <div className="member-name">{u.name || u.email}{me && <span className="you-tag">คุณ</span>}</div>
-                      <div className="user-email">{u.email}</div>
+                      <div className="user-email">
+                        {u.email}
+                        {u.username ? ` · ชื่อผู้ใช้ ${u.username}` : ""}
+                      </div>
                     </td>
                     <td>
                       <select

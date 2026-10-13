@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { verifyPassword } from "@mstgolf/shared/password";
 import { audit, startSession } from "../../../../lib/auth";
 import { clearFailures, isLocked, recordFailure } from "../../../../lib/login-throttle";
-import { findUserByEmail, updateUser } from "../../../../lib/users";
+import { findUserByLogin, updateUser } from "../../../../lib/users";
 import { authConfigured } from "../../../../lib/session-token";
 
 /** Only same-site paths, never "//evil.com". */
@@ -20,21 +20,22 @@ export async function POST(req: Request) {
   } catch {
     return NextResponse.json({ error: "ข้อมูลไม่ถูกต้อง" }, { status: 400 });
   }
+  // "email" carries what the person typed: an email, or a username without @.
   const email = (body.email ?? "").trim().toLowerCase();
   const password = body.password ?? "";
   if (!email || !password) {
-    return NextResponse.json({ error: "กรอกอีเมลและรหัสผ่าน" }, { status: 400 });
+    return NextResponse.json({ error: "กรอกอีเมลหรือชื่อผู้ใช้ และรหัสผ่าน" }, { status: 400 });
   }
   if (isLocked(email)) {
     return NextResponse.json({ error: "ใส่รหัสผิดหลายครั้ง ลองใหม่ใน 15 นาที" }, { status: 429 });
   }
 
-  const user = await findUserByEmail(email);
+  const user = await findUserByLogin(email);
   const ok = !!user && user.isActive && (await verifyPassword(password, user.passwordHash));
   if (!ok || !user) {
     recordFailure(email);
     await audit(null, { action: "auth.login_failed", entity: "user", entityId: user?.id ?? null, after: { email } });
-    return NextResponse.json({ error: "อีเมลหรือรหัสผ่านไม่ถูกต้อง" }, { status: 401 });
+    return NextResponse.json({ error: "อีเมล/ชื่อผู้ใช้ หรือรหัสผ่านไม่ถูกต้อง" }, { status: 401 });
   }
 
   clearFailures(email);

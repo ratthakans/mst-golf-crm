@@ -3,12 +3,14 @@ import { db } from "@mstgolf/core";
 import type { Role } from "./permissions";
 import { currentOrg } from "./org";
 
-// Back-office user accounts. Staff log in with email + password (scrypt); the
+// Back-office user accounts. Staff log in with email (or their optional
+// username) + password (scrypt); the
 // session cookie only carries the id, so every request re-reads the row.
 
 export interface UserRecord {
   id: string;
   email: string;
+  username: string | null;
   name: string | null;
   role: Role;
   passwordHash: string | null;
@@ -18,11 +20,11 @@ export interface UserRecord {
   createdAt: Date;
 }
 
-export type UserPatch = Partial<Pick<UserRecord, "name" | "role" | "passwordHash" | "mustChangePassword" | "isActive" | "lastLoginAt">>;
+export type UserPatch = Partial<Pick<UserRecord, "name" | "username" | "role" | "passwordHash" | "mustChangePassword" | "isActive" | "lastLoginAt">>;
 
 export class DuplicateUserError extends Error {
   constructor() {
-    super("A user with this email already exists");
+    super("A user with this email or username already exists");
   }
 }
 
@@ -36,6 +38,18 @@ export async function findUserByEmail(email: string): Promise<UserRecord | null>
   return (await db.user.findFirst({ where: { email: email.trim().toLowerCase() } })) as UserRecord | null;
 }
 
+/** A sign-in name: lower-case letters, digits, dot, dash, underscore; 3–32 long, no @. */
+export const USERNAME = /^[a-z0-9._-]{3,32}$/;
+
+/** Sign-in lookup: an email when it has an @, otherwise a username. */
+export async function findUserByLogin(login: string): Promise<UserRecord | null> {
+  const key = login.trim().toLowerCase();
+  if (key.includes("@")) return findUserByEmail(key);
+  if (!USERNAME.test(key)) return null;
+  const { db } = await client();
+  return (await db.user.findFirst({ where: { username: key } })) as UserRecord | null;
+}
+
 export async function getUser(id: string): Promise<UserRecord | null> {
   const { db } = await client();
   return (await db.user.findFirst({ where: { id } })) as UserRecord | null;
@@ -46,10 +60,11 @@ export async function listUsers(): Promise<UserRecord[]> {
   return (await db.user.findMany({ orderBy: [{ isActive: "desc" }, { createdAt: "asc" }] })) as UserRecord[];
 }
 
-export async function createUser(input: { email: string; name: string | null; role: Role; passwordHash: string; mustChangePassword: boolean }): Promise<UserRecord> {
+export async function createUser(input: { email: string; username?: string | null; name: string | null; role: Role; passwordHash: string; mustChangePassword: boolean }): Promise<UserRecord> {
   const { orgId, db } = await client();
   const email = input.email.trim().toLowerCase();
   if (await db.user.findFirst({ where: { email } })) throw new DuplicateUserError();
+  if (input.username && (await db.user.findFirst({ where: { username: input.username } }))) throw new DuplicateUserError();
   return (await db.user.create({ data: { orgId, ...input, email } })) as UserRecord;
 }
 

@@ -81,6 +81,7 @@ model User {
   orgId              String
   org                Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
   email              String // stored lower-case
+  username           String? // optional short sign-in name (lower-case), used instead of the email
   name               String?
   role               UserRole     @default(STORE_STAFF)
   passwordHash       String? // scrypt, see @mstgolf/shared/password
@@ -93,6 +94,7 @@ model User {
   auditLogs AuditLog[]
 
   @@unique([orgId, email])
+  @@unique([orgId, username])
   @@index([orgId])
   @@map("users")
 }

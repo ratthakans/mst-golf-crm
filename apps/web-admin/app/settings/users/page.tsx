@@ -14,6 +14,7 @@ export default async function UsersPage() {
   const rows: UserRow[] = users.map((u) => ({
     id: u.id,
     email: u.email,
+    username: u.username,
     name: u.name ?? "",
     role: u.role,
     isActive: u.isActive,
