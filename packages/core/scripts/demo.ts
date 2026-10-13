@@ -42,7 +42,7 @@ const ITEMS = [
   ["GLV-FJ", "FootJoy StaSof Glove", "FootJoy", "Accessory", 890],
   ["SHOE-FJ", "FootJoy Premiere Series", "FootJoy", "Shoes", 7900],
   ["FIT-60", "Club Fitting 60 นาที", "MST", "Service", 2500],
-  ["LESSON-1", "บทเรียนกอล์ฟ 1 ชม.", "MST", "Academy", 1800],
+  ["FIT-1", "ค่าบริการฟิตติ้งไดรเวอร์", "MST", "Fitting", 1800],
   ["POLO-TM", "TaylorMade Polo", "TaylorMade", "Apparel", 2400],
 ] as const;
 

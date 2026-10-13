@@ -20,7 +20,7 @@ The back office (`apps/web-admin`) keeps its own UI. It only takes the CVI accen
   3. Exclusive at MST Golf: the four exclusive brands as 2-up cards (`EXCLUSIVE_BRANDS` in `@mstgolf/shared/site`).
   4. Brands in store: a labelled, centred list of names (logos when MST sends them).
   5. Simulator: free count, price and hours, plus the next 4 free times, each linking straight to that slot.
-  6. Services as 4 portrait tiles.
+  6. Services as 3 portrait tiles (pro shop, club fitting, simulator; MST runs no lessons).
   7. Membership: copy, plus the 3 tiers as columns (no table).
   8. Journal as 3 cards.
   9. Visit: the Charn Issara front, address, hours, phone, with Google Maps as the primary button.

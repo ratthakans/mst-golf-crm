@@ -16,11 +16,11 @@ import { endsSoon, promoHref, untilText } from "@/lib/promo";
 export const revalidate = 300;
 
 export const metadata: Metadata = {
-  title: { absolute: "MST Golf — ร้านกอล์ฟ โปรโมชัน ฟิตติ้ง อคาเดมี และ Golf Simulator ชาญอิสสระ ทาวเวอร์ 1" },
+  title: { absolute: "MST Golf — ร้านกอล์ฟ โปรโมชัน ฟิตติ้ง และ Golf Simulator ชาญอิสสระ ทาวเวอร์ 1" },
   description:
-    "ร้านอุปกรณ์กอล์ฟ MST Golf ชาญอิสสระ ทาวเวอร์ 1 ถนนพระราม 4 — โปรโมชันไม้กอล์ฟ รองเท้า เสื้อผ้า และอุปกรณ์ · Club fitting · Academy · Golf Simulator · สมัครสมาชิกสะสมแต้มทุกการซื้อ",
+    "ร้านอุปกรณ์กอล์ฟ MST Golf ชาญอิสสระ ทาวเวอร์ 1 ถนนพระราม 4 — โปรโมชันไม้กอล์ฟ รองเท้า เสื้อผ้า และอุปกรณ์ · Club fitting · Golf Simulator · สมัครสมาชิกสะสมแต้มทุกการซื้อ",
   alternates: { canonical: "/" },
-  openGraph: { title: "MST Golf", description: "โปรโมชันล่าสุด ไม้กอล์ฟ อุปกรณ์ ฟิตติ้ง อคาเดมี และ Golf Simulator", url: "/" },
+  openGraph: { title: "MST Golf", description: "โปรโมชันล่าสุด ไม้กอล์ฟ อุปกรณ์ ฟิตติ้ง และ Golf Simulator", url: "/" },
 };
 
 // The home page, "quiet premium": one full-bleed hero (the lead promotion),

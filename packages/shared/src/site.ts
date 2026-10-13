@@ -6,7 +6,7 @@
 // settings, no invented numbers or brand claims.
 
 /** Photo slots on the website (apps/web/lib/images.ts). */
-export const SITE_PHOTO_KEYS = ["hero", "proShop", "fitting", "academy", "simulator", "simBays", "store"] as const;
+export const SITE_PHOTO_KEYS = ["hero", "proShop", "fitting", "simulator", "simBays", "store"] as const;
 export type SitePhotoKey = (typeof SITE_PHOTO_KEYS)[number];
 
 /** Where each photo shows, and the mockup it replaces (apps/web/public/mock). */
@@ -17,14 +17,14 @@ export const SITE_PHOTO_LABEL: Record<SitePhotoKey, { label: string; where: stri
   hero: { label: "ภาพหลัก", where: "หน้าบริการ ด้านบน", mock: "/photos/mst/coaching.jpg" },
   proShop: { label: "Pro shop", where: "บริการ · หน้าแรกและหน้าบริการ", mock: "/photos/mst/irons.jpg" },
   fitting: { label: "Club fitting", where: "บริการ · หน้าแรกและหน้าบริการ", mock: "/photos/mst/workshop.jpg" },
-  academy: { label: "Academy", where: "บริการ · หน้าแรกและหน้าบริการ", mock: "/photos/mst/swing.jpg" },
   simulator: { label: "Golf Simulator (บริการ)", where: "บริการ · หน้าแรกและหน้าบริการ", mock: "/mock/simulator.jpg" },
   simBays: { label: "ห้องซิม", where: "หน้า Golf Simulator", mock: "/mock/sim-bays.jpg" },
   store: { label: "หน้าร้าน", where: "หน้าแรก · แวะมาที่ร้าน", mock: "/photos/mst-th/charn-issara.jpg" },
 };
 
 /** Services on the website. */
-export const SITE_SERVICE_SLUGS = ["pro-shop", "club-fitting", "academy", "golf-simulator"] as const;
+// MST Golf Thailand runs no golf lessons (owner, 13 Oct 2026): three services.
+export const SITE_SERVICE_SLUGS = ["pro-shop", "club-fitting", "golf-simulator"] as const;
 export type SiteServiceSlug = (typeof SITE_SERVICE_SLUGS)[number];
 
 export interface Service {
@@ -60,17 +60,6 @@ export const DEFAULT_SERVICES: Service[] = [
     points: ["วิเคราะห์วงสวิงบนเครื่องวัด", "เทียบหัวไม้และก้านหลายรุ่น", "สรุปสเปกที่แนะนำ", "นัดล่วงหน้าที่ร้านหรือทางโทรศัพท์"],
   },
   {
-    slug: "academy",
-    name: "Academy",
-    thai: "คลาสเรียนกอล์ฟ",
-    short: "เรียนกับโปรทั้งพื้นฐานและปรับวงสวิง ในห้องที่เห็นตัวเลขทุกช็อต",
-    body: [
-      "คลาสสำหรับผู้เริ่มต้นที่อยากจับไม้ให้ถูกตั้งแต่แรก และคลาสสำหรับคนที่ออกรอบแล้วแต่อยากแก้จุดที่ค้างอยู่ เช่น ลูกเฟด ลูกสไลซ์ หรือระยะที่ไม่คงที่",
-      "การสอนในห้องซิมทำให้เห็นผลของการปรับแต่ละครั้งทันที ไม่ต้องรอออกรอบถึงจะรู้",
-    ],
-    points: ["คลาสพื้นฐานสำหรับผู้เริ่มต้น", "คลาสปรับวงสวิงรายบุคคล", "ฝึกในห้องซิมพร้อมตัวเลขทุกช็อต", "สอบถามตารางคลาสที่ร้านหรือทางโทรศัพท์"],
-  },
-  {
     slug: "golf-simulator",
     name: "Golf Simulator",
     thai: "ซิมกอล์ฟ",
@@ -86,9 +75,9 @@ export const DEFAULT_SERVICES: Service[] = [
 export const DEFAULT_HOME_COPY = {
   heroTitle: "ร้านกอล์ฟที่ให้คุณ",
   heroHighlight: "ลองก่อนเลือก",
-  heroLede: (lanes: number) => `อุปกรณ์กอล์ฟ ฟิตติ้งไม้ให้เข้ากับวงสวิง คลาสกับโปร และ Golf Simulator ${lanes} lane — อยู่ในร้านเดียว ใจกลางถนนพระราม 4`,
+  heroLede: (lanes: number) => `อุปกรณ์กอล์ฟ ฟิตติ้งไม้ให้เข้ากับวงสวิง และ Golf Simulator ${lanes} lane — อยู่ในร้านเดียว ใจกลางถนนพระราม 4`,
   servicesTitle: "ครบตั้งแต่เลือกไม้ จนถึงวันออกรอบ",
-  servicesLede: "สี่บริการที่ต่อกันเป็นเส้นเดียว ลองไม้บนซิม ฟิตติ้งให้เข้ากับวงสวิง แล้วซ้อมต่อกับโปรได้ในที่เดียว",
+  servicesLede: "สามบริการที่ต่อกันเป็นเส้นเดียว เลือกของในร้าน ฟิตติ้งไม้ให้เข้ากับวงสวิง แล้วซ้อมต่อบนซิมได้ในที่เดียว",
   // Placeholder from the MST Golf group's line-up — MST Thailand confirms what this store carries.
   // The brands on mstgolf.co.th ("The biggest brands in golf, all in one store"), Oct 2026.
   brands: ["Titleist", "TaylorMade", "Callaway", "PING", "Mizuno", "Srixon", "XXIO", "ONOFF", "Majesty", "Fourteen", "Bettinardi", "FootJoy", "ECCO", "adidas", "Under Armour", "PUMA", "Sun Day Red", "Fore All", "WAAC", "Malbon", "Cutter & Buck", "Disney"].join("\n"),

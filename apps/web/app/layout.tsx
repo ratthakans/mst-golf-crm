@@ -16,9 +16,9 @@ export async function generateMetadata(): Promise<Metadata> {
   const origin = await siteOrigin();
   return {
     metadataBase: new URL(origin),
-    title: { default: "MST Golf — Pro shop · Club fitting · Academy · Golf Simulator", template: "%s | MST Golf" },
+    title: { default: "MST Golf — Pro shop · Club fitting · Golf Simulator", template: "%s | MST Golf" },
     description:
-      "MST Golf ชาญอิสสระ ทาวเวอร์ 1 ถนนพระราม 4 — ร้านอุปกรณ์กอล์ฟ ฟิตติ้งไม้กอล์ฟ อคาเดมี และ Golf Simulator 3 lane จองซิมและสะสมแต้มบนเว็บไซต์",
+      "MST Golf ชาญอิสสระ ทาวเวอร์ 1 ถนนพระราม 4 — ร้านอุปกรณ์กอล์ฟ ฟิตติ้งไม้กอล์ฟ และ Golf Simulator 3 lane จองซิมและสะสมแต้มบนเว็บไซต์",
     applicationName: "MST Golf",
     openGraph: { type: "website", locale: "th_TH", siteName: "MST Golf" },
     icons: { icon: "/icon.svg" },

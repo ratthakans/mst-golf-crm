@@ -21,10 +21,9 @@ export interface SitePhoto {
 const photo = (src: string, alt: string, width = 1600, height = 1205): SitePhoto => ({ src, alt, width, height, mock: src.startsWith("/mock/") });
 
 export const PHOTOS = {
-  hero: photo(M.hero.mock, "โค้ชดูวงสวิงของนักกอล์ฟในห้องซิม", 2000, 2000),
+  hero: photo(M.hero.mock, "ฟิตเตอร์ดูวงสวิงของนักกอล์ฟในห้องซิม", 2000, 2000),
   proShop: photo(M.proShop.mock, "ไม้กอล์ฟชุดเหล็ก Mizuno ในถุงกอล์ฟ", 1400, 1750),
   fitting: photo(M.fitting.mock, "ช่างประกอบไม้กอล์ฟในเวิร์กช็อปฟิตติ้ง", 1600, 1600),
-  academy: photo(M.academy.mock, "นักกอล์ฟตีลูกบนสนาม", 1122, 838),
   simulator: photo(M.simulator.mock, "เพื่อนสามคนเล่น Golf Simulator ด้วยกันในห้องซิม"),
   simBays: photo(M.simBays.mock, "ห้อง Golf Simulator สามช่องเรียงกัน", 1600, 895),
   store: photo(M.store.mock, "หน้าร้าน MST Golf อาคารชาญอิสสระ ทาวเวอร์ 1 ถนนพระรามที่ 4", 2400, 1146),
@@ -43,5 +42,5 @@ export function sitePhotos(site: SiteSettings | undefined): Photos {
 
 /** Photo for each service in lib/content.ts, by slug. */
 export function servicePhotos(p: Photos): Record<string, SitePhoto> {
-  return { "pro-shop": p.proShop, "club-fitting": p.fitting, academy: p.academy, "golf-simulator": p.simulator };
+  return { "pro-shop": p.proShop, "club-fitting": p.fitting, "golf-simulator": p.simulator };
 }

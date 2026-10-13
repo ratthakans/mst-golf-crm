@@ -92,7 +92,7 @@ export async function queueBirthdays(orgId: string, now = new Date()): Promise<n
 // Website contact form → Marketing's inbox
 // ---------------------------------------------------------------------------
 
-export const CONTACT_TOPICS = ["สอบถามสินค้า", "ฟิตติ้ง", "อคาเดมี / เรียนกอล์ฟ", "Golf Simulator", "สมาชิกและแต้ม", "อื่น ๆ"] as const;
+export const CONTACT_TOPICS = ["สอบถามสินค้า", "ฟิตติ้ง", "Golf Simulator", "สมาชิกและแต้ม", "อื่น ๆ"] as const;
 
 export interface ContactInput {
   name: string;

@@ -1,6 +1,6 @@
 # CLAUDE.md — MST Golf Platform
 
-Customer Intelligence platform for **MST Golf (Bangkok, Thailand)** — pro shop + academy + fitting + arena + golf simulator, currency THB, locale `th`, timezone `Asia/Bangkok`.
+Customer Intelligence platform for **MST Golf (Bangkok, Thailand)** — pro shop + club fitting + golf simulator (no lessons — owner, 13 Oct 2026), currency THB, locale `th`, timezone `Asia/Bangkok`.
 It is **our platform** and MST Golf is tenant #1: built multi-tenant / config-driven so more orgs can run on it. The back office is named **MST Golf Platform**; customer-facing LINE screens are branded **MST Golf**. Display names come from tenant config (`Organization.name`, `settings.productName`), never from code. There is no "Golffy" naming anywhere. Package scope is `@mstgolf/*`. TypeScript end-to-end.
 
 **What the product does and every business rule: `docs/PRODUCT.md`** (section numbers are referenced from code). **Status, remaining work and go-live steps: `MST-DEV-PLAN.md`.** Read both before changing scope.

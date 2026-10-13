@@ -11,8 +11,8 @@ import { getOrg, getStore } from "@/lib/org";
 export const revalidate = 300;
 
 export const metadata: Metadata = {
-  title: "บริการ — Pro shop · Club fitting · Academy · Golf Simulator",
-  description: "บริการของ MST Golf ชาญอิสสระ ทาวเวอร์ 1: ร้านอุปกรณ์กอล์ฟ ฟิตติ้งไม้กอล์ฟตามวงสวิง คลาสเรียนกับโปร และ Golf Simulator จองออนไลน์",
+  title: "บริการ — Pro shop · Club fitting · Golf Simulator",
+  description: "บริการของ MST Golf ชาญอิสสระ ทาวเวอร์ 1: ร้านอุปกรณ์กอล์ฟ ฟิตติ้งไม้กอล์ฟตามวงสวิง และ Golf Simulator จองออนไลน์",
   alternates: { canonical: "/services" },
   openGraph: { title: "บริการ | MST Golf", url: "/services" },
 };
@@ -30,7 +30,7 @@ export default async function ServicesPage() {
       <SheetHead
         label="Services"
         title="บริการในร้าน"
-        lede="ทุกบริการใช้ห้องซิมเป็นเครื่องมือเดียวกัน คุณจึงเห็นตัวเลขวงสวิงของตัวเองตั้งแต่ลองไม้ ฟิตติ้ง ไปจนถึงเรียนกับโปร"
+        lede="ทุกบริการใช้ห้องซิมเป็นเครื่องมือเดียวกัน คุณจึงเห็นตัวเลขวงสวิงของตัวเองตั้งแต่ลองไม้ ฟิตติ้ง ไปจนถึงซ้อมบนซิม"
         full
         media={<Photo photo={photos.hero} ratio="16 / 9" priority sizes="100vw" />}
       />
