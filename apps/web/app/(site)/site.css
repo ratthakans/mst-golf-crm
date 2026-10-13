@@ -527,6 +527,11 @@
 .colophon-links > a {
   white-space: nowrap;
 }
+.colophon-social {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-5);
+}
 .colophon-fine {
   margin-top: var(--space-4);
   font-size: var(--text-xs);
@@ -813,7 +818,7 @@
 
 /* closing line (replaces the dark CTA band) */
 .closing {
-  padding: var(--space-12) 0 0;
+  padding: var(--space-12) 0 var(--space-16); /* the green band has no top margin now */
 }
 .closing-row {
   display: grid;
@@ -1237,6 +1242,35 @@ a.ps-row:hover .ps-title,
 .pg-doc {
   max-width: 720px;
 }
+.pg-terms {
+  display: grid;
+  margin: 0 0 var(--space-10);
+  border-top: 1px solid var(--color-ink);
+}
+.pg-terms > div {
+  display: grid;
+  grid-template-columns: 7.5rem minmax(0, 1fr);
+  gap: var(--space-4);
+  padding-block: var(--space-4);
+  border-bottom: var(--rule);
+}
+.pg-terms dt {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 0.8125rem;
+  letter-spacing: 0.04em;
+  color: var(--color-muted);
+  padding-top: 2px;
+}
+.pg-terms dd {
+  margin: 0;
+  color: var(--color-ink);
+  overflow-wrap: anywhere;
+}
+.pg-terms a {
+  color: inherit;
+  text-underline-offset: 3px;
+}
 .pg-doc .pg-foot {
   padding-top: var(--space-5);
   border-top: var(--rule);
@@ -1389,20 +1423,6 @@ a.ps-row:hover .ps-title,
   .rl-value {
     font-size: var(--text-xl);
   }
-}
-
-/* contact: the online form isn't open yet — say so plainly */
-.contact-note {
-  align-self: start;
-  padding-top: var(--space-4);
-  border-top: 1px solid var(--color-ink);
-  color: var(--color-ink-2);
-}
-.contact-note h2 {
-  margin-bottom: var(--space-2);
-  font-size: var(--text-xl);
-  font-weight: 800;
-  font-family: var(--font-display); /* Book has no bold */
 }
 
 /* the Swing Arc (components/SwingArc.tsx) */
@@ -2004,11 +2024,15 @@ a.ps-row:hover .ps-title,
 
 /* ---------------------------------------------- professional pass (Oct 2026) */
 
-/* hero: the countdown reads at a glance */
+/* hero: the countdown reads at a glance — white on the photo, sand when ending soon */
 .hero .sh-label .sh-kicker {
+  color: var(--color-on-brand);
   font-size: 0.9375rem;
   font-weight: 600;
   letter-spacing: 0.01em;
+}
+.hero .sh-label .sh-kicker.soon {
+  color: var(--color-sand);
 }
 .hero .sh-kicker.soon::before {
   content: "";
@@ -2278,4 +2302,26 @@ a.ps-row:hover .ps-title,
 /* the Charn Issara front: keep the MST GOLF sign (right of centre) in the 4:3 crop */
 .q-store-img img {
   object-position: 80% 50%;
+}
+
+/* contact: social links in the facts list */
+.contact-social {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-5);
+}
+
+/* promotion: room under the full-bleed photo; no second rule when the terms close the page */
+.hero + .pg-body {
+  padding-top: var(--space-12);
+}
+.pg-doc .pg-terms + .pg-foot {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+.colophon-social a,
+.contact-social a {
+  display: inline-block;
+  padding-block: 3px; /* ≥ 24 px tap target */
 }

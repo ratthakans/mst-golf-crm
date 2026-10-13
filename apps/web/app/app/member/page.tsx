@@ -24,7 +24,17 @@ export default async function MemberPage({ searchParams }: { searchParams: { nex
   const org = await getOrg();
   const [setup, { customer, member }] = await Promise.all([loginSetup(org.id), currentMember()]);
 
-  if (!customer || (customer.kind === "member" && !member)) return <LoginPanel setup={setup} purpose="member" />;
+  if (!customer || (customer.kind === "member" && !member)) {
+    // What signing up gets you, from the org's own settings (never hardcoded numbers).
+    const tiers = org.settings.tiers;
+    const topDiscount = Math.max(0, ...tiers.map((t) => t.benefits.discountPct));
+    const perks = [
+      org.settings.welcomeBonus > 0 ? `รับ ${org.settings.welcomeBonus.toLocaleString("th-TH")} แต้มทันทีเมื่อสมัคร` : "สะสมแต้มทุกการซื้อในร้าน",
+      topDiscount > 0 ? `ส่วนลดสินค้าตามระดับสมาชิก สูงสุด ${topDiscount}%` : "สิทธิ์และโปรโมชันเฉพาะสมาชิก",
+      "จองซิมกอล์ฟออนไลน์ เลือกเลนและเวลาได้เอง",
+    ];
+    return <LoginPanel setup={setup} purpose="member" perks={perks} />;
+  }
 
   if (!member) {
     const { terms, marketing } = await currentConsentTexts(org.id);

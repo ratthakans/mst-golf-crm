@@ -20,7 +20,15 @@ const RETRY_KEY = "mst_login_retry";
 // Signs the visitor in with their mobile number and an SMS code. When the
 // tenant has LINE on, LINE sign-in (LIFF / LINE Login) is offered first. On
 // success the server sets the session cookie and the page re-renders.
-export function LoginPanel({ setup, purpose }: { setup: LoginSetupProps; purpose: "member" | "booking" | "rewards" }) {
+export function LoginPanel({
+  setup,
+  purpose,
+  perks = [],
+}: {
+  setup: LoginSetupProps;
+  purpose: "member" | "booking" | "rewards";
+  perks?: string[];
+}) {
   const router = useRouter();
   const [phase, setPhase] = useState<Phase>(setup.lineReady ? "starting" : "idle");
   const [error, setError] = useState<string | null>(null);
@@ -80,6 +88,13 @@ export function LoginPanel({ setup, purpose }: { setup: LoginSetupProps; purpose
     <section className="panel login-panel" aria-live="polite">
       <h1>{title}</h1>
       <p className="muted">{lead}</p>
+      {perks.length > 0 && (
+        <ul className="login-perks" aria-label="สิทธิ์ของสมาชิก">
+          {perks.map((p) => (
+            <li key={p}>{p}</li>
+          ))}
+        </ul>
+      )}
 
       {setup.lineReady && (
         <div className="login-state">

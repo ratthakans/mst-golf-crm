@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { CONTACT_TOPICS, emailConfigured } from "@mstgolf/core";
 import { ContactForm } from "@/components/ContactForm";
+import { Photo } from "@/components/Photo";
 import { SheetHead } from "@/components/SheetHead";
 import { hoursLines } from "@/lib/format";
+import { sitePhotos } from "@/lib/images";
 import { getOrg, getStore } from "@/lib/org";
 
 export const revalidate = 300;
@@ -21,6 +23,7 @@ export default async function ContactPage() {
   const hours = store ? hoursLines(store.openHours) : [];
   // The form only appears when a message would reach someone (Marketing's email + the mail service).
   const formOpen = org.settings.redemption.alertEmails.length > 0 && emailConfigured();
+  const photos = sitePhotos(site);
 
   return (
     <>
@@ -65,11 +68,28 @@ export default async function ContactPage() {
                   </dd>
                 </div>
               )}
+              {(site.facebookUrl || site.instagramUrl) && (
+                <div>
+                  <dt>ติดตาม</dt>
+                  <dd className="contact-social">
+                    {site.facebookUrl && (
+                      <a href={site.facebookUrl} target="_blank" rel="noopener">
+                        Facebook ↗
+                      </a>
+                    )}
+                    {site.instagramUrl && (
+                      <a href={site.instagramUrl} target="_blank" rel="noopener">
+                        Instagram ↗
+                      </a>
+                    )}
+                  </dd>
+                </div>
+              )}
             </dl>
             <div className="cta-row">
               {site.mapsUrl && (
-                <a href={site.mapsUrl} className="btn btn-outline" target="_blank" rel="noopener">
-                  เปิดใน Google Maps
+                <a href={site.mapsUrl} className="btn btn-primary" target="_blank" rel="noopener">
+                  นำทางด้วย Google Maps
                 </a>
               )}
               {site.shopUrl && (
@@ -87,10 +107,8 @@ export default async function ContactPage() {
           {formOpen ? (
             <ContactForm topics={[...CONTACT_TOPICS]} />
           ) : (
-            <div className="contact-note">
-              <h2>ฝากข้อความออนไลน์</h2>
-              <p>{site.phone ? `ยังไม่เปิดรับทางเว็บ ระหว่างนี้โทรหาเราได้ที่ ${site.phone} หรือแวะมาที่ร้าน` : "ยังไม่เปิดรับทางเว็บ ระหว่างนี้แวะมาที่ร้านหรือโทรหาเราได้ตามเวลาเปิด"}</p>
-            </div>
+            // No form until a message would reach someone: show the storefront instead of a "not open yet" box.
+            <Photo photo={photos.store} ratio="4 / 3" className="contact-photo" position="80% 50%" sizes="(min-width: 900px) 50vw, 100vw" />
           )}
         </div>
       </section>

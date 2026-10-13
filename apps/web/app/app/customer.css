@@ -1608,3 +1608,28 @@
 .inbox-item details[open] > summary::after {
   transform: rotate(-135deg) translateY(-2px);
 }
+
+/* sign-in: what a new member gets, three short lines above the phone field */
+.login-perks {
+  list-style: none;
+  margin: var(--space-2) 0;
+  padding: 0;
+  border-top: var(--rule);
+}
+.login-perks li {
+  position: relative;
+  padding: var(--space-3) 0 var(--space-3) var(--space-6);
+  border-bottom: var(--rule);
+  color: var(--color-ink);
+}
+.login-perks li::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: calc(var(--space-3) + 0.5em);
+  width: 10px;
+  height: 6px;
+  border-left: 2px solid var(--color-brand);
+  border-bottom: 2px solid var(--color-brand);
+  transform: rotate(-45deg);
+}

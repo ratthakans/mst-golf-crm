@@ -24,6 +24,7 @@ export default async function ServicesPage() {
   const photos = sitePhotos(org.settings.site);
   const SERVICE_PHOTO = servicePhotos(photos);
   const hours = store ? hoursLines(store.openHours) : [];
+  const phone = org.settings.site.phone ?? null;
 
   return (
     <>
@@ -32,7 +33,7 @@ export default async function ServicesPage() {
         title="บริการในร้าน"
         lede="ทุกบริการใช้ห้องซิมเป็นเครื่องมือเดียวกัน คุณจึงเห็นตัวเลขวงสวิงของตัวเองตั้งแต่ลองไม้ ฟิตติ้ง ไปจนถึงซ้อมบนซิม"
         full
-        media={<Photo photo={photos.hero} ratio="16 / 9" priority sizes="100vw" />}
+        media={<Photo photo={photos.hero} ratio="16 / 9" priority sizes="100vw" position="50% 15%" />}
       />
 
       {SERVICES.map((svc, i) => (
@@ -65,6 +66,15 @@ export default async function ServicesPage() {
                   <a href={lineOa} className="btn btn-line" target="_blank" rel="noopener">
                     สอบถามทาง LINE
                   </a>
+                ) : phone ? (
+                  <>
+                    <a href={`tel:${phone.replace(/[^\d+]/g, "")}`} className="btn btn-primary">
+                      โทร <span className="num">{phone}</span>
+                    </a>
+                    <Link href="/contact" className="text-link">
+                      ที่ตั้งและเวลาเปิด
+                    </Link>
+                  </>
                 ) : (
                   <Link href="/contact" className="btn btn-outline">
                     สอบถาม

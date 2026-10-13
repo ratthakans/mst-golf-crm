@@ -125,7 +125,7 @@ async function main() {
     body: "## เริ่มจากความเร็วหัวไม้\n\nถ้าความเร็วหัวไม้ต่ำกว่า 90 mph ลองดูไดรเวอร์ loft 10.5° ขึ้นไป\n\n## ก้านสำคัญพอ ๆ กับหัว\n\n- ก้านอ่อนเกินไป ลูกโด่งและเลี้ยว\n- ก้านแข็งเกินไป ลูกต่ำและสั้น\n\n> ที่ MST เรามีบริการ Club Fitting ช่วยหาไดรเวอร์ที่ใช่ในหนึ่งชั่วโมง",
     category: "ARTICLE",
     status: "PUBLISHED",
-    coverUrl: "/mock/fitting.jpg", // sample covers are the website's mockup photos
+    coverUrl: "/photos/mst/workshop.jpg", // sample covers: MST imagery; the sim room stays a mockup until MST sends a photo
   }).catch((e) => console.warn("post", (e as Error).message));
   await savePost(org.id, actor, null, {
     title: "จองซิมกอล์ฟออนไลน์ได้แล้ว",
@@ -143,7 +143,7 @@ async function main() {
     body: "สมัครบนเว็บไซต์ด้วยเบอร์มือถือในไม่กี่ขั้นตอน แล้วแจ้งเบอร์โทรที่เคาน์เตอร์ทุกครั้งที่ซื้อสินค้าเพื่อสะสมแต้ม",
     category: "NEWS",
     status: "PUBLISHED",
-    coverUrl: "/mock/store.jpg",
+    coverUrl: "/photos/mst-th/charn-issara.jpg",
   }).catch((e) => console.warn("post", (e as Error).message));
 
   // Rewards: a coupon and a physical reward, a few redemptions in different states.

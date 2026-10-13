@@ -10,12 +10,15 @@ export function Photo({
   sizes = "(min-width: 900px) 50vw, 100vw",
   priority = false,
   className = "",
+  position,
 }: {
   photo: SitePhoto;
   ratio?: string;
   sizes?: string;
   priority?: boolean;
   className?: string;
+  /** object-position, for frames much wider or taller than the photo (e.g. "50% 15%" keeps heads in a wide hero) */
+  position?: string;
 }) {
   return (
     <div className={`photo ${className}`} style={{ aspectRatio: ratio }}>
@@ -27,7 +30,7 @@ export function Photo({
         priority={priority}
         // Uploads (public Blob) and /public files are resized; any other https link MST pastes is shown as is.
         unoptimized={!photo.src.startsWith("/") && !BLOB.test(photo.src)}
-        style={{ objectFit: "cover" }}
+        style={{ objectFit: "cover", objectPosition: position }}
       />
     </div>
   );

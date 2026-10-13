@@ -8,7 +8,7 @@ import { getPost } from "@mstgolf/core";
 import { SheetHead } from "@/components/SheetHead";
 import { formatThaiDate } from "@/lib/format";
 import { endsSoon, untilText } from "@/lib/promo";
-import { getOrg } from "@/lib/org";
+import { getOrg, getStore } from "@/lib/org";
 
 export const revalidate = 300;
 
@@ -37,10 +37,18 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 export default async function PromotionPage({ params }: { params: { slug: string } }) {
   const p = await loadPromo(params.slug);
   if (!p) notFound();
+  const [org, store] = await Promise.all([getOrg(), getStore()]);
+  const phone = org.settings.site.phone ?? null;
   const lastDay = p.endsAt ? new Date(p.endsAt.getTime() - 1).toISOString() : null;
   const external = !!p.linkUrl && /^https:\/\//.test(p.linkUrl);
   const now = new Date();
   const hasBody = p.body.trim().length > 0;
+  // The fixed facts every promotion answers; anything more specific lives in the body MST writes.
+  const from = p.startsAt ?? p.publishedAt;
+  const period = lastDay
+    ? `${from ? `${formatThaiDate(from)} – ` : "ถึง "}${formatThaiDate(new Date(lastDay))}`
+    : "จนกว่าร้านจะประกาศปิดโปรโมชัน";
+  const where = `${store?.name ?? org.name}${external ? " และร้านออนไลน์" : ""}`;
 
   return (
     <>
@@ -74,6 +82,34 @@ export default async function PromotionPage({ params }: { params: { slug: string
       <section className="pg-body">
         <div className="wrap">
           <div className="pg-doc">
+            <dl className="pg-terms" aria-label="เงื่อนไขโดยย่อ">
+              <div>
+                <dt>ระยะเวลา</dt>
+                <dd className="num">{period}</dd>
+              </div>
+              <div>
+                <dt>ใช้ได้ที่</dt>
+                <dd>{where}</dd>
+              </div>
+              <div>
+                <dt>รับสิทธิ์</dt>
+                <dd>แสดงหน้านี้กับพนักงานที่เคาน์เตอร์ก่อนชำระเงิน</dd>
+              </div>
+              <div>
+                <dt>เงื่อนไข</dt>
+                <dd>
+                  เป็นไปตามที่ร้านกำหนด
+                  {phone && (
+                    <>
+                      {" "}· สอบถาม{" "}
+                      <a href={`tel:${phone.replace(/[^\d+]/g, "")}`} className="num">
+                        {phone}
+                      </a>
+                    </>
+                  )}
+                </dd>
+              </div>
+            </dl>
             {hasBody && (
               <div className="md">
                 <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ img: () => null }}>
