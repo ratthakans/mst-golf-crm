@@ -10,7 +10,7 @@
   --color-paper: #ffffff;
   --color-paper-2: oklch(97.2% 0.008 156); /* a breath of green, for bands */
   --color-stone: oklch(97.4% 0.004 140); /* alternate section ground — nearly neutral, a breath of green */
-  --color-veil: rgba(6, 18, 12, 0.46); /* even veil over hero photos so white type reads (not a gradient) */
+  --color-veil: rgba(6, 18, 12, 0.36); /* even veil over hero photos so white type reads (not a gradient) */
   --color-silver: oklch(76% 0.008 250);
   --color-gold: oklch(74% 0.1 85);
   --color-surface: #ffffff;

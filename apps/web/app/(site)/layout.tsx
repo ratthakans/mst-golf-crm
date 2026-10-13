@@ -21,7 +21,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
       {/* Logo left, page links in the middle (a menu button on phones); booking is the primary action on every width, the account sits next to it. */}
       <header className="site-header">
         <div className="wrap site-header-row">
-          <Logo height={22} />
+          <Logo height={26} />
           <SiteMenu
             shopUrl={site.shopUrl ?? null}
             store={{ name: store?.name ?? org.name, address, hours, phone: site.phone ?? null, mapsUrl: site.mapsUrl ?? null }}
@@ -50,47 +50,53 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
         </div>
       </section>
 
-      {/* Ft4 dense colophon: everything a visitor needs to find the store, set small. */}
+      {/* Colophon: the store's details on the left, the links in three short groups. */}
       <footer className="site-footer colophon">
-        <div className="wrap">
-          <p className="colophon-name">{store?.name ?? org.name}</p>
-          <p className="colophon-body">
-            {address && <span>{address}</span>}
+        <div className="wrap colophon-grid">
+          <div className="colophon-store">
+            <p className="colophon-name">{store?.name ?? org.name}</p>
+            {address && <p>{address}</p>}
             {hours.map((h) => (
-              <span key={h}>{h}</span>
+              <p key={h}>{h}</p>
             ))}
             {site.phone && (
-              <span>
+              <p>
                 โทร <a href={`tel:${site.phone.replace(/[^\d+]/g, "")}`} className="num">{site.phone}</a>
-              </span>
+              </p>
             )}
             {site.mapsUrl && (
-              <span>
-                <a href={site.mapsUrl} rel="noopener" target="_blank">แผนที่ Google Maps</a>
-              </span>
-            )}
-            {site.shopUrl && (
-              <span>
-                <a href={site.shopUrl} rel="noopener" target="_blank">ร้านออนไลน์</a>
-              </span>
+              <p>
+                <a href={site.mapsUrl} rel="noopener" target="_blank">เปิดแผนที่ Google Maps ↗</a>
+              </p>
             )}
             {org.settings.features.line && site.lineOaUrl && (
-              <span>
+              <p>
                 <a href={site.lineOaUrl} rel="noopener" target="_blank">เพิ่มเพื่อน LINE OA</a>
-              </span>
+              </p>
             )}
-          </p>
-          <nav aria-label="ลิงก์ท้ายเว็บ">
-            <p className="colophon-links">
+          </div>
+          <nav className="colophon-nav" aria-label="ลิงก์ท้ายเว็บ">
+            <div>
+              <p className="colophon-h" lang="en">Store</p>
               {NAV.map((n) => (
                 <Link key={n.href} href={n.href}>{n.label}</Link>
               ))}
+              {site.shopUrl && (
+                <a href={site.shopUrl} rel="noopener" target="_blank">ร้านออนไลน์ ↗</a>
+              )}
+            </div>
+            <div>
+              <p className="colophon-h" lang="en">Members</p>
               <Link href="/register">สมัครสมาชิก</Link>
               <Link href="/app/member">บัตรสมาชิก</Link>
               <Link href="/app/booking">จองซิมกอล์ฟ</Link>
+              <Link href="/app/rewards">แลกรางวัล</Link>
+            </div>
+            <div>
+              <p className="colophon-h" lang="en">Legal</p>
               <Link href="/terms">ข้อกำหนดสมาชิก</Link>
               <Link href="/privacy">นโยบายความเป็นส่วนตัว</Link>
-            </p>
+            </div>
           </nav>
           <p className="colophon-fine">
             © {new Date().getFullYear()} {org.name} · ราคาและเวลาเปิดบนหน้านี้มาจากระบบของร้านโดยตรง

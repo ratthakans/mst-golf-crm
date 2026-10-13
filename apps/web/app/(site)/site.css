@@ -451,7 +451,7 @@
 /* Ft4 dense colophon: the store's details and every link, set small in one block. */
 
 .brand-band {
-  margin-top: var(--space-16);
+  margin-top: 0; /* the last section's own padding sets the gap; no white strip before the green */
   background: var(--color-brand-bright);
   color: #fff;
 }
@@ -2000,4 +2000,257 @@ a.ps-row:hover .ps-title,
    names like ชาญอิสสระ aren't split by the browser's dictionary breaks. */
 .word {
   white-space: nowrap;
+}
+
+/* ---------------------------------------------- professional pass (Oct 2026) */
+
+/* hero: the countdown reads at a glance */
+.hero .sh-label .sh-kicker {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+.hero .sh-kicker.soon::before {
+  content: "";
+  display: inline-block;
+  width: 0.5em;
+  height: 0.5em;
+  margin-right: 0.45em;
+  border-radius: 50%;
+  background: var(--color-sand);
+  vertical-align: 0.1em;
+}
+
+/* promotions and articles on phones: one swipeable row, the next card peeking */
+@media (max-width: 639px) {
+  .q-cards {
+    grid-auto-flow: column;
+    grid-template-columns: none;
+    grid-auto-columns: 78%;
+    gap: var(--space-4);
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    margin-inline: calc(var(--gutter) * -1);
+    padding-inline: var(--gutter);
+    scroll-padding-inline: var(--gutter);
+  }
+  .q-cards::-webkit-scrollbar {
+    display: none;
+  }
+  .q-cards > li {
+    scroll-snap-align: start;
+  }
+}
+
+/* simulator: the free times are the way in */
+.q-times-label {
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--color-ink);
+}
+.q-times ul {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+.q-time {
+  display: grid;
+  gap: 2px;
+  justify-items: start;
+  min-height: 64px;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-line-green);
+  border-radius: var(--radius-img);
+  background: var(--color-surface);
+  text-decoration: none;
+}
+.q-time:hover {
+  border-color: var(--color-brand);
+  background: var(--color-tint);
+}
+.q-time-hm {
+  font-weight: 700;
+  font-size: 1.125rem;
+  color: var(--color-ink);
+}
+.q-time-free {
+  font-size: var(--text-xs);
+  color: var(--color-brand-deep);
+}
+@media (max-width: 479px) {
+  .q-times ul {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* services: a line about each, and a visible way in */
+.q-svc-short {
+  margin-top: var(--space-2);
+  font-size: 0.9375rem;
+  color: var(--color-ink-2);
+}
+.q-svc-go {
+  margin-top: var(--space-3);
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: var(--text-sm);
+  color: var(--color-brand-deep);
+}
+.q-svc-item:hover .q-svc-go {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+@media (max-width: 639px) {
+  .q-svc-short {
+    display: none;
+  }
+}
+
+/* membership: the same four rows under every tier, so they compare line by line */
+.q-tier-rows {
+  margin: var(--space-2) 0 0;
+}
+.q-tier-rows > div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-block: var(--space-2);
+  border-top: var(--rule);
+  font-size: 0.9375rem;
+}
+.q-tier-rows dt {
+  color: var(--color-muted);
+}
+.q-tier-rows dd {
+  margin: 0;
+  font-weight: 700;
+  color: var(--color-ink);
+}
+@media (max-width: 639px) {
+  .q-tiers {
+    grid-auto-flow: column;
+    grid-template-columns: none;
+    grid-auto-columns: 82%;
+    gap: var(--space-4);
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    margin-inline: calc(var(--gutter) * -1);
+    padding-inline: var(--gutter);
+    scroll-padding-inline: var(--gutter); /* snap the first tier to the gutter, not the screen edge */
+  }
+  .q-tiers::-webkit-scrollbar {
+    display: none;
+  }
+  .q-tier {
+    scroll-snap-align: start;
+  }
+}
+
+/* brands: a labelled, even grid right under the promotions */
+.q-brands {
+  padding-block: var(--space-10);
+  border-block: var(--rule);
+  border-bottom: 0;
+}
+.q-brands-h {
+  margin-bottom: var(--space-6);
+  text-align: center;
+  justify-content: center;
+}
+.q-brands ul {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: var(--space-5) var(--space-4);
+}
+.q-brands li {
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--color-ink-2);
+}
+@media (max-width: 899px) {
+  .q-brands ul {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    gap: var(--space-8);
+    overflow-x: auto;
+    scrollbar-width: none;
+    margin-inline: calc(var(--gutter) * -1);
+    padding-inline: var(--gutter);
+  }
+  .q-brands ul::-webkit-scrollbar {
+    display: none;
+  }
+  .q-brands li {
+    flex: none;
+  }
+}
+
+/* header: the account is a quiet text button next to the one green action */
+.acct-login.btn-quiet {
+  color: var(--color-ink);
+}
+
+/* footer: the store on the left, three short link groups */
+.colophon-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-10);
+}
+.colophon-store {
+  display: grid;
+  gap: var(--space-1);
+  align-content: start;
+}
+.colophon-store .colophon-name {
+  margin-bottom: var(--space-2);
+}
+.colophon-nav {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-8) var(--space-6);
+}
+.colophon-nav > div {
+  display: grid;
+  gap: var(--space-1);
+  align-content: start;
+}
+.colophon-nav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  text-decoration: none;
+}
+.colophon-nav a:hover {
+  text-decoration: underline;
+}
+.colophon-h {
+  margin-bottom: var(--space-2);
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 0.75rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+.colophon-grid .colophon-fine {
+  grid-column: 1 / -1;
+  padding-top: var(--space-6);
+  border-top: var(--rule);
+}
+@media (min-width: 900px) {
+  .colophon-grid {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: 5rem;
+  }
+  .colophon-nav {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+.q-tiers:focus-visible,
+.q-brands ul:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 4px;
 }

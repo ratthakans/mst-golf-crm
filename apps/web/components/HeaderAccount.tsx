@@ -13,7 +13,7 @@ export function HeaderAccount() {
 
   if (!brief || !brief.signedIn) {
     return (
-      <Link href="/app/member" className="btn btn-outline btn-sm acct-login" aria-label="เข้าสู่ระบบ หรือ สมัครสมาชิก">
+      <Link href="/app/member" className="btn btn-quiet btn-sm acct-login" aria-label="เข้าสู่ระบบ หรือ สมัครสมาชิก">
         <IconUser size={18} />
         <span className="acct-login-text" aria-hidden="true">
           เข้าสู่ระบบ / สมัคร
@@ -24,7 +24,7 @@ export function HeaderAccount() {
 
   if (!brief.member) {
     return (
-      <Link href="/app/member" className="btn btn-outline btn-sm acct-login" aria-label="สมัครสมาชิก">
+      <Link href="/app/member" className="btn btn-quiet btn-sm acct-login" aria-label="สมัครสมาชิก">
         <IconUser size={18} />
         <span className="acct-login-text" aria-hidden="true">
           สมัครสมาชิก

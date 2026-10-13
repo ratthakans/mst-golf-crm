@@ -44,10 +44,11 @@ export default async function HomePage() {
   // The next free start times (any lane), each a link straight to that slot.
   const nextFree = lanesDay
     ? lanesDay.avail.slots
-        .map((slot) => ({ slot, lane: slot.lanes.find((l) => l.state === "free") }))
-        .filter((x): x is { slot: (typeof x)["slot"]; lane: NonNullable<(typeof x)["lane"]> } => !!x.lane)
+        .map((slot) => ({ slot, lane: slot.lanes.find((l) => l.state === "free"), free: slot.lanes.filter((l) => l.state === "free").length }))
+        .filter((x): x is { slot: (typeof x)["slot"]; lane: NonNullable<(typeof x)["lane"]>; free: number } => !!x.lane)
         .slice(0, 4)
-        .map(({ slot, lane }) => ({
+        .map(({ slot, lane, free }) => ({
+          free,
           label: formatHm(new Date(slot.startAt)),
           href: `/app/booking?date=${localDateKey(new Date(slot.startAt))}&at=${encodeURIComponent(slot.startAt)}&lane=${encodeURIComponent(lane.laneId)}`,
         }))
@@ -142,10 +143,25 @@ export default async function HomePage() {
         </section>
       )}
 
+      {copy.brands.length > 0 && (
+        <section className="q-brands" aria-labelledby="brands-h">
+          <div className="wrap">
+            <h2 id="brands-h" className="q-label q-brands-h" lang="en">
+              Brands in store
+            </h2>
+            <ul lang="en" tabIndex={0} aria-label="แบรนด์ในร้าน">
+              {copy.brands.map((b) => (
+                <li key={b}>{b}</li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      )}
+
       {lanesDay && (
         <section className="q-sec q-alt" aria-labelledby="sim-h">
           <div className="wrap q-split">
-            <Photo photo={photos.simBays} ratio="4 / 3" className="q-split-img" sizes="(min-width: 900px) 50vw, 100vw" />
+            <Photo photo={photos.simBays} ratio="1 / 1" className="q-split-img" sizes="(min-width: 900px) 50vw, 100vw" />
             <div className="q-split-copy">
               <SectionHead id="sim-h" label="Golf Simulator" title="ซิมกอล์ฟ จองได้ทันที" lede="ช่องว่างจองได้ทันทีบนเว็บไซต์ ไม่ต้องรอร้านยืนยัน ชำระเงินที่ร้านตอนเช็กอิน" />
               <dl className="q-facts">
@@ -170,12 +186,13 @@ export default async function HomePage() {
               </dl>
               {nextFree.length > 0 && (
                 <div className="q-times">
-                  <p className="q-times-label">เวลาว่างถัดไป{lanesDay.word === "พรุ่งนี้" ? " (พรุ่งนี้)" : ""}</p>
+                  <p className="q-times-label">เลือกเวลาว่าง{lanesDay.word === "พรุ่งนี้" ? "พรุ่งนี้" : "วันนี้"}</p>
                   <ul>
                     {nextFree.map((t) => (
                       <li key={t.href}>
-                        <Link href={t.href} className="q-time mono" aria-label={`จองเวลา ${t.label} น.`}>
-                          {t.label}
+                        <Link href={t.href} className="q-time" aria-label={`จองเวลา ${t.label} น. ว่าง ${t.free} lane`}>
+                          <span className="q-time-hm mono">{t.label}</span>
+                          <span className="q-time-free">ว่าง {t.free} lane</span>
                         </Link>
                       </li>
                     ))}
@@ -183,8 +200,8 @@ export default async function HomePage() {
                 </div>
               )}
               <div className="q-actions">
-                <Link href="/app/booking" className="btn btn-primary">
-                  จองซิม
+                <Link href="/app/booking" className="btn btn-outline">
+                  ดูตารางทั้งหมด
                 </Link>
                 <Link href="/golf-simulator" className="text-link">
                   ราคาและกติกา
@@ -207,6 +224,10 @@ export default async function HomePage() {
                     {svc.name}
                   </span>
                   <span className="q-svc-thai">{svc.thai}</span>
+                  <span className="q-svc-short">{svc.short}</span>
+                  <span className="q-svc-go" aria-hidden="true">
+                    ดูรายละเอียด →
+                  </span>
                 </Link>
               </li>
             ))}
@@ -236,16 +257,31 @@ export default async function HomePage() {
               </Link>
             </div>
           </div>
-          <ul className="q-tiers">
+          <ul className="q-tiers" tabIndex={0} aria-label="ระดับสมาชิก (เลื่อนซ้ายขวาได้บนมือถือ)">
             {s.tiers.map((t) => (
               <li key={t.key} className={`q-tier q-tier-${t.key.toLowerCase()}`}>
                 <span className="q-tier-name" lang="en">
                   {t.name}
                 </span>
                 <span className="q-tier-min">{t.minSpend12m === 0 ? "สมัครฟรี" : `ยอดซื้อ ${formatBahtWhole(t.minSpend12m)}+ / 12 เดือน`}</span>
-                <span className="q-tier-perk">แต้ม ×{t.pointRate}</span>
-                <span className="q-tier-perk">{t.benefits.discountPct ? `ส่วนลดสินค้า ${t.benefits.discountPct}%` : "ราคาปกติ"}</span>
-                <span className="q-tier-perk">{t.benefits.simDiscountPct ? `ส่วนลดซิม ${t.benefits.simDiscountPct}%` : `จองซิมล่วงหน้า ${t.benefits.simBookingDaysAhead} วัน`}</span>
+                <dl className="q-tier-rows">
+                  <div>
+                    <dt>อัตราแต้ม</dt>
+                    <dd className="mono">×{t.pointRate}</dd>
+                  </div>
+                  <div>
+                    <dt>ส่วนลดสินค้า</dt>
+                    <dd className="mono">{t.benefits.discountPct ? `${t.benefits.discountPct}%` : "—"}</dd>
+                  </div>
+                  <div>
+                    <dt>ส่วนลดซิม</dt>
+                    <dd className="mono">{t.benefits.simDiscountPct ? `${t.benefits.simDiscountPct}%` : "—"}</dd>
+                  </div>
+                  <div>
+                    <dt>จองซิมล่วงหน้า</dt>
+                    <dd className="mono">{t.benefits.simBookingDaysAhead} วัน</dd>
+                  </div>
+                </dl>
               </li>
             ))}
           </ul>
@@ -269,6 +305,7 @@ export default async function HomePage() {
                       {p.publishedAt ? ` · ${formatThaiDate(new Date(p.publishedAt))}` : ""}
                     </span>
                     <span className="q-card-title">{p.title}</span>
+                    {p.excerpt && <span className="q-card-text">{p.excerpt}</span>}
                   </Link>
                 </li>
               ))}
@@ -277,17 +314,6 @@ export default async function HomePage() {
         </section>
       )}
 
-      {copy.brands.length > 0 && (
-        <section className="q-brands" aria-label="แบรนด์ในร้าน">
-          <div className="wrap">
-            <ul lang="en">
-              {copy.brands.map((b) => (
-                <li key={b}>{b}</li>
-              ))}
-            </ul>
-          </div>
-        </section>
-      )}
 
       <section className="q-sec q-alt" aria-labelledby="visit-h">
         <div className="wrap q-split q-split-flip">
@@ -334,14 +360,20 @@ export default async function HomePage() {
               )}
             </dl>
             <div className="q-actions">
-              {s.site.mapsUrl && (
-                <a href={s.site.mapsUrl} className="btn btn-outline" target="_blank" rel="noopener">
+              {s.site.mapsUrl ? (
+                <a href={s.site.mapsUrl} className="btn btn-primary" target="_blank" rel="noopener">
                   เปิดใน Google Maps
                 </a>
+              ) : (
+                <Link href="/contact" className="btn btn-outline">
+                  ติดต่อและเดินทาง
+                </Link>
               )}
-              <Link href="/contact" className="text-link">
-                ติดต่อเรา
-              </Link>
+              {s.site.mapsUrl && (
+                <Link href="/contact" className="text-link">
+                  ติดต่อเรา
+                </Link>
+              )}
             </div>
           </div>
         </div>
