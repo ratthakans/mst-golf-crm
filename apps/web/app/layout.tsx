@@ -5,12 +5,14 @@ import "./globals.css";
 import { siteOrigin } from "@/lib/org";
 
 // Type: MST's Futura 100 Thai from Adobe Fonts (kit sxs5ann, loaded below) —
-// it carries Thai and Latin, Book for running text, Medium/Bold for titles and
-// anything set heavier. Montserrat / Lato / Kanit / Anuphan stay as fallbacks
-// should the kit fail to load.
+// Book for running text, Medium/Bold for titles and anything set heavier. The
+// kit serves only the Latin subset until its owner sets the web project to
+// "All characters"; until then Thai falls back to Kanit (titles, 400–700) and
+// Anuphan (text), which are loopless like Futura's Thai. Montserrat / Lato
+// stand in for Latin should the kit fail to load.
 const montserrat = Montserrat({ subsets: ["latin"], weight: ["600", "700", "800", "900"], variable: "--ff-montserrat", display: "swap", preload: false });
 const lato = Lato({ subsets: ["latin"], weight: ["400", "700"], variable: "--ff-lato", display: "swap", preload: false });
-const kanit = Kanit({ subsets: ["thai", "latin"], weight: ["500", "600", "700"], variable: "--ff-kanit", display: "swap", preload: false });
+const kanit = Kanit({ subsets: ["thai", "latin"], weight: ["400", "500", "600", "700"], variable: "--ff-kanit", display: "swap", preload: false });
 
 export async function generateMetadata(): Promise<Metadata> {
   const origin = await siteOrigin();

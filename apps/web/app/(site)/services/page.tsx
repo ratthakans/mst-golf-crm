@@ -32,8 +32,6 @@ export default async function ServicesPage() {
         label="Services"
         title="บริการในร้าน"
         lede="ทุกบริการใช้ห้องซิมเป็นเครื่องมือเดียวกัน คุณจึงเห็นตัวเลขวงสวิงของตัวเองตั้งแต่ลองไม้ ฟิตติ้ง ไปจนถึงซ้อมบนซิม"
-        full
-        media={<Photo photo={photos.hero} ratio="16 / 9" priority sizes="100vw" position="50% 15%" />}
       />
 
       {SERVICES.map((svc, i) => (

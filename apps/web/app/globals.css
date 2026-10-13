@@ -11,6 +11,11 @@
   --color-paper-2: oklch(97.2% 0.008 156); /* a breath of green, for bands */
   --color-stone: oklch(97.4% 0.004 140); /* alternate section ground — nearly neutral, a breath of green */
   --color-veil: rgba(6, 18, 12, 0.36); /* even veil over hero photos so white type reads (not a gradient) */
+  --color-night: oklch(21% 0.022 162); /* the one dark block (simulator): green-black, the room with the lights down */
+  --color-night-2: oklch(27% 0.026 162);
+  --color-on-night: #ffffff;
+  --color-on-night-muted: oklch(82% 0.018 160); /* 9:1 on night */
+  --color-night-line: oklch(100% 0 0 / 0.16);
   --color-silver: oklch(76% 0.008 250);
   --color-gold: oklch(74% 0.1 85);
   --color-surface: #ffffff;

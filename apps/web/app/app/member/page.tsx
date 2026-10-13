@@ -19,8 +19,14 @@ export const metadata: Metadata = {
 
 // /app/member — sign-in (mobile + SMS code, or LINE when on) → sign-up form or
 // the member card. /register and /login land here.
-export default async function MemberPage({ searchParams }: { searchParams: { next?: string } }) {
+export default async function MemberPage({ searchParams }: { searchParams: { next?: string; date?: string; at?: string; lane?: string } }) {
   const next = searchParams.next === "booking" || searchParams.next === "rewards" ? searchParams.next : null;
+  // A slot picked on the website survives sign-up: /app/booking re-opens it.
+  const slot =
+    next === "booking" && searchParams.date && searchParams.at && searchParams.lane
+      ? `?${new URLSearchParams({ date: String(searchParams.date), at: String(searchParams.at), lane: String(searchParams.lane) })}`
+      : "";
+  const nextHref = next ? `/app/${next}${slot}` : null;
   const org = await getOrg();
   const [setup, { customer, member }] = await Promise.all([loginSetup(org.id), currentMember()]);
 
@@ -48,13 +54,14 @@ export default async function MemberPage({ searchParams }: { searchParams: { nex
         terms={doc(terms)}
         marketing={doc(marketing)}
         next={next}
+        nextHref={nextHref}
         todayKey={localDateKey(new Date())}
         birthdayMultiplier={org.settings.tiers[0]?.benefits.birthdayPointMultiplier ?? 1}
       />
     );
   }
 
-  if (next) redirect(`/app/${next}`);
+  if (nextHref) redirect(nextHref);
 
   const [card, points] = await Promise.all([loadCard(org.id, member.id), loadPoints(org.id, member.id)]);
   const tiers = org.settings.tiers;

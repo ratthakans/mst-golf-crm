@@ -30,7 +30,10 @@ export default async function BookingPage({ searchParams }: { searchParams: { da
     );
   }
   if (!customer) return <LoginPanel setup={setup} purpose="booking" />;
-  if (!member) redirect("/app/member?next=booking");
+  if (!member) {
+    const keep = searchParams.date && searchParams.at && searchParams.lane ? `&${new URLSearchParams({ date: String(searchParams.date), at: String(searchParams.at), lane: String(searchParams.lane) })}` : "";
+    redirect(`/app/member?next=booking${keep}`);
+  }
 
   const todayKey = localDateKey(new Date());
   const [card, bookings, store] = await Promise.all([loadCard(org.id, member.id), loadBookings(org.id, member.id), getStore()]);

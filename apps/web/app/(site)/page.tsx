@@ -7,10 +7,10 @@ import { Photo } from "@/components/Photo";
 import { servicePhotos, sitePhotos } from "@/lib/images";
 import { EXCLUSIVE_BRANDS } from "@mstgolf/shared/site";
 import { homeCopy, siteServices } from "@/lib/content";
-import { CATEGORY_LABEL, formatBaht, formatBahtWhole, formatHm, formatPoints, formatThaiDate, hoursLines, openingSpec } from "@/lib/format";
+import { formatBaht, formatBahtWhole, formatHm, formatPoints, hoursLines, openingSpec } from "@/lib/format";
 import { getLanes, getOrg, getStore, siteOrigin } from "@/lib/org";
 import { lanesToShow } from "@/lib/lanes";
-import { currentPromotions, publishedPosts } from "@/lib/posts";
+import { currentPromotions } from "@/lib/posts";
 import { endsSoon, promoHref, untilText } from "@/lib/promo";
 
 export const revalidate = 300;
@@ -23,18 +23,18 @@ export const metadata: Metadata = {
   openGraph: { title: "MST Golf", description: "โปรโมชันล่าสุด ไม้กอล์ฟ อุปกรณ์ ฟิตติ้ง และ Golf Simulator", url: "/" },
 };
 
-// The home page, "quiet premium": one full-bleed hero (the lead promotion),
-// then white sections that all share one head (label · title · see all) and
-// one rhythm — promotions as big cards, the simulator as one calm module with
-// the next free times, the services, membership, articles and the store.
-// Green is kept for the primary action; every number comes from the back
-// office or live data.
+// The home page, "clubhouse at night": one full-bleed photo with the store's
+// own line, then a short run of white sections and one dark block for the
+// simulator — promotions (laid out by how many there are), the sim with the
+// next free times, the shop and fitting, the exclusive brands, membership in
+// one line per tier, and the store. Green is kept for the primary action;
+// every number comes from the back office or live data.
 export default async function HomePage() {
-  const [org, store, lanes, posts, origin, promos] = await Promise.all([getOrg(), getStore(), getLanes(), publishedPosts(3), siteOrigin(), currentPromotions(9)]);
+  const [org, store, lanes, origin, promos] = await Promise.all([getOrg(), getStore(), getLanes(), siteOrigin(), currentPromotions(3)]);
   const s = org.settings;
   const photos = sitePhotos(s.site);
   const svcPhotos = servicePhotos(photos);
-  const services = siteServices(s.site.copy);
+  const services = siteServices(s.site.copy).filter((svc) => svc.slug !== "golf-simulator"); // the sim has its own block
   const copy = homeCopy(s.site.copy, lanes.length || 3);
   const address = s.site.address ?? store?.address ?? null;
   const hours = store ? hoursLines(store.openHours) : [];
@@ -47,7 +47,7 @@ export default async function HomePage() {
     ? lanesDay.avail.slots
         .map((slot) => ({ slot, lane: slot.lanes.find((l) => l.state === "free"), free: slot.lanes.filter((l) => l.state === "free").length }))
         .filter((x): x is { slot: (typeof x)["slot"]; lane: NonNullable<(typeof x)["lane"]>; free: number } => !!x.lane)
-        .slice(0, 4)
+        .slice(0, 5)
         .map(({ slot, lane, free }) => ({
           free,
           label: formatHm(new Date(slot.startAt)),
@@ -69,73 +69,57 @@ export default async function HomePage() {
     ...(s.site.shopUrl ? { sameAs: [s.site.shopUrl] } : {}),
   };
 
-  const [lead, ...rest] = promos;
-  const leadCta = lead ? promoHref(lead) : null;
-
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
 
-      <h1 className="visually-hidden">{org.name} — ร้านกอล์ฟ ชาญอิสสระ ทาวเวอร์ 1</h1>
-
-      {lead ? (
-        <SheetHead
-          full
-          label="Promotion"
-          kicker={untilText(lead.endsAt, now)}
-          kickerSoon={endsSoon(lead.endsAt, now)}
-          titleAs="h2"
-          titleId="window-h"
-          title={lead.title}
-          lede={lead.excerpt || null}
-          actions={
+      <SheetHead
+        full
+        label="Pro shop · Club fitting · Golf Simulator"
+        title={
+          copy.heroHighlight ? (
             <>
-              {leadCta!.external ? (
-                <a href={leadCta!.href} className="btn btn-light" target="_blank" rel="noopener">
-                  {lead.linkLabel || "ดูโปรโมชัน"}
-                </a>
-              ) : (
-                <Link href={leadCta!.href} className="btn btn-light">
-                  {lead.linkLabel || "ดูรายละเอียด"}
-                </Link>
-              )}
-              <Link href={`/promotions/${lead.slug}`} className="text-link">
-                {lead.hasBody ? "รายละเอียดและเงื่อนไข" : "ดูโปรโมชัน"}
-              </Link>
+              {copy.heroTitle} <span className="hero-hl">{copy.heroHighlight}</span>
             </>
-          }
-          media={
-            // eslint-disable-next-line @next/next/no-img-element -- promotion covers come from MST's uploads
-            <img src={lead.coverUrl ?? photos.hero.src} alt="" fetchPriority="high" />
-          }
-        />
-      ) : (
-        <SheetHead
-          full
-          label="MST Golf"
-          titleAs="h2"
-          titleId="window-h"
-          title={copy.heroHighlight ? `${copy.heroTitle} ${copy.heroHighlight}` : copy.heroTitle}
-          lede={copy.heroLede}
-          media={<Photo photo={photos.hero} ratio="16 / 9" priority sizes="100vw" />}
-        />
-      )}
+          ) : (
+            copy.heroTitle
+          )
+        }
+        lede={copy.heroLede}
+        actions={
+          <>
+            <Link href="/app/booking" className="btn btn-light">
+              จองซิมกอล์ฟ
+            </Link>
+            <Link href="/register" className="text-link">
+              สมัครสมาชิก รับ {formatPoints(s.welcomeBonus)} แต้ม
+            </Link>
+          </>
+        }
+        media={<Photo photo={photos.hero} ratio="16 / 9" priority sizes="100vw" position="50% 22%" />}
+      />
 
-      {rest.length > 0 && (
+      {promos.length > 0 && (
         <section className="q-sec" aria-labelledby="promos-h">
           <div className="wrap">
             <SectionHead id="promos-h" label="Promotions" title="โปรโมชันเดือนนี้" link={{ href: "/promotions", text: "ดูทั้งหมด" }} />
-            <ul className="q-cards">
-              {rest.slice(0, 3).map((p) => (
+            {/* the layout follows the count: one wide card, two halves, or three columns */}
+            <ul className={`n-promos n-promos-${promos.length}`}>
+              {promos.map((p) => (
                 <li key={p.slug}>
-                  <Link href={`/promotions/${p.slug}`} className="q-card">
-                    <span className="q-card-img">
+                  <Link href={`/promotions/${p.slug}`} className="n-promo">
+                    <span className="n-promo-img">
                       {/* eslint-disable-next-line @next/next/no-img-element -- promotion covers come from MST's uploads */}
                       {p.coverUrl ? <img src={p.coverUrl} alt="" loading="lazy" /> : null}
                     </span>
-                    <span className={`q-card-meta${endsSoon(p.endsAt, now) ? " soon" : ""}`}>{untilText(p.endsAt, now)}</span>
-                    <span className="q-card-title">{p.title}</span>
-                    {p.excerpt && <span className="q-card-text">{p.excerpt}</span>}
+                    <span className="n-promo-copy">
+                      <span className={`n-promo-until${endsSoon(p.endsAt, now) ? " soon" : ""}`}>{untilText(p.endsAt, now)}</span>
+                      <span className="n-promo-title">{p.title}</span>
+                      {p.excerpt && <span className="n-promo-text">{p.excerpt}</span>}
+                      <span className="n-go" aria-hidden="true">
+                        ดูรายละเอียด →
+                      </span>
+                    </span>
                   </Link>
                 </li>
               ))}
@@ -144,81 +128,49 @@ export default async function HomePage() {
         </section>
       )}
 
-      <section className="q-sec q-alt" aria-labelledby="excl-h">
-        <div className="wrap">
-          <SectionHead
-            id="excl-h"
-            label="Exclusive at MST Golf"
-            title="แบรนด์ที่มีเฉพาะที่ MST Golf"
-            link={s.site.shopUrl ? { href: s.site.shopUrl, text: "ดูสินค้าทั้งหมด" } : undefined}
-          />
-          <ul className="q-cards q-cards-2" tabIndex={0} aria-label="แบรนด์ที่มีเฉพาะที่ MST Golf">
-            {EXCLUSIVE_BRANDS.map((b) => (
-              <li key={b.name} className="q-card">
-                <span className="q-card-img q-card-img-wide">
-                  {/* eslint-disable-next-line @next/next/no-img-element -- MST Golf Thailand's brand photography */}
-                  <img src={b.image} alt="" loading="lazy" style={b.position ? { objectPosition: b.position } : undefined} />
-                </span>
-                <span className="q-card-title" lang="en">
-                  {b.name}
-                </span>
-                <span className="q-card-text">{b.line}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
-
-      {copy.brands.length > 0 && (
-        <section className="q-brands" aria-labelledby="brands-h">
-          <div className="wrap">
-            <h2 id="brands-h" className="q-label q-brands-h" lang="en">
-              Brands in store
-            </h2>
-            <ul lang="en" tabIndex={0} aria-label="แบรนด์ในร้าน">
-              {copy.brands.map((b) => (
-                <li key={b}>{b}</li>
-              ))}
-            </ul>
-          </div>
-        </section>
-      )}
-
       {lanesDay && (
-        <section className="q-sec q-alt" aria-labelledby="sim-h">
-          <div className="wrap q-split">
-            <Photo photo={photos.simBays} ratio="1 / 1" className="q-split-img" sizes="(min-width: 900px) 50vw, 100vw" />
-            <div className="q-split-copy">
-              <SectionHead id="sim-h" label="Golf Simulator" title="ซิมกอล์ฟ จองได้ทันที" lede="ช่องว่างจองได้ทันทีบนเว็บไซต์ ไม่ต้องรอร้านยืนยัน ชำระเงินที่ร้านตอนเช็กอิน" />
-              <dl className="q-facts">
+        <section className="n-night" aria-labelledby="sim-h">
+          <div className="wrap n-night-row">
+            <Photo photo={photos.simBays} ratio="4 / 5" className="n-night-img" sizes="(min-width: 900px) 45vw, 100vw" />
+            <div className="n-night-copy">
+              <p className="q-label" lang="en">
+                Golf Simulator
+              </p>
+              <h2 id="sim-h" className="q-title">
+                ซิมกอล์ฟ จองได้ทันที
+              </h2>
+              <p className="q-lede">เลือกเวลาว่างแล้วจองบนเว็บไซต์ได้เลย ไม่ต้องรอร้านยืนยัน ชำระเงินที่ร้านตอนเช็กอิน</p>
+              <dl className="n-stats">
                 <div>
                   <dt>ว่าง{lanesDay.word}</dt>
                   <dd>
-                    <span className="mono">{freeCount}</span> ช่อง · {lanes.length} lane
+                    <b className="mono">{freeCount}</b> ช่อง
                   </dd>
                 </div>
                 {prices.length > 0 && (
                   <div>
-                    <dt>ราคา</dt>
-                    <dd>{prices.map((x) => formatBaht(x)).join(" / ")} ต่อชั่วโมง · สมาชิกลดตามระดับ</dd>
+                    <dt>ต่อชั่วโมง</dt>
+                    <dd>
+                      <b className="mono">{prices.map((x) => formatBaht(x)).join(" / ")}</b>
+                    </dd>
                   </div>
                 )}
-                {hours[0] && (
-                  <div>
-                    <dt>เวลาเปิด</dt>
-                    <dd>{hours[0]}</dd>
-                  </div>
-                )}
+                <div>
+                  <dt>จำนวน</dt>
+                  <dd>
+                    <b className="mono">{lanes.length}</b> lane
+                  </dd>
+                </div>
               </dl>
               {nextFree.length > 0 && (
-                <div className="q-times">
-                  <p className="q-times-label">เลือกเวลาว่าง{lanesDay.word === "พรุ่งนี้" ? "พรุ่งนี้" : "วันนี้"}</p>
+                <div className="n-times">
+                  <p className="n-times-label">เวลาว่าง{lanesDay.word === "พรุ่งนี้" ? "พรุ่งนี้" : "วันนี้"} · แตะเพื่อจอง</p>
                   <ul>
                     {nextFree.map((t) => (
                       <li key={t.href}>
-                        <Link href={t.href} className="q-time" aria-label={`จองเวลา ${t.label} น. ว่าง ${t.free} lane`}>
-                          <span className="q-time-hm mono">{t.label}</span>
-                          <span className="q-time-free">ว่าง {t.free} lane</span>
+                        <Link href={t.href} className="n-time" aria-label={`จองเวลา ${t.label} น. ว่าง ${t.free} lane`}>
+                          <span className="mono">{t.label}</span>
+                          <span className="n-time-free">{t.free} lane</span>
                         </Link>
                       </li>
                     ))}
@@ -226,11 +178,11 @@ export default async function HomePage() {
                 </div>
               )}
               <div className="q-actions">
-                <Link href="/app/booking" className="btn btn-outline">
-                  ดูตารางทั้งหมด
+                <Link href="/app/booking" className="btn btn-primary">
+                  ดูตารางและจอง
                 </Link>
-                <Link href="/golf-simulator" className="text-link">
-                  ราคาและกติกา
+                <Link href="/golf-simulator" className="text-link n-link">
+                  ราคา สมาชิกลด และกติกา
                 </Link>
               </div>
             </div>
@@ -240,18 +192,18 @@ export default async function HomePage() {
 
       <section className="q-sec" aria-labelledby="svc-h">
         <div className="wrap">
-          <SectionHead id="svc-h" label="Services" title={copy.servicesTitle} link={{ href: "/services", text: "บริการทั้งหมด" }} />
-          <ul className="q-svc">
+          <SectionHead id="svc-h" label="In store" title={copy.servicesTitle} link={{ href: "/services", text: "บริการทั้งหมด" }} />
+          <ul className="n-svc">
             {services.map((svc) => (
               <li key={svc.slug}>
-                <Link href={svc.slug === "golf-simulator" ? "/golf-simulator" : `/services#${svc.slug}`} className="q-svc-item">
-                  <Photo photo={svcPhotos[svc.slug] ?? photos.proShop} ratio="4 / 5" sizes="(min-width: 900px) 25vw, 50vw" />
-                  <span className="q-svc-name" lang="en">
-                    {svc.name}
+                <Link href={`/services#${svc.slug}`} className="n-svc-item">
+                  <Photo photo={svcPhotos[svc.slug] ?? photos.proShop} ratio="3 / 2" sizes="(min-width: 900px) 50vw, 100vw" />
+                  <span className="n-svc-name">
+                    <span lang="en">{svc.name}</span>
+                    <span className="n-svc-thai">{svc.thai}</span>
                   </span>
-                  <span className="q-svc-thai">{svc.thai}</span>
-                  <span className="q-svc-short">{svc.short}</span>
-                  <span className="q-svc-go" aria-hidden="true">
+                  <span className="n-svc-short">{svc.short}</span>
+                  <span className="n-go" aria-hidden="true">
                     ดูรายละเอียด →
                   </span>
                 </Link>
@@ -261,8 +213,55 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="q-sec q-alt" aria-labelledby="club-h">
-        <div className="wrap q-club">
+      <section className="q-sec n-ruled" aria-labelledby="excl-h">
+        <div className="wrap">
+          <SectionHead
+            id="excl-h"
+            label="Exclusive at MST Golf"
+            title="แบรนด์ที่มีเฉพาะที่ MST Golf"
+            link={s.site.shopUrl ? { href: s.site.shopUrl, text: "ดูสินค้าทั้งหมด" } : undefined}
+          />
+          <ul className="n-excl" tabIndex={0} aria-label="แบรนด์ที่มีเฉพาะที่ MST Golf">
+            {EXCLUSIVE_BRANDS.map((b) => (
+              <li key={b.name} className="n-excl-item">
+                <span className="n-excl-img">
+                  {/* eslint-disable-next-line @next/next/no-img-element -- MST Golf Thailand's brand photography */}
+                  <img src={b.image} alt="" loading="lazy" style={b.position ? { objectPosition: b.position } : undefined} />
+                </span>
+                <span className="n-excl-name" lang="en">
+                  {b.name}
+                </span>
+                <span className="n-excl-line">{b.line}</span>
+              </li>
+            ))}
+          </ul>
+          {copy.brands.length > 0 && (
+            <div className="n-brands">
+              <h3 className="q-label" lang="en">
+                Also in store
+              </h3>
+              {/* one slow line of names until MST sends the logos; still for reduced motion */}
+              <div className="n-brands-view">
+              <div className="n-brands-track">
+                <ul lang="en" aria-label="แบรนด์ในร้าน">
+                  {copy.brands.map((b) => (
+                    <li key={b}>{b}</li>
+                  ))}
+                </ul>
+                <ul lang="en" aria-hidden="true">
+                  {copy.brands.map((b) => (
+                    <li key={b}>{b}</li>
+                  ))}
+                </ul>
+              </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
+
+      <section className="q-sec n-ruled" aria-labelledby="club-h">
+        <div className="wrap n-club">
           <div>
             <SectionHead
               id="club-h"
@@ -272,76 +271,38 @@ export default async function HomePage() {
                   สมัครฟรี รับ <span className="mono">{formatPoints(s.welcomeBonus)}</span> แต้ม
                 </>
               }
-              lede="สมัครด้วยเบอร์มือถือ บัตรสมาชิกอยู่ในมือถือ สะสมแต้มทุกการซื้อ รับส่วนลด แลกคูปอง และจองซิม"
+              lede="บัตรสมาชิกอยู่ในมือถือ สะสมแต้มทุกการซื้อ ระดับขึ้นตามยอดซื้อ 12 เดือน"
             />
             <div className="q-actions">
               <Link href="/register" className="btn btn-primary">
                 สมัครสมาชิก
               </Link>
               <Link href="/rewards" className="text-link">
-                สิทธิ์และรางวัล
+                สิทธิ์ทั้งหมดและรางวัล
               </Link>
             </div>
           </div>
-          <ul className="q-tiers" tabIndex={0} aria-label="ระดับสมาชิก (เลื่อนซ้ายขวาได้บนมือถือ)">
-            {s.tiers.map((t) => (
-              <li key={t.key} className={`q-tier q-tier-${t.key.toLowerCase()}`}>
-                <span className="q-tier-name" lang="en">
-                  {t.name}
-                </span>
-                <span className="q-tier-min">{t.minSpend12m === 0 ? "สมัครฟรี" : `ยอดซื้อ ${formatBahtWhole(t.minSpend12m)}+ / 12 เดือน`}</span>
-                <dl className="q-tier-rows">
-                  <div>
-                    <dt>อัตราแต้ม</dt>
-                    <dd className="mono">×{t.pointRate}</dd>
-                  </div>
-                  <div>
-                    <dt>ส่วนลดสินค้า</dt>
-                    <dd className="mono">{t.benefits.discountPct ? `${t.benefits.discountPct}%` : "—"}</dd>
-                  </div>
-                  <div>
-                    <dt>ส่วนลดซิม</dt>
-                    <dd className="mono">{t.benefits.simDiscountPct ? `${t.benefits.simDiscountPct}%` : "—"}</dd>
-                  </div>
-                  <div>
-                    <dt>จองซิมล่วงหน้า</dt>
-                    <dd className="mono">{t.benefits.simBookingDaysAhead} วัน</dd>
-                  </div>
-                </dl>
-              </li>
-            ))}
+          <ul className="n-tiers">
+            {s.tiers.map((t) => {
+              const entry = t.minSpend12m === 0;
+              return (
+                <li key={t.key} className={`n-tier tier-${t.key.toLowerCase()}`}>
+                  <span className="n-tier-name" lang="en">
+                    {t.name}
+                  </span>
+                  <span className="n-tier-big mono">{entry ? formatPoints(s.welcomeBonus) : `${t.benefits.discountPct}%`}</span>
+                  <span className="n-tier-what">
+                    {entry ? "แต้มต้อนรับเมื่อสมัคร" : `ส่วนลดสินค้า · ซิมลด ${t.benefits.simDiscountPct}%`}
+                  </span>
+                  <span className="n-tier-min">{entry ? "สมัครฟรี" : `ยอดซื้อ ${formatBahtWhole(t.minSpend12m)}+ ใน 12 เดือน`}</span>
+                </li>
+              );
+            })}
           </ul>
         </div>
       </section>
 
-      {posts.length > 0 && (
-        <section className="q-sec" aria-labelledby="journal-h">
-          <div className="wrap">
-            <SectionHead id="journal-h" label="Journal" title="บทความและข่าวจากร้าน" link={{ href: "/blog", text: "บทความทั้งหมด" }} />
-            <ul className="q-cards q-cards-wide">
-              {posts.map((p) => (
-                <li key={p.slug}>
-                  <Link href={`/blog/${p.slug}`} className="q-card">
-                    <span className="q-card-img q-card-img-wide">
-                      {/* eslint-disable-next-line @next/next/no-img-element -- covers live in MST's public Blob store or /mock */}
-                      {p.coverUrl ? <img src={p.coverUrl} alt="" loading="lazy" /> : null}
-                    </span>
-                    <span className="q-card-meta">
-                      {CATEGORY_LABEL[p.category]}
-                      {p.publishedAt ? ` · ${formatThaiDate(new Date(p.publishedAt))}` : ""}
-                    </span>
-                    <span className="q-card-title">{p.title}</span>
-                    {p.excerpt && <span className="q-card-text">{p.excerpt}</span>}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </section>
-      )}
-
-
-      <section className="q-sec q-alt" aria-labelledby="visit-h">
+      <section className="q-sec n-ruled" aria-labelledby="visit-h">
         <div className="wrap q-split q-split-flip">
           <Photo photo={photos.store} ratio="4 / 3" className="q-split-img q-store-img" sizes="(min-width: 900px) 50vw, 100vw" />
           <div className="q-split-copy">
@@ -387,8 +348,8 @@ export default async function HomePage() {
             </dl>
             <div className="q-actions">
               {s.site.mapsUrl ? (
-                <a href={s.site.mapsUrl} className="btn btn-primary" target="_blank" rel="noopener">
-                  เปิดใน Google Maps
+                <a href={s.site.mapsUrl} className="btn btn-outline" target="_blank" rel="noopener">
+                  นำทางด้วย Google Maps
                 </a>
               ) : (
                 <Link href="/contact" className="btn btn-outline">

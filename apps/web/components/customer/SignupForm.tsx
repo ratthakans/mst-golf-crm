@@ -21,6 +21,8 @@ interface Props {
   terms: ConsentDoc | null;
   marketing: ConsentDoc | null;
   next: "booking" | "rewards" | null;
+  /** where "continue" goes — /app/booking may carry the slot picked on the website */
+  nextHref?: string | null;
   todayKey: string;
   birthdayMultiplier: number; // entry tier's birthday-month points multiplier
 }
@@ -28,7 +30,7 @@ interface Props {
 // Name, mobile, optional birthday and email, PDPA consent. Who is signing up
 // comes from the session cookie on the server: the verified mobile number (or
 // the LINE account when LINE is on).
-export function SignupForm({ prefillName, verifiedPhone, phoneProven, welcomePoints, terms, marketing, next, todayKey, birthdayMultiplier }: Props) {
+export function SignupForm({ prefillName, verifiedPhone, phoneProven, welcomePoints, terms, marketing, next, nextHref, todayKey, birthdayMultiplier }: Props) {
   const router = useRouter();
   const [fullName, setFullName] = useState(prefillName.length >= 2 ? prefillName : "");
   const [phone, setPhone] = useState(verifiedPhone ?? "");
@@ -130,7 +132,7 @@ export function SignupForm({ prefillName, verifiedPhone, phoneProven, welcomePoi
         <div className="stack">
           {next ? (
             <>
-              <Link href={next === "booking" ? "/app/booking" : "/app/rewards"} className="btn btn-primary btn-block">
+              <Link href={nextHref || (next === "booking" ? "/app/booking" : "/app/rewards")} className="btn btn-primary btn-block">
                 {next === "booking" ? "ไปจองซิมกอล์ฟต่อ" : "ไปแลกรางวัลต่อ"}
               </Link>
               <button type="button" className="btn btn-secondary btn-block" onClick={openCard}>

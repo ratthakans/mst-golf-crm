@@ -14,7 +14,7 @@ export type SitePhotoKey = (typeof SITE_PHOTO_KEYS)[number];
 // imagery from mstgolf.com where it isn't tied to a place, AI mockups for the
 // Bangkok store and simulator room (only MST's own photos can show those).
 export const SITE_PHOTO_LABEL: Record<SitePhotoKey, { label: string; where: string; mock: string }> = {
-  hero: { label: "ภาพหลัก", where: "หน้าบริการ ด้านบน", mock: "/photos/mst/coaching.jpg" },
+  hero: { label: "ภาพหลัก", where: "หน้าแรก ด้านบน", mock: "/photos/mst/coaching.jpg" },
   proShop: { label: "Pro shop", where: "บริการ · หน้าแรกและหน้าบริการ", mock: "/photos/mst/irons.jpg" },
   fitting: { label: "Club fitting", where: "บริการ · หน้าแรกและหน้าบริการ", mock: "/photos/mst/workshop.jpg" },
   simulator: { label: "Golf Simulator (บริการ)", where: "บริการ · หน้าแรกและหน้าบริการ", mock: "/mock/simulator.jpg" },

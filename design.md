@@ -6,25 +6,23 @@ The locked design system for `apps/web`: the public site and the customer pages 
 
 The back office (`apps/web-admin`) keeps its own UI. It only takes the CVI accent colour.
 
-## Genre and layout: "quiet premium" (owner, 13 Oct 2026)
-- **Genre:** a premium golf shop, promotion-led, no e-commerce. White and near-black carry the page, photography leads, and green is kept for the primary action. Reference: premium golf brands (Titleist, PXG), not promotion flyers.
+## Genre and layout: "clubhouse at night" (owner, 13 Oct 2026 — supersedes "quiet premium")
+- **Genre:** a premium golf shop, promotion-led, no e-commerce. White and airy, **one dark green-black block** (`--color-night`) for the simulator, real photographs only, green kept for the primary action. Reference: premium golf brands (Titleist, Sun Day Red, Malbon), not promotion flyers.
 - **One system on every public page:**
-  - **Hero (`SheetHead full`):** the photo is full-bleed under an even veil (`--color-veil`, not a gradient). White type sits low-left: a small tracked label (PROMOTION · countdown), a large title, a lede, one light button and a text link. Pages without a photo get the same head in ink on white.
-  - **Section head (`SectionHead`):** a tracked English label, then the title (one size site-wide), an optional lede, and "ดูทั้งหมด →" on the right. Every section uses it.
-  - **Rhythm:** `.q-sec` sections are 72 px on phones and 120 px on desktop. Sections alternate white and `--color-stone`; they are not separated by rules or coloured bands.
-  - **Cards:** photo on top (4:5 for promotions and services, 3:2 for articles), with 4 px corners. Meta, title and line go under the photo, never on it.
-  - **Split modules (`.q-split`):** photo and copy at half and half, with facts as a hairline list. Used for the simulator, the store and each service.
-- **Home:**
-  1. Hero (the lead promotion).
-  2. Promotions as 3 cards.
-  3. Exclusive at MST Golf: the four exclusive brands as 2-up cards (`EXCLUSIVE_BRANDS` in `@mstgolf/shared/site`).
-  4. Brands in store: a labelled, centred list of names (logos when MST sends them).
-  5. Simulator: free count, price and hours, plus the next 4 free times, each linking straight to that slot.
-  6. Services as 3 portrait tiles (pro shop, club fitting, simulator; MST runs no lessons).
-  7. Membership: copy, plus the 3 tiers as columns (no table).
-  8. Journal as 3 cards.
-  9. Visit: the Charn Issara front, address, hours, phone, with Google Maps as the primary button.
-- **Never on the home page:** a promo bar, a meta line, green panels or bands (other than the CVI footer band), text in boxes on photos, carousels, marquees, block grids of bright green, tables inside cards, or pill badges.
+  - **Hero (`SheetHead full`):** the photo is full-bleed under an even veil (`--color-veil`, not a gradient). White type sits low-left: a small tracked label, a large **Bold** title, a lede, one light button and a text link. Pages without a photo get the same head in ink on white, title in Medium.
+  - **Section head (`SectionHead`):** a tracked English label, then the title in **Medium (400), one size site-wide**, an optional lede, and "ดูทั้งหมด →" on the right. Bold is for the hero and for numbers (points, prices, %).
+  - **Rhythm:** `.q-sec` sections are 72 px on phones and 120 px on desktop. Sections are all white, separated by space and a hairline inside the wrap — no alternating greys, no coloured bands except the night block and the CVI footer band.
+  - **Cards:** photo on top with 4 px corners; meta, title, line and a quiet "ดูรายละเอียด →" under the photo, never on it. Rows of cards swipe on phones (80 % width, next card peeking).
+  - **Split modules (`.q-split`):** photo and copy at half and half, with facts as a hairline list (store, each service).
+- **Home** (`apps/web/app/(site)/page.tsx`):
+  1. Hero: MST's own photo and line (`photos.hero`), "จองซิมกอล์ฟ" + "สมัครสมาชิก รับ N แต้ม". Not a promotion.
+  2. Promotions: the layout follows the count — 1 = one wide card, 2 = halves, 3 = columns.
+  3. Simulator, the night block: free count / price / lanes as three stats, the next 5 free times as pills linking straight to that slot, "ดูตารางและจอง".
+  4. In store: pro shop and club fitting as two wide tiles (the sim has its own block; MST runs no lessons).
+  5. Exclusive at MST Golf: the four brands 2 × 2 (`EXCLUSIVE_BRANDS`), then "Also in store" as one slow line of names (still under reduced motion; logos when MST sends them).
+  6. Membership: copy and one line per tier with the number that matters set large (welcome points / discount %).
+  7. Visit: the Charn Issara front (cropped right of the royal portrait), address, hours, phone, Google Maps.
+- **Never on the home page:** a promo bar, a meta line, an AI image outside the simulator, cut-out product shots, text in boxes on photos, carousels, block grids of bright green, tables, or the LINE green.
 - **App pages** (`/app/*`): function first, in the same voice. Ruled sections, underlined tabs, a bottom bar on phones, and the member card as the one object.
 
 ## Colour (CVI)
@@ -38,6 +36,7 @@ The back office (`apps/web-admin`) keeps its own UI. It only takes the CVI accen
 | `--color-paper-2` | `oklch(97.2% 0.008 156)` | Bands (scorecard, colophon). A breath of green, not cream |
 | `--color-ink` / `-ink-2` / `-muted` | `oklch(22% 0.012 160)` / `oklch(34% …)` / `oklch(47% …)` | Text |
 | `--color-line` / `-strong` | `oklch(91% 0.006 156)` / `oklch(82% 0.010 156)` | Hairlines |
+| `--color-night` / `-night-2` | `oklch(21% 0.022 162)` / `oklch(27% …)` | The one dark block (simulator). Text on it is `--color-on-night` (white) or `--color-on-night-muted` |
 | `--color-grass` / `-grass-2` / `--color-sand-trap` | | The drawing only |
 
 These stay as they are:
@@ -50,7 +49,7 @@ The Member card is drawn in the CVI green.
 ## Typography
 - **Typeface: Futura 100 Thai, from MST's Adobe Fonts kit `sxs5ann`.** The owner decided on 13 Oct 2026; this overrides the CVI PDF, which names Montserrat and Lato.
   - The kit is loaded in `apps/web/app/layout.tsx` with `<link rel="stylesheet" href="https://use.typekit.net/sxs5ann.css">`.
-  - It carries both Thai and Latin, so one family covers the whole page.
+  - **The kit is published with the Default (Latin) subset**, so Thai currently falls back to Kanit (titles, 400–700) and Anuphan (text). The kit owner must set the web project's character set to **All characters** for Futura's Thai to appear — check with CDP `CSS.getPlatformFontsForNode`, not by eye.
 - **Families and cuts:**
   - `futura-100-thai`: Medium (400) and Bold (700). This is `--font-display`, for titles, labels, buttons, numerals (`--font-mono`), and **anything set at weight 500 or above**.
   - `futura-100-thai-book`: Book (400). This is `--font-body`, for running text.

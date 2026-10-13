@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { publicRewards } from "@mstgolf/core";
 import { earnRateText } from "@mstgolf/shared/tiers";
+import { IconGift } from "@/components/icons";
 import { SectionHead } from "@/components/SectionHead";
 import { SheetHead } from "@/components/SheetHead";
 import { TierTable } from "@/components/TierTable";
@@ -81,12 +82,19 @@ export default async function RewardsInfoPage() {
             <ul className="rl">
               {rewards.map((r) => (
                 <li key={r.id} className={`rl-row${r.soldOut ? " sold-out" : ""}`}>
-                  <span className="rl-tag" aria-hidden="true">
+                  <span className={`rl-tag${r.imageUrl ? "" : r.kind === "COUPON" ? " rl-coupon" : " rl-gift"}`} aria-hidden="true">
                     {r.imageUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element -- catalogue images live in MST's public Blob store
                       <img src={r.imageUrl} alt="" loading="lazy" width={240} height={180} />
+                    ) : r.kind === "COUPON" ? (
+                      <span className="rl-value">
+                        <span className="rl-kind" lang="en">
+                          COUPON
+                        </span>
+                        {r.valueSatang ? formatBaht(r.valueSatang) : "คูปอง"}
+                      </span>
                     ) : (
-                      <span className="rl-value">{r.kind === "COUPON" && r.valueSatang ? formatBaht(r.valueSatang) : "ของรางวัล"}</span>
+                      <IconGift />
                     )}
                   </span>
                   <span className="rl-main">
