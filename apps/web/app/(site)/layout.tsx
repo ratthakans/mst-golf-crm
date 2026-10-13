@@ -22,7 +22,10 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
       <header className="site-header">
         <div className="wrap site-header-row">
           <Logo height={22} />
-          <SiteMenu shopUrl={site.shopUrl ?? null} />
+          <SiteMenu
+            shopUrl={site.shopUrl ?? null}
+            store={{ name: store?.name ?? org.name, address, hours, phone: site.phone ?? null, mapsUrl: site.mapsUrl ?? null }}
+          />
           <div className="site-account">
             <Link href="/app/booking" className="btn btn-primary btn-sm head-book">
               จองซิม

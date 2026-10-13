@@ -42,11 +42,8 @@ export default async function CustomerLayout({ children }: { children: React.Rea
           </div>
         )}
         <nav className="capp-links" aria-label="ลิงก์เว็บไซต์">
-          <Link href="/">หน้าแรก</Link>
-          <Link href="/rewards">สิทธิ์สมาชิก</Link>
-          <Link href="/golf-simulator">ราคาซิม</Link>
+          <Link href="/">หน้าเว็บ MST Golf</Link>
           <Link href="/contact">ติดต่อเรา</Link>
-          <Link href="/terms">ข้อกำหนด</Link>
           <Link href="/privacy">ความเป็นส่วนตัว</Link>
         </nav>
       </footer>

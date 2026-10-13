@@ -10,11 +10,14 @@ export const SITE_PHOTO_KEYS = ["hero", "proShop", "fitting", "academy", "simula
 export type SitePhotoKey = (typeof SITE_PHOTO_KEYS)[number];
 
 /** Where each photo shows, and the mockup it replaces (apps/web/public/mock). */
+// `mock` is the default shown until MST uploads its own photo: MST Golf Group
+// imagery from mstgolf.com where it isn't tied to a place, AI mockups for the
+// Bangkok store and simulator room (only MST's own photos can show those).
 export const SITE_PHOTO_LABEL: Record<SitePhotoKey, { label: string; where: string; mock: string }> = {
-  hero: { label: "ภาพหลัก", where: "หน้าบริการ ด้านบน", mock: "/mock/hero.jpg" },
-  proShop: { label: "Pro shop", where: "บริการ · หน้าแรกและหน้าบริการ", mock: "/mock/proshop.jpg" },
-  fitting: { label: "Club fitting", where: "บริการ · หน้าแรกและหน้าบริการ", mock: "/mock/fitting.jpg" },
-  academy: { label: "Academy", where: "บริการ · หน้าแรกและหน้าบริการ", mock: "/mock/academy.jpg" },
+  hero: { label: "ภาพหลัก", where: "หน้าบริการ ด้านบน", mock: "/photos/mst/coaching.jpg" },
+  proShop: { label: "Pro shop", where: "บริการ · หน้าแรกและหน้าบริการ", mock: "/photos/mst/irons.jpg" },
+  fitting: { label: "Club fitting", where: "บริการ · หน้าแรกและหน้าบริการ", mock: "/photos/mst/workshop.jpg" },
+  academy: { label: "Academy", where: "บริการ · หน้าแรกและหน้าบริการ", mock: "/photos/mst/swing.jpg" },
   simulator: { label: "Golf Simulator (บริการ)", where: "บริการ · หน้าแรกและหน้าบริการ", mock: "/mock/simulator.jpg" },
   simBays: { label: "ห้องซิม", where: "หน้า Golf Simulator", mock: "/mock/sim-bays.jpg" },
   store: { label: "หน้าร้าน", where: "หน้าแรก · แวะมาที่ร้าน", mock: "/mock/store.jpg" },

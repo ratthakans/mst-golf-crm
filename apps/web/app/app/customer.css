@@ -1568,3 +1568,43 @@
   color: var(--color-ink-2);
   background: var(--color-paper-2);
 }
+/* notifications: unread ones open, read ones fold to a single line */
+.inbox-item details > summary {
+  list-style: none;
+  cursor: pointer;
+  min-height: 32px;
+  align-items: center;
+}
+.inbox-item details > summary::-webkit-details-marker {
+  display: none;
+}
+.inbox-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--text-md);
+  color: var(--color-ink);
+}
+.inbox-item details[open] > summary {
+  margin-bottom: var(--space-2);
+}
+.inbox-item details[open] > :not(summary) + :not(summary) {
+  margin-top: var(--space-2);
+}
+.inbox-item:not(.unread) .inbox-title {
+  font-weight: 400;
+  color: var(--color-ink-2);
+}
+.inbox-item details > summary::after {
+  content: "";
+  flex: none;
+  width: 8px;
+  height: 8px;
+  margin-left: var(--space-1);
+  border-right: 1.5px solid var(--color-muted);
+  border-bottom: 1.5px solid var(--color-muted);
+  transform: rotate(45deg) translateY(-2px);
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+.inbox-item details[open] > summary::after {
+  transform: rotate(-135deg) translateY(-2px);
+}

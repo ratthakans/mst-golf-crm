@@ -115,9 +115,6 @@
 .section {
   padding: var(--space-16) 0;
 }
-.section-tight {
-  padding-top: var(--space-6);
-}
 
 .section-rule {
   border-top: var(--rule);
@@ -126,9 +123,6 @@
 @media (min-width: 900px) {
   .section {
     padding: var(--space-24) 0;
-  }
-  .section-tight {
-    padding-top: var(--space-8);
   }
 }
 
@@ -272,44 +266,6 @@
   color: var(--color-on-brand);
 }
 
-/* -------------------------------------------------------------- page heads */
-
-.page-head {
-  padding: var(--space-12) 0 var(--space-10);
-  border-bottom: var(--rule);
-  background: var(--color-paper);
-}
-.page-head h1 {
-  font-size: var(--text-display);
-  line-height: 1.12;
-  margin-bottom: var(--space-3);
-}
-.page-head .cta-row {
-  margin-top: var(--space-6);
-}
-
-@media (min-width: 900px) {
-  .page-head {
-    padding: var(--space-20) 0 var(--space-16);
-  }
-}
-
-/* ----------------------------------------------------------- simulator page */
-
-.sim-head-grid {
-  display: grid;
-  gap: var(--space-8);
-  align-items: center;
-}
-.sim-head-visual {
-  min-width: 0;
-}
-@media (min-width: 900px) {
-  .sim-head-grid {
-    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
-    gap: var(--space-16);
-  }
-}
 .two-col {
   display: grid;
   gap: var(--space-6);
@@ -481,19 +437,6 @@
   border: 0;
   border-top: var(--rule);
 }
-.article-foot {
-  margin-top: var(--space-12);
-  padding: var(--space-6);
-  border-radius: var(--radius-lg);
-  background: var(--color-tint);
-  display: grid;
-  gap: var(--space-4);
-}
-.article-foot p {
-  font-weight: 600;
-  font-family: var(--font-display); /* Book has no bold */
-  color: var(--color-brand-deep);
-}
 .consent-doc {
   padding: var(--space-6) 0;
   border-top: var(--rule);
@@ -601,13 +544,6 @@
   width: 100%;
 }
 
-.visit-photo {
-  margin-top: var(--space-6);
-}
-.nowrap {
-  white-space: nowrap;
-}
-
 /* ============================================================ yardage book */
 /* Home page, Map / Diagram macrostructure. The store drawn as one golf hole;
  * the other sections read like the pages of a yardage book: a scorecard of
@@ -626,201 +562,6 @@
 }
 .text-link:hover {
   color: var(--color-brand);
-}
-
-/* hero: the hole */
-.hole {
-  padding: var(--space-10) 0 var(--space-16);
-  border-bottom: var(--rule);
-}
-.hole-grid {
-  display: grid;
-  gap: var(--space-10);
-}
-.hole-place {
-  font-size: var(--text-sm);
-  color: var(--color-muted);
-}
-.hole-title {
-  margin-top: var(--space-3);
-  font-size: var(--text-display);
-  font-weight: 800;
-  font-family: var(--font-display); /* Book has no bold */
-  line-height: 1.12;
-}
-.hole-title-strong {
-  display: block;
-  font-weight: 800;
-  font-family: var(--font-display); /* Book has no bold */
-  color: var(--color-brand);
-}
-.hole-lede {
-  margin-top: var(--space-5);
-  max-width: 34rem;
-  font-size: var(--text-md);
-  color: var(--color-ink-2);
-}
-.hole .cta-row {
-  margin-top: var(--space-8);
-}
-@media (min-width: 900px) {
-  .hole {
-    padding: var(--space-16) 0 var(--space-24);
-  }
-  .hole-grid {
-    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
-    align-items: center;
-    gap: var(--space-12);
-  }
-}
-
-.yardage {
-  margin: 0;
-  min-width: 0;
-}
-.yardage-plot {
-  position: relative;
-  width: 100%;
-  max-width: 440px;
-  margin-inline: auto;
-  aspect-ratio: 400 / 520;
-}
-.yardage-svg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-}
-.y-fairway {
-  fill: var(--color-grass);
-}
-.y-bunker {
-  fill: var(--color-sand-trap);
-  stroke: var(--color-sand);
-  stroke-width: 2;
-}
-.y-green {
-  fill: var(--color-grass-2);
-}
-.y-tee {
-  fill: var(--color-grass-2);
-  stroke: var(--color-brand-deep);
-  stroke-width: 1.5;
-}
-.y-pin {
-  stroke: var(--color-ink);
-  stroke-width: 2;
-}
-.y-flag {
-  fill: var(--color-brand);
-}
-.y-flight {
-  fill: none;
-  stroke: var(--color-ink-2);
-  stroke-width: 2;
-  stroke-dasharray: 1 7;
-  stroke-linecap: round;
-}
-.y-stop {
-  position: absolute;
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  width: max-content;
-  max-width: 13rem;
-  color: var(--color-ink);
-  text-decoration: none;
-  transform: translate(-15px, -50%);
-}
-.y-stop-left {
-  flex-direction: row-reverse;
-  text-align: right;
-  transform: translate(calc(-100% + 15px), -50%);
-}
-.y-dot {
-  flex: none;
-  display: grid;
-  place-items: center;
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  border: 1.5px solid var(--color-ink);
-  background: var(--color-paper);
-  font-size: var(--text-sm);
-  transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
-}
-.y-label {
-  display: grid;
-  padding: 2px 6px;
-  border-radius: 4px;
-  background: var(--color-paper);
-  line-height: 1.3;
-}
-.y-label b {
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: var(--text-md);
-}
-.y-label span {
-  font-size: var(--text-xs);
-  color: var(--color-muted);
-}
-.y-stop:hover .y-dot,
-.y-stop:focus-visible .y-dot {
-  background: var(--color-brand);
-  border-color: var(--color-brand);
-  color: var(--color-on-brand);
-}
-.y-stop:hover .y-label b {
-  color: var(--color-brand);
-}
-.yardage-cap {
-  margin: var(--space-4) auto 0;
-  max-width: 440px;
-  font-size: var(--text-sm);
-  color: var(--color-muted);
-}
-.yardage-cap b {
-  color: var(--color-ink);
-  font-weight: 600;
-  font-family: var(--font-display); /* Book has no bold */
-}
-.y-legend {
-  display: block;
-  margin-top: var(--space-2);
-  font-size: var(--text-xs);
-}
-.y-legend-line {
-  display: inline-block;
-  width: 28px;
-  vertical-align: middle;
-  border-top: 2px dotted var(--color-ink-2);
-  margin-right: var(--space-1);
-}
-
-/* today's lanes: the scorecard */
-.card-section {
-  padding: var(--space-16) 0;
-  background: var(--color-paper-2);
-  border-bottom: var(--rule);
-}
-.card-grid,
-.ledger-grid,
-.visit-grid {
-  display: grid;
-  gap: var(--space-8);
-}
-.card-copy h2,
-.ledger-copy h2,
-.notes-head h2,
-.visit-copy h2 {
-  font-size: var(--text-3xl);
-}
-.card-copy > p,
-.ledger-copy > p {
-  margin-top: var(--space-3);
-  color: var(--color-ink-2);
-  max-width: 36rem;
 }
 .card-facts {
   margin: var(--space-6) 0 var(--space-5);
@@ -1003,14 +744,6 @@
 .scorecard-closed {
   color: var(--color-muted);
 }
-/* membership: the tier sheet */
-.ledger-section {
-  padding: var(--space-16) 0;
-  border-bottom: var(--rule);
-}
-.ledger-copy .btn {
-  margin-top: var(--space-6);
-}
 .tier-sheet-wrap {
   min-width: 0;
   overflow-x: auto;
@@ -1073,136 +806,9 @@
   color: var(--color-muted);
 }
 
-/* notes (articles) */
-.notes-section {
-  padding: var(--space-16) 0 var(--space-12);
-}
-.notes-head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--space-4);
-  padding-bottom: var(--space-3);
-  border-bottom: 1px solid var(--color-ink);
-}
-
-/* visit */
-.visit-section {
-  padding: var(--space-8) 0 0;
-}
-.visit-copy {
-  display: grid;
-  gap: var(--space-2);
-  align-content: start;
-  color: var(--color-ink-2);
-}
-.visit-store {
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: var(--text-lg);
-  color: var(--color-ink);
-}
-.visit-copy .cta-row {
-  margin-top: var(--space-4);
-}
-
-@media (min-width: 900px) {
-  .card-grid,
-  .ledger-grid {
-    grid-template-columns: minmax(0, 4fr) minmax(0, 7fr);
-    gap: var(--space-12);
-    align-items: start;
-  }
-  .visit-grid {
-    grid-template-columns: minmax(0, 6fr) minmax(0, 5fr);
-    gap: var(--space-12);
-    align-items: center;
-  }
-}
-
 /* services: one yardage-book page per stop, same rail every time (no zigzag) */
 .book-head .lede {
   max-width: 40rem;
-}
-.stops {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2) var(--space-6);
-  margin-top: var(--space-6);
-}
-.stop-link {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  min-height: 44px;
-  font-family: var(--font-display);
-  font-weight: 600;
-  color: var(--color-ink);
-  text-decoration: none;
-  white-space: nowrap;
-}
-.stop-link:hover .y-dot {
-  background: var(--color-brand);
-  border-color: var(--color-brand);
-  color: var(--color-on-brand);
-}
-.book-hero {
-  margin: var(--space-8) 0 0;
-}
-.book-page {
-  padding: var(--space-12) 0;
-  border-top: var(--rule);
-  scroll-margin-top: var(--header-h);
-}
-.book-grid {
-  display: grid;
-  gap: var(--space-6);
-}
-.book-side h2 {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  font-size: var(--text-3xl);
-}
-.book-thai {
-  margin-top: var(--space-1);
-  color: var(--color-muted);
-}
-.book-figure {
-  margin: var(--space-5) 0 0;
-}
-.book-body {
-  display: grid;
-  gap: var(--space-4);
-  align-content: start;
-  max-width: 40rem;
-  color: var(--color-ink-2);
-  font-size: var(--text-md);
-}
-.book-points {
-  list-style: none;
-  margin: var(--space-2) 0 0;
-  padding: 0;
-  border-top: 1px solid var(--color-ink);
-  font-size: var(--text-base);
-}
-.book-points li {
-  padding: var(--space-2) 0;
-  border-bottom: var(--rule);
-  color: var(--color-ink);
-}
-.book-body .cta-row {
-  margin-top: var(--space-2);
-  align-items: center;
-}
-@media (min-width: 900px) {
-  .book-grid {
-    grid-template-columns: minmax(0, 4fr) minmax(0, 7fr);
-    gap: var(--space-12);
-  }
-  .book-body {
-    padding-top: var(--space-2);
-  }
 }
 
 /* closing line (replaces the dark CTA band) */
@@ -1233,21 +839,6 @@
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
   }
-}
-
-/* -------------------------------------------------------- rewards · promotions · contact */
-
-.section-h {
-  font-size: var(--text-3xl);
-  margin-bottom: var(--space-3);
-}
-.section-lede {
-  color: var(--color-ink-2);
-  max-width: 40rem;
-  margin-bottom: var(--space-6);
-}
-.page-head .cta-row {
-  margin-top: var(--space-5);
 }
 .earn-steps {
   list-style: none;
@@ -1288,97 +879,6 @@
   .earn-steps li {
     border-bottom: 0;
   }
-}
-
-.reward-grid {
-  list-style: none;
-  margin: var(--space-4) 0 var(--space-6);
-  padding: 0;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
-  gap: var(--space-5);
-}
-.reward-card {
-  display: grid;
-  gap: var(--space-1);
-  align-content: start;
-}
-.reward-card img,
-.reward-blank {
-  width: 100%;
-  aspect-ratio: 4 / 3;
-  object-fit: cover;
-  border-radius: var(--radius-md);
-  background: var(--color-paper-2);
-  margin-bottom: var(--space-2);
-}
-.reward-blank {
-  display: grid;
-  place-items: center;
-  font-size: var(--text-2xl);
-  font-weight: 600;
-  font-family: var(--font-display); /* Book has no bold */
-  color: var(--color-brand-deep);
-}
-.reward-cost {
-  color: var(--color-brand);
-  font-weight: 500;
-  font-family: var(--font-display); /* Book has no bold */
-}
-.reward-meta {
-  font-size: var(--text-sm);
-  color: var(--color-muted);
-}
-.reward-card.sold-out img,
-.reward-card.sold-out .reward-blank {
-  opacity: 0.5;
-}
-
-.promo-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
-  gap: var(--space-6);
-}
-.promo-item {
-  display: grid;
-  gap: var(--space-3);
-  align-content: start;
-}
-.promo-cover {
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  object-fit: cover;
-  border-radius: var(--radius-md);
-  background: var(--color-paper-2);
-}
-.promo-text {
-  display: grid;
-  gap: var(--space-2);
-}
-.promo-title {
-  font-size: var(--text-lg);
-  font-weight: 600;
-  font-family: var(--font-display); /* Book has no bold */
-}
-.promo-excerpt {
-  color: var(--color-ink-2);
-}
-.promo-until {
-  font-size: var(--text-sm);
-  color: var(--color-muted);
-}
-.promo-actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-4);
-  margin-top: var(--space-1);
-}
-.promo-foot {
-  margin-top: var(--space-8);
 }
 
 .contact-grid {
@@ -1423,40 +923,6 @@
   width: 1px;
   height: 1px;
   overflow: hidden;
-}
-
-/* ======================================================= retail home (Oct 2026) */
-
-.promo-bar {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-3);
-  min-height: 40px;
-  padding: var(--space-2) var(--gutter);
-  background: var(--color-brand-deep);
-  color: #fff;
-  font-size: var(--text-sm);
-  text-decoration: none;
-}
-.promo-bar:hover .promo-bar-text {
-  text-decoration: underline;
-}
-.promo-bar-tag {
-  flex: none;
-  padding: 2px var(--space-2);
-  border-radius: 4px;
-  background: var(--color-brand); /* white small text never sits on #00A35F (design.md) */
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: var(--text-xs);
-  letter-spacing: 0.04em;
-}
-.promo-bar-text {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  min-width: 0;
 }
 
 .site-nav {
@@ -1705,9 +1171,6 @@ a.ps-row:hover .ps-title,
   gap: var(--space-2) var(--space-5);
   margin-top: var(--space-3);
 }
-.ps-all {
-  margin-top: var(--space-4);
-}
 @media (min-width: 720px) {
   .ps-row {
     grid-template-columns: 96px minmax(0, 1fr) auto;
@@ -1754,64 +1217,6 @@ a.ps-row:hover .ps-title,
   .ps-full .ps-row {
     grid-template-columns: 320px minmax(0, 1fr) auto;
     column-gap: var(--space-8);
-  }
-}
-
-.dir {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  border-top: 1px solid var(--color-ink);
-}
-.dir-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  grid-template-areas: "name go" "thai thai" "short short";
-  gap: var(--space-1) var(--space-4);
-  padding-block: var(--space-5);
-  border-bottom: var(--rule);
-  color: var(--color-ink);
-  text-decoration: none;
-}
-.dir-name {
-  grid-area: name;
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: var(--text-xl);
-  letter-spacing: -0.01em;
-}
-.dir-thai {
-  grid-area: thai;
-  font-weight: 600;
-  font-family: var(--font-display); /* Book has no bold */
-  font-size: var(--text-sm);
-  color: var(--color-brand-deep);
-}
-.dir-short {
-  grid-area: short;
-  color: var(--color-ink-2);
-}
-.dir-go {
-  grid-area: go;
-  align-self: center;
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: var(--text-xl);
-  color: var(--color-brand);
-  transition: transform var(--dur-fast) var(--ease-out);
-}
-.dir-row:hover .dir-name {
-  color: var(--color-brand);
-}
-.dir-row:hover .dir-go {
-  transform: translateX(4px);
-}
-@media (min-width: 900px) {
-  .dir-row {
-    grid-template-columns: 15rem 9rem minmax(0, 1fr) auto;
-    grid-template-areas: "name thai short go";
-    align-items: baseline;
-    gap: var(--space-6);
   }
 }
 
@@ -1896,56 +1301,9 @@ a.ps-row:hover .ps-title,
   border-top: var(--rule);
   scroll-margin-top: calc(var(--header-h) + var(--space-4));
 }
-.svc-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--space-6);
-}
-.svc-name {
-  font-size: clamp(2rem, 2.4vw + 1.2rem, 3rem);
-  font-weight: 800;
-  font-family: var(--font-display); /* Book has no bold */
-  letter-spacing: -0.02em;
-}
-.svc-thai {
-  margin-top: var(--space-1);
-  font-family: var(--font-display);
-  font-weight: 600;
-  color: var(--color-brand-deep);
-}
-.svc-photo {
-  margin-top: var(--space-6);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-}
-.svc-body {
-  display: grid;
-  gap: var(--space-4);
-  align-content: start;
-  color: var(--color-ink-2);
-  max-width: 62ch;
-}
-.svc-points {
-  list-style: none;
-  margin: var(--space-2) 0 0;
-  padding: 0;
-  border-top: 1px solid var(--color-ink);
-}
-.svc-points li {
-  padding-block: var(--space-3);
-  border-bottom: var(--rule);
-  color: var(--color-ink);
-}
-.svc-body .cta-row {
-  margin-top: var(--space-2);
-}
 @media (min-width: 900px) {
   .svc {
     padding-block: var(--space-16);
-  }
-  .svc-grid {
-    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-    gap: var(--space-12);
   }
 }
 
@@ -2604,4 +1962,37 @@ a.ps-row:hover .ps-title,
 }
 .sc-chip:hover {
   background: var(--color-tint);
+}
+
+/* phone menu: the store's facts above the two buttons */
+.menu-sheet-info {
+  display: grid;
+  gap: var(--space-1);
+  margin-top: auto;
+  padding-block: var(--space-6) var(--space-5);
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+}
+.menu-sheet-store {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--text-base);
+  color: var(--color-ink);
+}
+.menu-sheet-links-inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-5);
+  margin-top: var(--space-2);
+}
+.menu-sheet-links-inline a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--color-brand-deep);
+  font-family: var(--font-display);
+  font-weight: 400;
+}
+.menu-sheet-info + .menu-sheet-cta {
+  margin-top: 0;
 }

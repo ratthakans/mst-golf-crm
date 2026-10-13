@@ -90,9 +90,11 @@ The Member card is drawn in the CVI green.
   - Tertiary: `.text-link`.
   - No pill buttons, no dark CTA bands.
 - **Photos:**
-  - Framed only by radius.
-  - The CVI's own style is black-and-white photography with the green Swing Arc over it. Use it for MST's real photos when they arrive.
-  - Until then the site shows AI mockups and must not go live with them.
+  - Framed only by 4 px corners.
+  - Default order: MST's uploads in the back office always win. Until then, use MST Golf Group imagery from mstgolf.com, kept in `apps/web/public/photos/mst` (coaching, workshop, irons, a swing, course walk, driver, balls).
+    - Only use that imagery where the picture isn't tied to a place. mstgolf.com is the Malaysia/Singapore group site, so never present its MST Golf Plaza or Arena photos as the Bangkok store.
+  - The Bangkok shop front and simulator room stay AI mockups (`/public/mock`) until MST sends real photos. The site must not go live with them.
+  - The CVI's own style, black-and-white photography with the green Swing Arc over it, applies to MST's real photos when they arrive.
 
 ## Motion
 Allowed: hover colour shifts, the → nudging 4 px on directory rows, sheet/menu fade-ins. The home carousel and brand marquee were removed in the sale-sheet redesign. Everything stops under `prefers-reduced-motion`. Nothing scrolls in.

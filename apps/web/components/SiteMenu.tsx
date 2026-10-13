@@ -8,7 +8,7 @@ import { NAV } from "@/lib/nav";
 
 // Desktop: the page links in the header row. Phone: a menu button that opens
 // the same links full-screen (plus booking and membership).
-export function SiteMenu({ shopUrl }: { shopUrl: string | null }) {
+export function SiteMenu({ shopUrl, store }: { shopUrl: string | null; store?: { name: string; address: string | null; hours: string[]; phone: string | null; mapsUrl: string | null } }) {
   const path = usePathname() ?? "/";
   const [open, setOpen] = useState(false);
   const active = (href: string) => (href === "/" ? path === "/" : path.startsWith(href));
@@ -58,6 +58,23 @@ export function SiteMenu({ shopUrl }: { shopUrl: string | null }) {
               </a>
             )}
           </nav>
+          {store && (
+            <div className="menu-sheet-info">
+              <p className="menu-sheet-store">{store.name}</p>
+              {store.address && <p>{store.address}</p>}
+              {store.hours.map((h) => (
+                <p key={h}>{h}</p>
+              ))}
+              <p className="menu-sheet-links-inline">
+                {store.phone && <a href={`tel:${store.phone.replace(/[^\d+]/g, "")}`}>โทร {store.phone}</a>}
+                {store.mapsUrl && (
+                  <a href={store.mapsUrl} target="_blank" rel="noopener">
+                    เปิดแผนที่ ↗
+                  </a>
+                )}
+              </p>
+            </div>
+          )}
           <div className="menu-sheet-cta">
             <Link href="/app/booking" className="btn btn-primary btn-block">
               จองซิมกอล์ฟ

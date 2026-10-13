@@ -1,10 +1,12 @@
 import type { SitePhotoKey, SiteSettings } from "@mstgolf/shared";
 import { SITE_PHOTO_LABEL as M } from "@mstgolf/shared/site";
 
-// Site photography, in one place. Every file under /public/mock is an
-// AI-generated MOCKUP (Higgsfield · gpt_image_2_5, 26 Sep 2026) standing in
-// until MST uploads real photos in the back office (เว็บไซต์ › เนื้อหาหน้าเว็บ),
-// which are stored in settings.site.photos and win over the mockups here.
+// Site photography, in one place. Photos MST uploads in the back office
+// (เว็บไซต์ › เนื้อหาหน้าเว็บ, settings.site.photos) always win. Until then:
+// - /public/photos/mst: MST Golf Group's own imagery from mstgolf.com, used only
+//   where the picture isn't tied to a place (coaching, workshop, clubs, a swing);
+// - /public/mock: AI-generated MOCKUPS (Higgsfield · gpt_image_2_5, 26 Sep 2026)
+//   for the Bangkok store and simulator room, which only MST's photos can show.
 
 export interface SitePhoto {
   src: string;
@@ -14,13 +16,13 @@ export interface SitePhoto {
   mock?: boolean; // still the AI mockup
 }
 
-const photo = (src: string, alt: string, width = 1600, height = 1205): SitePhoto => ({ src, alt, width, height, mock: true });
+const photo = (src: string, alt: string, width = 1600, height = 1205): SitePhoto => ({ src, alt, width, height, mock: src.startsWith("/mock/") });
 
 export const PHOTOS = {
-  hero: photo(M.hero.mock, "นักกอล์ฟตีไดรฟ์ในห้อง Golf Simulator ของร้าน"),
-  proShop: photo(M.proShop.mock, "ผนังจัดแสดงไม้กอล์ฟ ลูก และถุงมือในร้าน"),
-  fitting: photo(M.fitting.mock, "ฟิตเตอร์วัดวงสวิงด้วยเครื่องวัดระหว่างฟิตติ้งไม้กอล์ฟ"),
-  academy: photo(M.academy.mock, "โปรช่วยปรับการจับไม้ให้นักเรียนในคลาสกอล์ฟ"),
+  hero: photo(M.hero.mock, "โค้ชดูวงสวิงของนักกอล์ฟในห้องซิม", 2000, 2000),
+  proShop: photo(M.proShop.mock, "ไม้กอล์ฟชุดเหล็ก Mizuno ในถุงกอล์ฟ", 1400, 1750),
+  fitting: photo(M.fitting.mock, "ช่างประกอบไม้กอล์ฟในเวิร์กช็อปฟิตติ้ง", 1600, 1600),
+  academy: photo(M.academy.mock, "นักกอล์ฟตีลูกบนสนาม", 1122, 838),
   simulator: photo(M.simulator.mock, "เพื่อนสามคนเล่น Golf Simulator ด้วยกันในห้องซิม"),
   simBays: photo(M.simBays.mock, "ห้อง Golf Simulator สามช่องเรียงกัน", 1600, 895),
   store: photo(M.store.mock, "หน้าร้าน MST Golf ยามเย็น", 1600, 895),

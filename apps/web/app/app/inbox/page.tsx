@@ -32,27 +32,29 @@ export default async function InboxPage() {
         <ol className="inbox-list">
           {items.map((n) => (
             <li key={n.id} className={`inbox-item${n.read ? "" : " unread"}`}>
-              <div className="inbox-head">
-                <h2>{n.title}</h2>
-                <time dateTime={n.at}>{formatThaiDate(new Date(n.at))}</time>
-              </div>
-              {n.lead && <p className="inbox-lead">{n.lead}</p>}
-              {n.rows.length > 0 && (
-                <dl className="summary">
-                  {n.rows.map((r) => (
-                    <div key={r.label}>
-                      <dt>{r.label}</dt>
-                      <dd className={r.strong ? "strong" : undefined}>{r.value}</dd>
-                    </div>
-                  ))}
-                </dl>
-              )}
-              {n.foot && <p className="hint">{n.foot}</p>}
-              {n.link && (
-                <Link href={n.link.href} className="text-link">
-                  {n.link.label}
-                </Link>
-              )}
+              <details open={!n.read}>
+                <summary className="inbox-head">
+                  <span className="inbox-title">{n.title}</span>
+                  <time dateTime={n.at}>{formatThaiDate(new Date(n.at))}</time>
+                </summary>
+                {n.lead && <p className="inbox-lead">{n.lead}</p>}
+                {n.rows.length > 0 && (
+                  <dl className="summary">
+                    {n.rows.map((r) => (
+                      <div key={r.label}>
+                        <dt>{r.label}</dt>
+                        <dd className={r.strong ? "strong" : undefined}>{r.value}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                )}
+                {n.foot && <p className="hint">{n.foot}</p>}
+                {n.link && (
+                  <Link href={n.link.href} className="text-link">
+                    {n.link.label}
+                  </Link>
+                )}
+              </details>
             </li>
           ))}
         </ol>

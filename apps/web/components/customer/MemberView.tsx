@@ -154,13 +154,15 @@ function CardPanel({ card, qrSrc, topTierName }: { card: CardData; qrSrc: string
           <>
             <div className="progress-head">
               <span>
-                อีก <b className="num">{formatBahtWhole(card.next.remainingBaht)}</b> ถึง {card.next.name}
+                ซื้ออีก <b className="num">{formatBahtWhole(card.next.remainingBaht)}</b> ภายใน 12 เดือน เพื่อขึ้นระดับ <b>{card.next.name}</b>
               </span>
-              <span className="num muted">{Math.round(card.next.pct * 100)}%</span>
+              {card.next.pct >= 0.05 && <span className="num muted">{Math.round(card.next.pct * 100)}%</span>}
             </div>
+            {card.next.pct >= 0.05 && (
             <div className="progress" role="progressbar" aria-label={`ความคืบหน้าสู่ระดับ ${card.next.name}`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(card.next.pct * 100)}>
               <i style={{ transform: `scaleX(${Math.max(0.02, card.next.pct)})` }} />
             </div>
+            )}
             <p className="hint">ยอดซื้อสะสม 12 เดือนล่าสุด {formatBahtWhole(card.spend12mBaht)} · ระดับคิดจากยอดซื้อ ไม่ใช่แต้ม</p>
           </>
         ) : (
