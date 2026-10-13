@@ -26,8 +26,6 @@ export const metadata: Metadata = {
   openGraph: { title: "MST Golf", description: "โปรโมชันล่าสุด ไม้กอล์ฟ อุปกรณ์ ฟิตติ้ง อคาเดมี และ Golf Simulator", url: "/" },
 };
 
-const MONTH = new Intl.DateTimeFormat("th-TH", { month: "long", timeZone: "Asia/Bangkok" });
-
 // The home page of a golf shop, set like the sale sheet at the counter: this
 // month's promotions first (the lead one large, the rest as a ruled list), then
 // the brands on the shelves, today's free simulator lanes from the live booking
@@ -69,13 +67,7 @@ export default async function HomePage() {
 
       {lead ? (
         <SheetHead
-          crumb={null}
-          place={store?.name ?? org.name}
-          fact={
-            <>
-              โปรโมชันเดือน{MONTH.format(now)} · <span className="mono">{promos.length}</span> รายการ
-            </>
-          }
+          full
           kicker={untilText(lead.endsAt, now)}
           kickerSoon={endsSoon(lead.endsAt, now)}
           titleAs="h2"
@@ -85,11 +77,11 @@ export default async function HomePage() {
           actions={
             <>
               {leadCta!.external ? (
-                <a href={leadCta!.href} className="btn btn-primary" target="_blank" rel="noopener">
+                <a href={leadCta!.href} className="btn btn-on-dark" target="_blank" rel="noopener">
                   {lead.linkLabel || "ดูโปรโมชัน"}
                 </a>
               ) : (
-                <Link href={leadCta!.href} className="btn btn-primary">
+                <Link href={leadCta!.href} className="btn btn-on-dark">
                   {lead.linkLabel || "ดูรายละเอียด"}
                 </Link>
               )}
@@ -100,17 +92,20 @@ export default async function HomePage() {
               )}
             </>
           }
-          aside={
-            lead.coverUrl ? (
-              <Link href={`/promotions/${lead.slug}`} className="sh-img" tabIndex={-1} aria-hidden="true">
-                {/* eslint-disable-next-line @next/next/no-img-element -- promotion covers come from MST's uploads */}
-                <img src={lead.coverUrl} alt="" />
-              </Link>
-            ) : null
+          media={
+            // eslint-disable-next-line @next/next/no-img-element -- promotion covers come from MST's uploads
+            <img src={lead.coverUrl ?? photos.hero.src} alt="" fetchPriority="high" />
           }
         />
       ) : (
-        <SheetHead crumb={null} place={store?.name ?? org.name} titleAs="h2" titleId="window-h" title={copy.heroHighlight ? `${copy.heroTitle} ${copy.heroHighlight}` : copy.heroTitle} lede={copy.heroLede} />
+        <SheetHead
+          full
+          titleAs="h2"
+          titleId="window-h"
+          title={copy.heroHighlight ? `${copy.heroTitle} ${copy.heroHighlight}` : copy.heroTitle}
+          lede={copy.heroLede}
+          media={<Photo photo={photos.hero} ratio="16 / 9" priority sizes="100vw" />}
+        />
       )}
 
       {rest.length > 0 && (

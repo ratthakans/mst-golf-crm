@@ -44,21 +44,9 @@ export default async function PostPage({ params }: { params: { slug: string } })
   return (
     <article className="article">
       <div className="wrap article-wrap">
-        <p className="sh-meta">
-          <span className="sh-crumb">
-            <Link href="/">MST Golf</Link>
-            <span aria-hidden="true"> / </span>
-            <Link href="/blog">บทความ</Link>
-          </span>
-          <span className="sh-fact">
-            {CATEGORY_LABEL[post.category]}
-            {post.publishedAt && (
-              <>
-                {" · "}
-                <time dateTime={post.publishedAt.toISOString()}>{formatThaiDate(post.publishedAt)}</time>
-              </>
-            )}
-          </span>
+        <p className="post-meta article-meta">
+          <span className="cat">{CATEGORY_LABEL[post.category]}</span>
+          {post.publishedAt && <time dateTime={post.publishedAt.toISOString()}>{formatThaiDate(post.publishedAt)}</time>}
         </p>
         <header className="article-head">
           <h1 className="sh-title">{post.title}</h1>

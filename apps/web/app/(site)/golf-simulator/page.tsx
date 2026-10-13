@@ -46,17 +46,11 @@ export default async function SimulatorPage() {
   return (
     <>
       <SheetHead
-        crumb="Golf Simulator"
-        fact={
-          <>
-            <span className="mono">{lanes.length || 3}</span> lane{prices.length ? ` · ${prices.map((p) => formatBaht(p)).join(" / ")} ต่อชั่วโมง` : ""}
-          </>
-        }
         title="Golf Simulator"
         lede={`ซ้อมหรือเล่นสนามจำลองได้ทุกวัน${hours[0] ? ` (${hours[0]})` : ""} จองบนเว็บไซต์ด้วยตารางเดียวกับที่ร้านใช้ ช่องว่างจองได้ทันที`}
         actions={
           <>
-            <Link href="/app/booking" className="btn btn-primary">
+            <Link href="/app/booking" className="btn btn-on-dark">
               จองซิม
             </Link>
             <a href="#rules-h" className="text-link">
@@ -64,7 +58,8 @@ export default async function SimulatorPage() {
             </a>
           </>
         }
-        aside={<Photo photo={sitePhotos(s.site).simBays} ratio="4 / 3" priority sizes="(min-width: 900px) 45vw, 100vw" />}
+        full
+        media={<Photo photo={sitePhotos(s.site).simBays} ratio="16 / 9" priority sizes="100vw" />}
       />
 
       {day && (

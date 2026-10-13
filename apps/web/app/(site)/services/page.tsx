@@ -28,15 +28,10 @@ export default async function ServicesPage() {
   return (
     <>
       <SheetHead
-        crumb="บริการ"
-        fact={
-          <>
-            <span className="mono">{SERVICES.length}</span> บริการในร้านเดียว{hours[0] ? ` · ${hours[0]}` : ""}
-          </>
-        }
         title="บริการในร้าน"
         lede="ทุกบริการใช้ห้องซิมเป็นเครื่องมือเดียวกัน คุณจึงเห็นตัวเลขวงสวิงของตัวเองตั้งแต่ลองไม้ ฟิตติ้ง ไปจนถึงเรียนกับโปร"
-        aside={<Photo photo={photos.hero} ratio="4 / 3" priority sizes="(min-width: 900px) 45vw, 100vw" />}
+        full
+        media={<Photo photo={photos.hero} ratio="16 / 9" priority sizes="100vw" />}
       />
 
       <section className="pg-body" aria-label="บริการทั้งหมด">

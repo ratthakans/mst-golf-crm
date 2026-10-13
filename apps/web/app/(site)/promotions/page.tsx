@@ -14,8 +14,6 @@ export const metadata: Metadata = {
   openGraph: { title: "โปรโมชัน | MST Golf", url: "/promotions" },
 };
 
-const MONTH = new Intl.DateTimeFormat("th-TH", { month: "long", timeZone: "Asia/Bangkok" });
-
 export default async function PromotionsPage() {
   const [promos, org] = await Promise.all([currentPromotions(30), getOrg()]);
   const shop = org.settings.site.shopUrl;
@@ -23,12 +21,6 @@ export default async function PromotionsPage() {
   return (
     <>
       <SheetHead
-        crumb="โปรโมชัน"
-        fact={
-          <>
-            เดือน{MONTH.format(now)} · <span className="mono">{promos.length}</span> รายการ
-          </>
-        }
         title="โปรโมชัน"
         lede={`ข้อเสนอที่ใช้ได้ตอนนี้ที่ร้าน${shop ? "และร้านออนไลน์" : ""} · สมาชิกได้แต้มทุกการซื้อ`}
       />

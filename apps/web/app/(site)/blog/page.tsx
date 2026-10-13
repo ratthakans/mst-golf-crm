@@ -17,12 +17,6 @@ export default async function BlogPage() {
   return (
     <>
       <SheetHead
-        crumb="บทความ"
-        fact={
-          <>
-            <span className="mono">{posts.length}</span> เรื่อง
-          </>
-        }
         title="บทความและข่าวจากร้าน"
         lede="เทคนิคการซ้อม เรื่องไม้กอล์ฟ บริการในร้าน และข่าวสารจาก MST Golf"
       />

@@ -10,7 +10,7 @@ The back office (`apps/web-admin`) keeps its own UI. It only takes the CVI accen
 - **Genre:** a golf shop's website, promotion-led (no e-commerce: visitors see offers, they don't buy online). Clean CVI sans-serif on white, photography first.
 - **Home (`/`): the sale sheet** (Hallmark macrostructure *Catalogue*, Oct 2026). Set like the promotion sheet at a shop counter. In order:
   1. A promotion bar.
-  2. **Shop window:** a sheet header (store name · "โปรโมชันเดือน… · N รายการ" over a 1 px ink rule), then the lead promotion large: end date or countdown, title, short line, one button; its cover sits beside it, never under the text.
+  2. **Full-width hero:** the lead promotion's photo runs edge to edge. Its end date, title, line and one white button sit on a solid `#00854D` panel over the lower-left corner (on phones, the panel sits full width under the photo). The CVI Swing Arc sweeps across the photo. There is no gradient over the picture and no meta line above it (owner, 13 Oct 2026).
   3. **The rest of the month's promotions as a ruled list:** thumbnail, title, short line, end date on the right. Then a "ทุกโปรโมชันและเงื่อนไข" link.
   4. **Brands on the shelves:** one static line, no marquee.
   5. **Free sim lanes:** the live scorecard for today, or for tomorrow once the store has closed. Price from settings, plus a "จองซิม" button.
@@ -21,7 +21,7 @@ The back office (`apps/web-admin`) keeps its own UI. It only takes the CVI accen
 - **Never on the home page:** text over photos, carousels, a marquee, photo-tile grids, pill badges, or a CTA band with two buttons. Those read as generated.
 - **Header:** logo, page links (desktop) or a full-screen menu (phone), "จองซิม" and the account on the right.
 - **Every other public page uses the same sale sheet** (Oct 2026):
-  - **Head (`components/SheetHead.tsx`):** "MST Golf / page" on the left and one live fact on the right (counts, hours, price, end date), over a 1 px ink rule. Then a large roman title, a lede, one primary button plus a text link. An optional photo sits beside it, never behind it.
+  - **Head (`components/SheetHead.tsx`):** pages with a photo (home, /services, /golf-simulator, a promotion with a cover) use the same full-width hero. Pages without one get a large roman title, a lede and actions on white. No breadcrumb or meta line.
   - **Lists are ruled:** promotions (`PromoSheet`, with a `full` variant on `/promotions`), services (`ServiceDirectory`), the rewards catalogue (`.rw`), articles, rules and prices. Each list opens with a 1 px ink rule and puts the fact on the right (end date, points, price).
   - **`/services`:** the directory, then one section per service (name, Thai name, photo if there is one, ruled points). No numbered circles.
   - **`/golf-simulator`:** the head, then the live scorecard (today, or tomorrow after closing), lanes and prices, tier discounts and rules.
@@ -70,7 +70,7 @@ The Member card is drawn in the CVI green.
 ## The Swing Arc (CVI)
 - `components/SwingArc.tsx` is the site's only decorative mark. It is the curve from the logo.
 - Where it appears:
-  - In #00A35F over the bottom-right corner of every sheet-head photo.
+  - In #00A35F across the full-width hero photo.
   - As a 10 % white watermark in the green membership band on the home page.
   - Inside the member card.
 - Don't add it anywhere else, and never put it behind text.

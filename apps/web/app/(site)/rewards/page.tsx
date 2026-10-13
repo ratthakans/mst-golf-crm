@@ -28,18 +28,6 @@ export default async function RewardsInfoPage() {
   return (
     <>
       <SheetHead
-        crumb="สิทธิ์สมาชิก"
-        fact={
-          <>
-            สมัครฟรี · {s.tiers.map((t) => t.name).join(" / ")}
-            {rewards.length ? (
-              <>
-                {" "}
-                · รางวัล <span className="mono">{rewards.length}</span> รายการ
-              </>
-            ) : null}
-          </>
-        }
         title="สิทธิ์สมาชิกและรางวัล"
         lede="สมัครฟรีด้วยเบอร์มือถือ สะสมแต้มทุกการซื้อ แล้วใช้แต้มแลกคูปองและของรางวัล"
         actions={

@@ -45,8 +45,6 @@ export default async function PromotionPage({ params }: { params: { slug: string
   return (
     <>
       <SheetHead
-        crumb={{ text: "โปรโมชัน", href: "/promotions" }}
-        fact={lastDay ? `ถึง ${formatThaiDate(new Date(lastDay))}` : "ระยะเวลาจำกัด"}
         kicker={lastDay ? untilText(lastDay, now) : null}
         kickerSoon={!!lastDay && endsSoon(lastDay, now)}
         title={p.title}
@@ -54,22 +52,21 @@ export default async function PromotionPage({ params }: { params: { slug: string
         actions={
           p.linkUrl ? (
             external ? (
-              <a href={p.linkUrl} className="btn btn-primary" target="_blank" rel="noopener">
+              <a href={p.linkUrl} className={p.coverUrl ? "btn btn-on-dark" : "btn btn-primary"} target="_blank" rel="noopener">
                 {p.linkLabel || "ดูรายละเอียด"}
               </a>
             ) : (
-              <Link href={p.linkUrl} className="btn btn-primary">
+              <Link href={p.linkUrl} className={p.coverUrl ? "btn btn-on-dark" : "btn btn-primary"}>
                 {p.linkLabel || "ดูรายละเอียด"}
               </Link>
             )
           ) : null
         }
-        aside={
+        full={!!p.coverUrl}
+        media={
           p.coverUrl ? (
-            <figure className="sh-img">
-              {/* eslint-disable-next-line @next/next/no-img-element -- cover lives in MST's public Blob store */}
-              <img src={p.coverUrl} alt="" width={1200} height={900} />
-            </figure>
+            // eslint-disable-next-line @next/next/no-img-element -- cover lives in MST's public Blob store
+            <img src={p.coverUrl} alt="" fetchPriority="high" />
           ) : null
         }
       />
