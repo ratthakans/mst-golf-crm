@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import { Kanit, Lato, Montserrat } from "next/font/google";
 import "./fonts.css";
 import "./globals.css";
 import { siteOrigin } from "@/lib/org";
@@ -7,12 +6,11 @@ import { siteOrigin } from "@/lib/org";
 // Type: MST's Futura 100 Thai from Adobe Fonts (kit sxs5ann, loaded below) —
 // Book for running text, Medium/Bold for titles and anything set heavier. The
 // kit serves only the Latin subset until its owner sets the web project to
-// "All characters"; until then Thai falls back to Kanit (titles, 400–700) and
-// Anuphan (text), which are loopless like Futura's Thai. Montserrat / Lato
-// stand in for Latin should the kit fail to load.
-const montserrat = Montserrat({ subsets: ["latin"], weight: ["600", "700", "800", "900"], variable: "--ff-montserrat", display: "swap", preload: false });
-const lato = Lato({ subsets: ["latin"], weight: ["400", "700"], variable: "--ff-lato", display: "swap", preload: false });
-const kanit = Kanit({ subsets: ["thai", "latin"], weight: ["400", "500", "600", "700"], variable: "--ff-kanit", display: "swap", preload: false });
+// "All characters"; until then Thai falls back to Kanit (titles, 400–700, from
+// Google Fonts below) and Anuphan (text, self-hosted in fonts.css), which are
+// loopless like Futura's Thai. Kanit is a plain stylesheet, not next/font:
+// next/font fetches at build time and Next 14.2.35's loader crashes on Google's
+// current font URLs.
 
 export async function generateMetadata(): Promise<Metadata> {
   const origin = await siteOrigin();
@@ -36,12 +34,16 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="th" className={`${montserrat.variable} ${lato.variable} ${kanit.variable}`}>
+    <html lang="th">
       <head>
         <link rel="preconnect" href="https://use.typekit.net" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://p.typekit.net" crossOrigin="anonymous" />
         {/* eslint-disable-next-line @next/next/no-css-tags -- Adobe Fonts kits are served as a stylesheet */}
         <link rel="stylesheet" href="https://use.typekit.net/sxs5ann.css" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        {/* eslint-disable-next-line @next/next/no-css-tags, @next/next/no-page-custom-font -- the root layout covers every page; Kanit is only the Thai fallback (see above) */}
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600;700&display=swap" />
       </head>
       <body>{children}</body>
     </html>

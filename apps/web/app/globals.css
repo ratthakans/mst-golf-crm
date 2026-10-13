@@ -61,9 +61,9 @@
   /* Futura 100 Thai (Adobe Fonts kit in app/layout.tsx). Its Book cut has only 400,
      so anything set at 500+ uses the Medium/Bold family (--font-display) instead
      of a synthesised bold. The rest of each stack is the fallback if the kit fails. */
-  --font-body: "futura-100-thai-book", var(--ff-lato, "Lato"), "Anuphan", "Noto Sans Thai", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-display: "futura-100-thai", var(--ff-montserrat, "Montserrat"), var(--ff-kanit, "Kanit"), "Noto Sans Thai", system-ui, sans-serif; /* titles, labels, bold */
-  --font-mono: "futura-100-thai", var(--ff-montserrat, "Montserrat"), "Anuphan", system-ui, sans-serif; /* numerals: prices, times, lane numbers (tabular) */
+  --font-body: "futura-100-thai-book", "Anuphan", "Noto Sans Thai", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "futura-100-thai", "Kanit", "Noto Sans Thai", system-ui, sans-serif; /* titles, labels, bold */
+  --font-mono: "futura-100-thai", "Kanit", "Anuphan", system-ui, sans-serif; /* numerals: prices, times, lane numbers (tabular) */
   --color-grass: oklch(90% 0.060 156); /* yardage-map fairway */
   --color-grass-2: oklch(80% 0.110 156); /* yardage-map green */
   --color-sand-trap: oklch(90% 0.040 88);
