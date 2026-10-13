@@ -15,12 +15,13 @@ export interface UserRecord {
   role: Role;
   passwordHash: string | null;
   mustChangePassword: boolean;
+  sessionVersion: number;
   isActive: boolean;
   lastLoginAt: Date | null;
   createdAt: Date;
 }
 
-export type UserPatch = Partial<Pick<UserRecord, "name" | "username" | "role" | "passwordHash" | "mustChangePassword" | "isActive" | "lastLoginAt">>;
+export type UserPatch = Partial<Pick<UserRecord, "name" | "username" | "role" | "passwordHash" | "mustChangePassword" | "sessionVersion" | "isActive" | "lastLoginAt">>;
 
 export class DuplicateUserError extends Error {
   constructor() {

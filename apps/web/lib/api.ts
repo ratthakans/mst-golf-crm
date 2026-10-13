@@ -3,7 +3,7 @@ import { isCoreError, processEmails, processOutbox, type MemberSummary } from "@
 import { waitUntil } from "@vercel/functions";
 import { getOrg } from "./org";
 import { memberFor } from "./member";
-import { cookieOptions, currentCustomer, MEMBER_COOKIE, signCustomerSession, type Customer } from "./session";
+import { cookieOptions, currentCustomer, MEMBER_COOKIE, sessionUsable, signCustomerSession, type Customer } from "./session";
 
 // Customer API plumbing. Route handlers only parse input and call
 // @mstgolf/core; every rule lives in the core and fails with a CoreError whose
@@ -62,7 +62,7 @@ export async function readJson<T extends object>(req: NextRequest): Promise<Part
 
 export async function requireCustomer(): Promise<Customer> {
   const c = await currentCustomer();
-  if (!c) throw new ApiError(401, "UNAUTHENTICATED", "กรุณาเข้าสู่ระบบ");
+  if (!c || !sessionUsable((await getOrg()).settings.features, c)) throw new ApiError(401, "UNAUTHENTICATED", "กรุณาเข้าสู่ระบบ");
   return c;
 }
 
@@ -70,7 +70,7 @@ export async function requireCustomer(): Promise<Customer> {
 export async function requireMember(): Promise<{ orgId: string; customer: Customer; member: MemberSummary }> {
   const customer = await requireCustomer();
   const org = await getOrg();
-  const member = await memberFor(org.id, customer);
+  const member = await memberFor(org, customer);
   if (!member) throw new ApiError(403, "NOT_MEMBER", "กรุณาสมัครสมาชิกก่อน");
   return { orgId: org.id, customer, member };
 }

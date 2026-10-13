@@ -1,8 +1,18 @@
 import { NextResponse } from "next/server";
-import { verifyPassword } from "@mstgolf/shared/password";
-import { audit, startSession } from "../../../../lib/auth";
-import { clearFailures, isLocked, recordFailure } from "../../../../lib/login-throttle";
+import { assertUnderLimit, clearHits, isCoreError, RATE, recordHit } from "@mstgolf/core";
+import { hashPassword, verifyPassword } from "@mstgolf/shared/password";
+import { audit, clientIp, startSession } from "../../../../lib/auth";
+import { currentOrg } from "../../../../lib/org";
 import { findUserByLogin, updateUser } from "../../../../lib/users";
+
+// Failed logins are counted in the database (serverless instances share no
+// memory): 5 per sign-in name or 30 per IP within 15 minutes, then a pause.
+const BUCKET = "staff_login_fail";
+const WINDOW = 15 * RATE.MINUTE;
+
+// Unknown names still pay for one scrypt check, so timing doesn't tell which accounts exist.
+let dummyHash: Promise<string> | null = null;
+const dummy = () => (dummyHash ??= hashPassword("not-a-real-password-" + Math.random()));
 import { authConfigured } from "../../../../lib/session-token";
 
 /** Only same-site paths, never "//evil.com". */
@@ -26,19 +36,24 @@ export async function POST(req: Request) {
   if (!email || !password) {
     return NextResponse.json({ error: "กรอกอีเมลหรือชื่อผู้ใช้ และรหัสผ่าน" }, { status: 400 });
   }
-  if (isLocked(email)) {
-    return NextResponse.json({ error: "ใส่รหัสผิดหลายครั้ง ลองใหม่ใน 15 นาที" }, { status: 429 });
+  const org = await currentOrg();
+  const ip = clientIp();
+  try {
+    await assertUnderLimit(org.id, BUCKET, [{ key: email, max: 5, windowMs: WINDOW }, { key: ip, max: 30, windowMs: WINDOW }], "ใส่รหัสผิดหลายครั้ง ลองใหม่ใน 15 นาที");
+  } catch (e) {
+    if (isCoreError(e)) return NextResponse.json({ error: e.message }, { status: 429 });
+    throw e;
   }
 
   const user = await findUserByLogin(email);
-  const ok = !!user && user.isActive && (await verifyPassword(password, user.passwordHash));
+  const ok = user ? user.isActive && (await verifyPassword(password, user.passwordHash)) : (await verifyPassword(password, await dummy()), false);
   if (!ok || !user) {
-    recordFailure(email);
+    await recordHit(org.id, BUCKET, [email, ip]);
     await audit(null, { action: "auth.login_failed", entity: "user", entityId: user?.id ?? null, after: { email } });
     return NextResponse.json({ error: "อีเมล/ชื่อผู้ใช้ หรือรหัสผ่านไม่ถูกต้อง" }, { status: 401 });
   }
 
-  clearFailures(email);
+  await clearHits(org.id, BUCKET, email);
   await updateUser(user.id, { lastLoginAt: new Date() });
   await startSession(user);
   await audit(user, { action: "auth.login", entity: "user", entityId: user.id });

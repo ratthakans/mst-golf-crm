@@ -39,6 +39,7 @@ export async function POST(req: NextRequest) {
     });
     kickOutbox();
     const res = json({ outcome: result.outcome, welcomePoints: result.welcomePoints, member: await loadCard(org.id, result.member.id) }, 201);
-    return viaLine ? res : withSession(res, { kind: "member", memberId: result.member.id });
+    // The member session is as proven as the phone session it replaces.
+    return viaLine ? res : withSession(res, { kind: "member", memberId: result.member.id, proven: customer.kind === "phone" && customer.proven });
   });
 }

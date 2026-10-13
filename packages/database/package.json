@@ -16,7 +16,7 @@
     "db:studio": "node --env-file-if-exists=../../.env.local scripts/prisma.mjs studio",
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "vitest run",
+    "test": "DATABASE_SCHEMA=test_core node --env-file-if-exists=../../.env.local node_modules/vitest/vitest.mjs run",
     "admin:create": "node --env-file-if-exists=../../.env.local --import tsx prisma/create-admin.ts"
   },
   "prisma": {

@@ -4,7 +4,7 @@ import { normalizeThaiMobile } from "@mstgolf/shared/phone";
 import { findTier, lowestTier } from "@mstgolf/shared/tiers";
 import { writeAudit } from "./audit";
 import type { Actor } from "./context";
-import { db, inTx, type Tx } from "./db";
+import { db, inTx, lockMembers, type Tx } from "./db";
 import { CoreError, isUniqueViolation } from "./errors";
 import { recordEvent } from "./events";
 import { enqueue } from "./notify/outbox";
@@ -17,6 +17,15 @@ import { addDays, formatHm, localDateKey, openWindow, parseDateKey, startOfLocal
 // customers and staff tap at once.
 
 const ACTIVE: BookingStatus[] = ["HELD", "CONFIRMED", "CHECKED_IN"];
+
+/**
+ * Moves a booking out of the status it was read in. Conditional on that status,
+ * so two staff (or a staff tap and the nightly job) can't both apply the change.
+ */
+async function transitionBooking(tx: Tx, orgId: string, id: string, from: BookingStatus[], data: Prisma.BookingUncheckedUpdateManyInput): Promise<void> {
+  const moved = await tx.booking.updateMany({ where: { id, orgId, status: { in: from } }, data });
+  if (moved.count !== 1) throw new CoreError("BOOKING_RULE", "การจองนี้เปลี่ยนสถานะไปแล้ว กรุณาโหลดหน้าใหม่");
+}
 const HOUR = 60 * 60_000;
 
 export type SlotState = "free" | "taken" | "blocked" | "past" | "closed";
@@ -192,6 +201,8 @@ export async function holdSlot(orgId: string, input: HoldInput, now = new Date()
       const lastDay = addDays(startOfLocalDay(now), tier.benefits.simBookingDaysAhead + 1);
       if (startAt >= lastDay) throw new CoreError("BOOKING_RULE", `ระดับ ${tier.name} จองล่วงหน้าได้ ${tier.benefits.simBookingDaysAhead} วัน`);
 
+      // One hold at a time per member: lock the member so the limits below count a settled set.
+      await lockMembers(tx, orgId, [member.id]);
       // A new hold replaces any hold this member left unfinished.
       await tx.booking.updateMany({
         where: { memberId: member.id, status: "HELD" },
@@ -265,7 +276,7 @@ export async function cancelByMember(orgId: string, memberId: string, bookingId:
     if (b.startAt.getTime() - now.getTime() < settings.booking.cancelHoursBefore * HOUR) {
       throw new CoreError("BOOKING_RULE", `ยกเลิกเองได้ก่อนเวลาจอง ${settings.booking.cancelHoursBefore} ชั่วโมง — กรุณาติดต่อร้าน`);
     }
-    await tx.booking.update({ where: { id: b.id }, data: { status: "CANCELLED", cancelReason: "ลูกค้ายกเลิกเอง" } });
+    await transitionBooking(tx, orgId, b.id, ["CONFIRMED"], { status: "CANCELLED", cancelReason: "ลูกค้ายกเลิกเอง" });
     await recordEvent(tx, orgId, memberId, "BOOKING_CANCELLED", { bookingId: b.id, by: "member" });
     await enqueue(tx, orgId, [bookingMessage("BOOKING_CANCELLED", b.id, memberId, b.lane.name, b, { reason: null })]);
     return (await viewById(tx, settings, b.id, now))!;
@@ -381,10 +392,7 @@ export async function moveBooking(orgId: string, actor: Actor, bookingId: string
       if (startAt.getTime() + settings.booking.slotMinutes * 60_000 <= now.getTime()) throw new CoreError("BOOKING_RULE", "ย้ายไปเวลาที่ผ่านไปแล้วไม่ได้");
       if (lane.id === b.laneId && startAt.getTime() === b.startAt.getTime()) return (await viewById(tx, settings, b.id, now))!;
       const endAt = await assertSlotBookable(tx, lane.id, startAt, settings.booking.slotMinutes, now, b.id);
-      await tx.booking.update({
-        where: { id: b.id },
-        data: { laneId: lane.id, startAt, endAt, reminderSentAt: null, priceSatang: priceFor(lane.hourlyPriceSatang, settings.booking.slotMinutes, b.discountPct) },
-      });
+      await transitionBooking(tx, orgId, b.id, [b.status], { laneId: lane.id, startAt, endAt, reminderSentAt: null, priceSatang: priceFor(lane.hourlyPriceSatang, settings.booking.slotMinutes, b.discountPct) });
       if (b.memberId) {
         await enqueue(tx, orgId, [
           bookingMessage("BOOKING_MOVED", `${b.id}:${startAt.getTime()}:${lane.id}`, b.memberId, lane.name, { ...b, startAt }, {
@@ -416,10 +424,7 @@ export async function checkIn(orgId: string, actor: Actor, bookingId: string, pa
     if (b.status !== "CONFIRMED" && b.status !== "CHECKED_IN") throw new CoreError("BOOKING_RULE", "เช็กอินได้เฉพาะการจองที่ยืนยันแล้ว");
     if (b.startAt.getTime() - now.getTime() > 3 * HOUR) throw new CoreError("BOOKING_RULE", "ยังไม่ถึงเวลาเช็กอิน");
     if (paidSatang !== null && (paidSatang < 0 || !Number.isInteger(paidSatang))) throw new CoreError("INVALID_INPUT", "ยอดชำระไม่ถูกต้อง");
-    await tx.booking.update({
-      where: { id: b.id },
-      data: { status: "CHECKED_IN", checkedInAt: b.checkedInAt ?? now, paidSatang: paidSatang ?? b.paidSatang },
-    });
+    await transitionBooking(tx, orgId, b.id, [b.status], { status: "CHECKED_IN", checkedInAt: b.checkedInAt ?? now, paidSatang: paidSatang ?? b.paidSatang });
     if (b.memberId && b.status !== "CHECKED_IN") await recordEvent(tx, orgId, b.memberId, "BOOKING_CHECKED_IN", { bookingId: b.id });
     await writeAudit(tx, orgId, actor, { action: "booking.check_in", entity: "booking", entityId: b.id, after: { paidSatang } });
     return (await viewById(tx, settings, b.id, now))!;
@@ -435,9 +440,9 @@ export async function markNoShow(orgId: string, actor: Actor, bookingId: string,
     if (now.getTime() < b.startAt.getTime() + settings.booking.noShowGraceMinutes * 60_000) {
       throw new CoreError("BOOKING_RULE", `บันทึกได้หลังเวลาเริ่ม ${settings.booking.noShowGraceMinutes} นาที`);
     }
-    await tx.booking.update({ where: { id: b.id }, data: { status: "NO_SHOW" } });
+    await transitionBooking(tx, orgId, b.id, ["CONFIRMED"], { status: "NO_SHOW" });
     if (b.memberId) {
-      await tx.member.update({ where: { id: b.memberId }, data: { noShowCount: { increment: 1 } } });
+      await tx.member.updateMany({ where: { id: b.memberId, orgId }, data: { noShowCount: { increment: 1 } } });
       await recordEvent(tx, orgId, b.memberId, "BOOKING_NO_SHOW", { bookingId: b.id });
     }
     await writeAudit(tx, orgId, actor, { action: "booking.no_show", entity: "booking", entityId: b.id });
@@ -452,10 +457,7 @@ export async function cancelByStaff(orgId: string, actor: Actor, bookingId: stri
     const b = await tx.booking.findFirst({ where: { id: bookingId }, include: { lane: true } });
     if (!b) throw new CoreError("NOT_FOUND", "ไม่พบการจอง");
     if (!ACTIVE.includes(b.status)) throw new CoreError("BOOKING_RULE", "การจองนี้ไม่อยู่ในสถานะที่ยกเลิกได้");
-    await tx.booking.update({
-      where: { id: b.id },
-      data: { status: "CANCELLED", cancelReason: reason.trim(), cancelledBy: actor.kind === "staff" ? actor.userId : null },
-    });
+    await transitionBooking(tx, orgId, b.id, [b.status], { status: "CANCELLED", cancelReason: reason.trim(), cancelledBy: actor.kind === "staff" ? actor.userId : null });
     if (b.memberId) {
       await recordEvent(tx, orgId, b.memberId, "BOOKING_CANCELLED", { bookingId: b.id, by: "staff" });
       if (b.status !== "HELD" && b.endAt > now) {

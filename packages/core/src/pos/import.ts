@@ -4,7 +4,7 @@ import type { PosMapping } from "@mstgolf/shared";
 import { findTier, lowestTier, reviewTier, tierProgress, tierRank } from "@mstgolf/shared/tiers";
 import { writeAudit } from "../audit";
 import type { Actor } from "../context";
-import { createManyChunked, db, inTx, type Tx } from "../db";
+import { createManyChunked, db, inTx, lockOrgJob, type Tx } from "../db";
 import { CoreError } from "../errors";
 import { newId } from "../ids";
 import { findMemberIdByIdentity, insertMember, refreshMemberSpend } from "../members";
@@ -340,6 +340,8 @@ export async function commitImport(orgId: string, actor: Actor, batchId: string)
   const counts = await inTx(
     orgId,
     async (tx) => {
+      // One commit/rollback at a time per org: members' spend and tier are written as totals.
+      await lockOrgJob(tx, orgId, "pos-import");
       const batch = await tx.importBatch.findFirst({ where: { id: batchId } });
       if (!batch) throw new CoreError("NOT_FOUND", "ไม่พบรอบนำเข้า");
       const claimed = await tx.importBatch.updateMany({
@@ -657,7 +659,8 @@ export async function commitImport(orgId: string, actor: Actor, batchId: string)
   const batch = await db(orgId).importBatch.findFirst({ where: { id: batchId }, select: { counts: true } });
   const mapping = (batch?.counts as { mapping?: PosMapping } | null)?.mapping;
   if (mapping && JSON.stringify(mapping) !== JSON.stringify(settings.pos.mapping)) {
-    await updateSettings(orgId, { pos: { ...settings.pos, mapping } });
+    // Patch only the mapping, on the settings as they are now — staff may have edited the POS rules meanwhile.
+    await updateSettings(orgId, (cur) => ({ pos: { ...settings.pos, ...(cur.pos ?? {}), mapping } }));
   }
   return counts;
 }
@@ -672,6 +675,7 @@ export async function rollbackImport(orgId: string, actor: Actor, batchId: strin
   return inTx(
     orgId,
     async (tx) => {
+      await lockOrgJob(tx, orgId, "pos-import");
       const batch = await tx.importBatch.findFirst({ where: { id: batchId } });
       if (!batch || batch.status !== "COMMITTED") throw new CoreError("IMPORT_STATE", "ยกเลิกได้เฉพาะรอบที่นำเข้าแล้ว");
       if (!batch.committedAt || Date.now() - batch.committedAt.getTime() > ROLLBACK_DAYS * 24 * 3600_000) {

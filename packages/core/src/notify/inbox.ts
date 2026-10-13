@@ -1,6 +1,6 @@
 import type { NotificationKind } from "@mstgolf/shared";
 import { findTier, lowestTier } from "@mstgolf/shared/tiers";
-import { db, inTx } from "../db";
+import { db, inTx, lockMembers } from "../db";
 import { CoreError } from "../errors";
 import { recordEvent } from "../events";
 import { postPoints } from "../points";
@@ -72,6 +72,8 @@ export async function queueBirthdays(orgId: string, now = new Date()): Promise<n
     if (done) continue;
     const tier = findTier(m.tier, settings.tiers) ?? lowestTier(settings.tiers);
     await inTx(orgId, async (tx) => {
+      // Overlapping runs: the second waits here, then sees the first's bonus and skips it.
+      await lockMembers(tx, orgId, [m.id]);
       const note = `โบนัสวันเกิด ${year}`;
       let bonus = 0;
       if (settings.birthdayBonus > 0 && !(await tx.pointTransaction.findFirst({ where: { memberId: m.id, reason: "BIRTHDAY", note } }))) {

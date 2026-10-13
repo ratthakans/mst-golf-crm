@@ -46,7 +46,7 @@ export function LoginForm({ next }: { next: string }) {
       <button className="btn btn-full" type="submit" disabled={busy}>
         {busy ? "กำลังเข้าสู่ระบบ…" : "เข้าสู่ระบบ"}
       </button>
-      <p className="login-foot">ลืมรหัสผ่าน? ให้ผู้ดูแลระบบตั้งรหัสชั่วคราวให้ในหน้า "ผู้ใช้และสิทธิ์"</p>
+      <p className="login-foot">ลืมรหัสผ่าน? ให้ผู้ดูแลระบบตั้งรหัสชั่วคราวให้ในหน้า &ldquo;ผู้ใช้และสิทธิ์&rdquo;</p>
     </form>
   );
 }

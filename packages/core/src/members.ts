@@ -4,7 +4,7 @@ import { normalizeThaiMobile } from "@mstgolf/shared/phone";
 import { findTier, lowestTier, reviewTier, tierProgress, tierRank } from "@mstgolf/shared/tiers";
 import { writeAudit } from "./audit";
 import type { Actor } from "./context";
-import { db, inTx, type Tx } from "./db";
+import { db, inTx, lockMembers, type Tx } from "./db";
 import { CoreError, isUniqueViolation } from "./errors";
 import { recordEvent } from "./events";
 import { enqueue } from "./notify/outbox";
@@ -644,6 +644,8 @@ export async function mergeMembers(
   return inTx(
     orgId,
     async (tx) => {
+      // Lock both rows so a redeem, import or adjustment on either member waits for the merge.
+      await lockMembers(tx, orgId, [input.survivorId, input.mergedId]);
       const [survivor, merged] = await Promise.all([
         tx.member.findFirst({ where: { id: input.survivorId, status: "ACTIVE" }, include: memberInclude }),
         tx.member.findFirst({ where: { id: input.mergedId, status: "ACTIVE" }, include: memberInclude }),
@@ -674,9 +676,11 @@ export async function mergeMembers(
       const survivorGotWelcome = await tx.pointTransaction.findFirst({ where: { memberId: survivor.id, reason: "WELCOME" } });
       const mergedWelcome = await tx.pointTransaction.findFirst({ where: { memberId: merged.id, reason: "WELCOME" } });
       const duplicateWelcome = survivorGotWelcome && mergedWelcome ? mergedWelcome.delta : 0;
-      const transfer = merged.points - duplicateWelcome;
-      if (merged.points !== 0) {
-        await postPoints(tx, orgId, { memberId: merged.id, type: "ADJUST", delta: -merged.points, reason: "MERGE_OUT", note: `รวมเข้า ${survivor.code}`, createdById: actorUserIdOf(actor) });
+      // The balance comes from the ledger itself, not the cached Member.points.
+      const mergedBalance = (await tx.pointTransaction.aggregate({ where: { memberId: merged.id }, _sum: { delta: true } }))._sum.delta ?? 0;
+      const transfer = mergedBalance - duplicateWelcome;
+      if (mergedBalance !== 0) {
+        await postPoints(tx, orgId, { memberId: merged.id, type: "ADJUST", delta: -mergedBalance, reason: "MERGE_OUT", note: `รวมเข้า ${survivor.code}`, createdById: actorUserIdOf(actor) });
       }
       if (transfer !== 0) {
         await postPoints(tx, orgId, { memberId: survivor.id, type: "ADJUST", delta: transfer, reason: "MERGE_IN", note: `จาก ${merged.code}`, createdById: actorUserIdOf(actor) });

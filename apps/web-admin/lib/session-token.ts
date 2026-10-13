@@ -13,6 +13,8 @@ export interface SessionClaims {
   name: string;
   email: string;
   mustChangePassword: boolean;
+  /** User.sessionVersion when the cookie was issued; a password change bumps it and older cookies stop working. */
+  sessionVersion: number;
 }
 
 // Local dev works without configuration; production refuses to sign or verify
@@ -31,7 +33,7 @@ export function authConfigured(): boolean {
 export async function signSession(claims: SessionClaims): Promise<string> {
   const key = secretKey();
   if (!key) throw new Error("AUTH_SECRET is not configured (32+ characters)");
-  return new SignJWT({ role: claims.role, name: claims.name, email: claims.email, mcp: claims.mustChangePassword })
+  return new SignJWT({ role: claims.role, name: claims.name, email: claims.email, mcp: claims.mustChangePassword, sv: claims.sessionVersion })
     .setProtectedHeader({ alg: "HS256" })
     .setSubject(claims.sub)
     .setIssuedAt()
@@ -51,6 +53,7 @@ export async function verifySession(token: string | undefined): Promise<SessionC
       name: String(payload.name ?? ""),
       email: String(payload.email ?? ""),
       mustChangePassword: payload.mcp === true,
+      sessionVersion: typeof payload.sv === "number" ? payload.sv : 0,
     };
   } catch {
     return null;

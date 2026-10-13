@@ -25,10 +25,11 @@ export function SignupLinkButton({ orgName, signupBonus, signupUrl }: { orgName:
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    const back = trigger.current; // the button to return focus to when the dialog closes
     window.addEventListener("keydown", onKey);
     return () => {
       window.removeEventListener("keydown", onKey);
-      trigger.current?.focus();
+      back?.focus();
     };
   }, [open]);
 

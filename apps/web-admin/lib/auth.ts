@@ -25,7 +25,8 @@ export async function getSessionUser(): Promise<SessionUser | null> {
   const claims = await verifySession(cookies().get(SESSION_COOKIE)?.value);
   if (!claims) return null;
   const user = await getUser(claims.sub);
-  if (!user || !user.isActive) return null;
+  // A password change or reset bumps sessionVersion, so cookies issued before it stop here.
+  if (!user || !user.isActive || user.sessionVersion !== claims.sessionVersion) return null;
   const org = await currentOrg();
   return {
     id: user.id,
@@ -46,6 +47,8 @@ export function actorOf(user: SessionUser): Actor {
 export async function requireApi(permission: Permission): Promise<SessionUser | NextResponse> {
   const user = await getSessionUser();
   if (!user) return NextResponse.json({ error: "กรุณาเข้าสู่ระบบ" }, { status: 401 });
+  // Read from the database, not the cookie: an admin reset applies to sessions already open.
+  if (user.mustChangePassword) return NextResponse.json({ error: "กรุณาเปลี่ยนรหัสผ่านก่อน" }, { status: 403 });
   if (!user.permissions.includes(permission)) return NextResponse.json({ error: "ไม่มีสิทธิ์ทำรายการนี้" }, { status: 403 });
   return user;
 }
@@ -57,6 +60,7 @@ export async function requireApi(permission: Permission): Promise<SessionUser | 
 export async function allowPage(permission: Permission): Promise<SessionUser | null> {
   const user = await getSessionUser();
   if (!user) redirect("/login");
+  if (user.mustChangePassword) redirect("/account/password");
   return user.permissions.includes(permission) ? user : null;
 }
 
@@ -64,13 +68,14 @@ export function hasPermission(user: SessionUser, permission: Permission): boolea
   return user.permissions.includes(permission) && can(user.role, permission);
 }
 
-export async function startSession(user: { id: string; email: string; name: string | null; role: Role; mustChangePassword: boolean }): Promise<void> {
+export async function startSession(user: { id: string; email: string; name: string | null; role: Role; mustChangePassword: boolean; sessionVersion: number }): Promise<void> {
   const token = await signSession({
     sub: user.id,
     role: user.role,
     name: user.name ?? user.email,
     email: user.email,
     mustChangePassword: user.mustChangePassword,
+    sessionVersion: user.sessionVersion,
   });
   cookies().set(SESSION_COOKIE, token, {
     httpOnly: true,
@@ -97,7 +102,7 @@ export async function audit(
 ): Promise<void> {
   try {
     const org = await currentOrg();
-    await writeAudit(db(org.id), org.id, user ? { kind: "staff", userId: user.id, role: "SUPER_ADMIN", ip: clientIp() } : { kind: "system" }, entry);
+    await writeAudit(db(org.id), org.id, user ? { kind: "staff", userId: user.id, role: (user as { role?: Role }).role ?? "STORE_STAFF", ip: clientIp() } : { kind: "system" }, entry);
   } catch (e) {
     console.error("[audit] failed to write", entry.action, e);
   }

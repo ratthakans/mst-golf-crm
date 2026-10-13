@@ -20,11 +20,27 @@ export function databaseUrl(
   base: string | undefined = process.env.DATABASE_URL,
   schema: string | undefined = process.env.DATABASE_SCHEMA,
 ): string | undefined {
+  // Tests never touch production: under vitest a missing or "public" schema is refused outright.
+  if (process.env.VITEST && base && (!schema || schema === "public")) {
+    throw new Error("Tests must run against a test schema — set DATABASE_SCHEMA (e.g. test_core)");
+  }
   if (!base || !schema || schema === "public") return base;
   if (!/^[a-z][a-z0-9_]*$/.test(schema)) throw new Error(`Invalid DATABASE_SCHEMA "${schema}"`);
   const url = new URL(base);
   url.searchParams.set("schema", schema);
   return url.toString();
+}
+
+/**
+ * A table name qualified with this environment's schema, for raw SQL. Prisma
+ * prefixes its own queries with the ?schema= of the URL, but $queryRaw text
+ * resolves through search_path (= public, production) — so raw SQL must name
+ * the schema itself.
+ */
+export function table(name: string): Prisma.Sql {
+  const schema = process.env.DATABASE_SCHEMA || "public";
+  if (!/^[a-z][a-z0-9_]*$/.test(schema) || !/^[a-z_]+$/.test(name)) throw new Error("Invalid SQL identifier");
+  return Prisma.raw(`"${schema}"."${name}"`);
 }
 
 export const prisma =
@@ -78,6 +94,7 @@ const TENANT_MODELS = new Set<string>([
   "Redemption",
   "EmailMessage",
   "OtpCode",
+  "RateHit",
 ]);
 
 // Operations whose `where` clause should be constrained to the tenant.

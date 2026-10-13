@@ -22,6 +22,14 @@ It is **our platform** and MST Golf is tenant #1: built multi-tenant / config-dr
 - Schema change → create a migration **and** update the seed.
 - Write tests for critical features — especially **tenant isolation** and the **points ledger**.
 
+## Concurrency, raw SQL, limits (code review, 13 Oct 2026)
+- **Read → check → write on a member** (points adjust, merge, holds, birthday bonus) locks the row first: `lockMembers(tx, orgId, ids)`. Status changes are conditional (`updateMany({ where: { id, status } })` + count check — see `transitionBooking`). Imports commit/rollback one at a time per org (`lockOrgJob`). `updateSettings` locks the org row; pass a function to patch on the current value.
+- **Raw SQL must name the schema:** `table("members")` from `@mstgolf/database`. Prisma prefixes its own queries with `?schema=`, but `$queryRaw` text resolves to `public` (= production) in every environment.
+- **Rate limits are rows** (`RateHit`, `packages/core/src/ratelimit.ts`), never in memory — serverless instances share nothing. Staff login: 5 fails per name / 30 per IP in 15 min. Phone sign-in: 10 per number / 30 per IP per hour.
+- **Sessions can be revoked:** staff cookies carry `User.sessionVersion` (bumped on password change/reset/deactivate); `mustChangePassword` is enforced from the database in `allowPage`/`requireApi`. Customer member cookies carry `pv` (proven by SMS code); with `features.otp` on, unproven sessions stop working. Phone-only sign-in is refused on the production schema unless `ALLOW_PHONE_ONLY_SIGNIN=1` (never set it for go-live).
+- Ledger, events, redemptions and committed sales are `onDelete: NoAction` — never cascade-delete them.
+- `pnpm lint` (eslint-config-next) and `.github/workflows/ci.yml` (typecheck · lint · unit; DB tests when the `DATABASE_URL_TEST` secret exists) must stay green. Tests refuse the `public` schema.
+
 ## Platform rules (docs/PRODUCT.md §3 — do not break)
 1. **The LLM is called only to generate text a person will read.** Never per member, per event or per cron job.
 2. **Every score, signal and segment is computed with statistics** in `@mstgolf/analytics` — the LLM explains numbers, it never produces them.

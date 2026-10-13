@@ -44,7 +44,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     case "deactivate": {
       if (self) return NextResponse.json({ error: "ปิดบัญชีของตัวเองไม่ได้" }, { status: 400 });
       if (removesLastAdmin) return NextResponse.json({ error: "ต้องมีผู้ดูแลระบบอย่างน้อย 1 คน" }, { status: 400 });
-      await updateUser(target.id, { isActive: false });
+      await updateUser(target.id, { isActive: false, sessionVersion: target.sessionVersion + 1 });
       await audit(admin, { action: "user.deactivate", entity: "user", entityId: target.id });
       return NextResponse.json({ ok: true });
     }
@@ -55,7 +55,8 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     }
     case "reset_password": {
       const tempPassword = temporaryPassword();
-      await updateUser(target.id, { passwordHash: await hashPassword(tempPassword), mustChangePassword: true });
+      // Signs the person out everywhere; they come back with the temporary password and must change it.
+      await updateUser(target.id, { passwordHash: await hashPassword(tempPassword), mustChangePassword: true, sessionVersion: target.sessionVersion + 1 });
       await audit(admin, { action: "user.password_reset", entity: "user", entityId: target.id });
       return NextResponse.json({ ok: true, tempPassword });
     }

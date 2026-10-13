@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
     const phone = await verifyOtp(org.id, str(body.phone, 40), str(body.code, 12));
     const member = await findMemberByPhone(org.id, phone);
     if (member && member.status === "ACTIVE" && member.registered) {
-      return withSession(json({ next: "member" }), { kind: "member", memberId: member.id });
+      return withSession(json({ next: "member" }), { kind: "member", memberId: member.id, proven: true });
     }
     if (member && member.status !== "ACTIVE") {
       return json({ error: "เบอร์นี้ใช้เข้าสู่ระบบไม่ได้ กรุณาติดต่อร้าน", code: "PHONE_TAKEN" }, 409);

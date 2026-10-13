@@ -1,7 +1,7 @@
 import type { PointTxType, UserRole } from "@mstgolf/database";
 import { writeAudit } from "./audit";
 import type { Actor } from "./context";
-import { db, inTx, type Tx } from "./db";
+import { db, inTx, lockMembers, type Tx } from "./db";
 import { CoreError } from "./errors";
 import type { ResolvedSettings } from "./settings";
 
@@ -66,7 +66,9 @@ export async function postPoints(tx: Tx, orgId: string, e: PointEntry): Promise<
       createdById: e.createdById ?? null,
     },
   });
-  await tx.member.update({ where: { id: e.memberId }, data: { points: { increment: e.delta } } });
+  // Scoped to the org (update-by-id is not covered by the tenant extension).
+  const moved = await tx.member.updateMany({ where: { id: e.memberId, orgId }, data: { points: { increment: e.delta } } });
+  if (moved.count !== 1) throw new CoreError("NOT_FOUND", "ไม่พบสมาชิก");
 }
 
 /** Base points for an amount: floor(baht × perBaht × tier rate). */
@@ -109,8 +111,13 @@ export async function adjustPoints(
     throw new CoreError("LIMIT_EXCEEDED", `ตำแหน่งนี้ปรับได้ครั้งละไม่เกิน ±${limit.toLocaleString("en-US")} แต้ม`);
   }
   return inTx(orgId, async (tx) => {
+    // Lock first so the balance read here (and written to the audit) is the one the adjustment applies to.
+    await lockMembers(tx, orgId, [input.memberId]);
     const m = await tx.member.findFirst({ where: { id: input.memberId, status: "ACTIVE" } });
     if (!m) throw new CoreError("NOT_FOUND", "ไม่พบสมาชิก");
+    if (delta < 0 && m.points + delta < 0) {
+      throw new CoreError("INVALID_INPUT", `หักได้ไม่เกินแต้มคงเหลือ (${m.points.toLocaleString("en-US")} แต้ม)`);
+    }
     await postPoints(tx, orgId, {
       memberId: m.id,
       type: "ADJUST",

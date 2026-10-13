@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
   return handle(req, async () => {
     const customer = await requireCustomer();
     const org = await getOrg();
-    const member = await memberFor(org.id, customer);
+    const member = await memberFor(org, customer);
     return json({
       user: { name: customerLabel(customer, member), via: customer.kind === "line" ? "LINE" : "PHONE" },
       member: member ? await loadCard(org.id, member.id) : null,

@@ -1,7 +1,7 @@
 import { cache } from "react";
 import { findActiveMember, findMemberByLine, findMemberByPhone, type MemberSummary } from "@mstgolf/core";
 import { getOrg } from "./org";
-import { currentCustomer, type Customer } from "./session";
+import { currentCustomer, sessionUsable, type Customer } from "./session";
 
 // The signed-in customer and, once they have signed up, their member record.
 // One lookup per request (React cache) for the layout, the page and the API.
@@ -11,8 +11,9 @@ export interface CurrentMember {
   member: MemberSummary | null;
 }
 
-export async function memberFor(orgId: string, customer: Customer | null): Promise<MemberSummary | null> {
-  if (!customer) return null;
+export async function memberFor(org: { id: string; settings: { features: { otp: boolean; line: boolean } } }, customer: Customer | null): Promise<MemberSummary | null> {
+  if (!customer || !sessionUsable(org.settings.features, customer)) return null;
+  const orgId = org.id;
   if (customer.kind === "member") return findActiveMember(orgId, customer.memberId);
   if (customer.kind === "line") return findMemberByLine(orgId, customer.sub);
   // A verified phone becomes a member the moment the sign-up (or the counter) registers it.
@@ -21,8 +22,10 @@ export async function memberFor(orgId: string, customer: Customer | null): Promi
 }
 
 export const currentMember = cache(async (): Promise<CurrentMember> => {
-  const customer = await currentCustomer();
-  const member = await memberFor((await getOrg()).id, customer);
+  const org = await getOrg();
+  const raw = await currentCustomer();
+  const customer = raw && sessionUsable(org.settings.features, raw) ? raw : null;
+  const member = await memberFor(org, customer);
   return { customer, member };
 });
 

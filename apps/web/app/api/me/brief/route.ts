@@ -3,7 +3,7 @@ import { memberBookings, unreadCount } from "@mstgolf/core";
 import { handle, json } from "@/lib/api";
 import { getOrg } from "@/lib/org";
 import { customerLabel, memberFor } from "@/lib/member";
-import { currentCustomer } from "@/lib/session";
+import { currentCustomer, sessionUsable } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 
@@ -12,10 +12,11 @@ export const dynamic = "force-dynamic";
 // stay statically cached. Always 200: { signedIn: false } when logged out.
 export async function GET(req: NextRequest) {
   return handle(req, async () => {
-    const customer = await currentCustomer();
-    if (!customer) return json({ signedIn: false });
+    const raw = await currentCustomer();
     const org = await getOrg();
-    const member = await memberFor(org.id, customer);
+    const customer = raw && sessionUsable(org.settings.features, raw) ? raw : null;
+    if (!customer) return json({ signedIn: false });
+    const member = await memberFor(org, customer);
     if (!member) return json({ signedIn: true, member: null, name: customerLabel(customer, null) ?? "" });
     const { upcoming } = await memberBookings(org.id, member.id);
     const next = upcoming.find((b) => b.status === "CONFIRMED" || b.status === "CHECKED_IN") ?? null;

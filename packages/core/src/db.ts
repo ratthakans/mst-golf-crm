@@ -1,4 +1,4 @@
-import { forOrg, type Prisma } from "@mstgolf/database";
+import { forOrg, table, type Prisma } from "@mstgolf/database";
 
 // Every core query goes through forOrg(orgId): reads are constrained to the
 // tenant and creates are stamped with it. Unique lookups (findUnique/update by
@@ -16,6 +16,22 @@ export async function inTx<T>(orgId: string, fn: (tx: Tx) => Promise<T>, opts: {
     maxWait: 10_000,
     timeout: opts.timeout ?? 20_000,
   });
+}
+
+/**
+ * Row locks for read → check → write sequences on members (merge, adjust,
+ * holds, birthday bonus): `SELECT … FOR UPDATE` inside the caller's
+ * transaction, ids sorted so two transactions never lock in opposite order.
+ */
+export async function lockMembers(tx: Tx, orgId: string, ids: string[]): Promise<void> {
+  for (const id of [...new Set(ids)].sort()) {
+    await tx.$queryRaw`SELECT "id" FROM ${table("members")} WHERE "id" = ${id} AND "orgId" = ${orgId} FOR UPDATE`;
+  }
+}
+
+/** One writer at a time per org for a named job (imports, settings): a transaction-scoped advisory lock. */
+export async function lockOrgJob(tx: Tx, orgId: string, job: string): Promise<void> {
+  await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`${orgId}:${job}`}))`;
 }
 
 /** Inserts in chunks — Postgres caps a statement at 65,535 bind parameters. */

@@ -163,7 +163,10 @@ export async function saveReward(orgId: string, actor: Actor, id: string | null,
       const used = await tx.redemption.count({ where: { rewardId: id } });
       if (used) throw new CoreError("INVALID_INPUT", "รางวัลนี้มีคนแลกแล้ว เปลี่ยนประเภทไม่ได้ — สร้างรางวัลใหม่แทน");
     }
-    const { orgId: _o, ...patch } = data;
+    const { orgId: _o, ...rest } = data;
+    // An unchanged stock field must not overwrite what redemptions took meanwhile.
+    const { stock, ...others } = rest;
+    const patch = stock === before.stock ? others : rest;
     const updated = await tx.reward.update({ where: { id: before.id }, data: patch });
     await writeAudit(tx, orgId, actor, { action: "reward.update", entity: "reward", entityId: id, before, after: patch });
     return updated;
@@ -177,8 +180,10 @@ export async function adjustRewardStock(orgId: string, actor: Actor, id: string,
     const r = await tx.reward.findFirst({ where: { id } });
     if (!r) throw new CoreError("NOT_FOUND", "ไม่พบรางวัล");
     if (r.stock === null) throw new CoreError("INVALID_INPUT", "รางวัลนี้ไม่จำกัดจำนวน — ใส่สต็อกในหน้าแก้ไขก่อน");
-    if (r.stock + delta < 0) throw new CoreError("INVALID_INPUT", `สต็อกเหลือ ${r.stock} — ลดได้ไม่เกินนั้น`);
-    const updated = await tx.reward.update({ where: { id: r.id }, data: { stock: { increment: delta } } });
+    // Conditional on the stock still covering the cut, so a redemption in between can't push it below zero.
+    const moved = await tx.reward.updateMany({ where: { id: r.id, stock: { gte: Math.max(0, -delta) } }, data: { stock: { increment: delta } } });
+    const updated = await tx.reward.findFirst({ where: { id: r.id } });
+    if (!moved.count || !updated) throw new CoreError("INVALID_INPUT", `สต็อกเหลือ ${updated?.stock ?? r.stock} — ลดได้ไม่เกินนั้น`);
     await writeAudit(tx, orgId, actor, { action: "reward.stock", entity: "reward", entityId: id, before: { stock: r.stock }, after: { stock: updated.stock }, reason: note.trim() || null });
     return updated;
   });

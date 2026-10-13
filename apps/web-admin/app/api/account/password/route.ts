@@ -24,8 +24,9 @@ export async function POST(req: Request) {
   if (problem) return NextResponse.json({ error: problem }, { status: 400 });
   if (next === body.current) return NextResponse.json({ error: "รหัสผ่านใหม่ต้องไม่ซ้ำรหัสเดิม" }, { status: 400 });
 
-  const updated = await updateUser(user.id, { passwordHash: await hashPassword(next), mustChangePassword: false });
-  await startSession(updated); // re-issue so the "must change" flag clears now
+  // A new sessionVersion signs out every other session; this one is re-issued with it.
+  const updated = await updateUser(user.id, { passwordHash: await hashPassword(next), mustChangePassword: false, sessionVersion: user.sessionVersion + 1 });
+  await startSession(updated);
   await audit(session, { action: "user.password_change", entity: "user", entityId: user.id });
   return NextResponse.json({ ok: true });
 }

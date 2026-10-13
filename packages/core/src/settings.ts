@@ -8,7 +8,7 @@ import type {
   TierSettings,
 } from "@mstgolf/shared";
 import { resolveTiers } from "@mstgolf/shared/tiers";
-import { prisma } from "@mstgolf/database";
+import { prisma, table } from "@mstgolf/database";
 import { CoreError } from "./errors";
 
 // Organization.settings with every Phase 1 section filled in. Stored settings
@@ -112,13 +112,21 @@ export async function getOrg(orgId: string): Promise<OrgRecord> {
 
 /**
  * Shallow-merges one section into Organization.settings (e.g. { booking: {…} }).
- * Callers validate the values; this only persists them.
+ * Callers validate the values; this only persists them. The row is locked for
+ * the read → merge → write, so two saves (or a save and an import remembering
+ * its column mapping) can't overwrite each other. Pass a function to build the
+ * patch from the settings as they are under the lock.
  */
-export async function updateSettings(orgId: string, patch: Partial<OrgSettings>): Promise<ResolvedSettings> {
-  const org = await prisma.organization.findUnique({ where: { id: orgId } });
-  if (!org) throw new CoreError("NOT_FOUND", "ไม่พบองค์กร");
-  const current = (org.settings ?? {}) as Record<string, unknown>;
-  const next = { ...current, ...patch };
-  await prisma.organization.update({ where: { id: orgId }, data: { settings: next as object } });
-  return resolveSettings(next);
+export async function updateSettings(
+  orgId: string,
+  patch: Partial<OrgSettings> | ((current: Partial<OrgSettings>) => Partial<OrgSettings>),
+): Promise<ResolvedSettings> {
+  return prisma.$transaction(async (tx) => {
+    const rows = await tx.$queryRaw<Array<{ settings: unknown }>>`SELECT "settings" FROM ${table("organizations")} WHERE "id" = ${orgId} FOR UPDATE`;
+    if (!rows.length) throw new CoreError("NOT_FOUND", "ไม่พบองค์กร");
+    const current = (rows[0]!.settings ?? {}) as Record<string, unknown>;
+    const next = { ...current, ...(typeof patch === "function" ? patch(current as Partial<OrgSettings>) : patch) };
+    await tx.organization.update({ where: { id: orgId }, data: { settings: next as object } });
+    return resolveSettings(next);
+  });
 }

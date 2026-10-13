@@ -63,6 +63,7 @@ model Organization {
   redemptions       Redemption[]
   emails            EmailMessage[]
   otpCodes          OtpCode[]
+  rateHits          RateHit[]
 
   @@map("organizations")
 }
@@ -86,6 +87,7 @@ model User {
   role               UserRole     @default(STORE_STAFF)
   passwordHash       String? // scrypt, see @mstgolf/shared/password
   mustChangePassword Boolean      @default(false)
+  sessionVersion     Int          @default(0) // bumped on password change/reset — older session cookies stop working
   isActive           Boolean      @default(true)
   lastLoginAt        DateTime?
   createdAt          DateTime     @default(now())
@@ -341,7 +343,7 @@ model Event {
   orgId      String
   org        Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
   memberId   String
-  member     Member       @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  member     Member       @relation(fields: [memberId], references: [id], onDelete: NoAction) // never cascade: the ledger outlives a delete
   type       EventType
   payload    Json         @default("{}")
   occurredAt DateTime     @default(now())
@@ -384,7 +386,7 @@ model PointTransaction {
   orgId       String
   org         Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
   memberId    String
-  member      Member       @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  member      Member       @relation(fields: [memberId], references: [id], onDelete: NoAction) // never cascade: the ledger outlives a delete
   type        PointTxType
   delta       Int
   reason      String // WELCOME · PURCHASE · BIRTHDAY · RETURN · VOID · ROLLBACK · ADJUST · MERGE_IN · MERGE_OUT · OPENING · REDEEM · REDEEM_REFUND
@@ -434,7 +436,7 @@ model Sale {
   pointEligibleSatang Int
   paymentMethod       String?
   batchId             String
-  batch               ImportBatch  @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  batch               ImportBatch  @relation(fields: [batchId], references: [id], onDelete: NoAction) // a committed batch's sales stay; only PREVIEW batches (no sales) are deleted
   historyOnly         Boolean      @default(false) // migrated history: counts toward spend, earns no points
   status              SaleStatus   @default(POSTED)
   createdAt           DateTime     @default(now())
@@ -721,7 +723,7 @@ model Redemption {
   org        Organization     @relation(fields: [orgId], references: [id], onDelete: Cascade)
   code       String // "RD-000123" — the Redemption ID the member and staff quote
   memberId   String
-  member     Member           @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  member     Member           @relation(fields: [memberId], references: [id], onDelete: NoAction) // never cascade: the ledger outlives a delete
   rewardId   String
   reward     Reward           @relation(fields: [rewardId], references: [id])
   kind       RewardKind
@@ -1006,4 +1008,19 @@ model RfmSnapshot {
   @@unique([orgId, memberId, snapshotDate])
   @@index([orgId, snapshotDate])
   @@map("rfm_snapshots")
+}
+
+// Durable rate limits (serverless instances share nothing in memory): one row
+// per counted attempt, e.g. a failed staff login or a phone sign-in. Pruned nightly.
+model RateHit {
+  id        String       @id @default(cuid())
+  orgId     String
+  org       Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  bucket    String // "staff_login_fail" · "phone_signin" …
+  key       String // what is limited: an email, an IP, a phone
+  createdAt DateTime     @default(now())
+
+  @@index([orgId, bucket, key, createdAt])
+  @@index([createdAt])
+  @@map("rate_hits")
 }

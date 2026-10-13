@@ -10,8 +10,9 @@ import { processOutbox, type OutboxRun } from "./notify/sender";
 import { expireCoupons } from "./rewards";
 import { queueBirthdays } from "./notify/inbox";
 import { pruneOtpCodes } from "./otp";
+import { pruneRateHits } from "./ratelimit";
 import { ledgerDrift } from "./points";
-import { pruneJobRuns } from "./ops";
+import { pruneJobRuns, recordJobRun } from "./ops";
 import { getOrg } from "./settings";
 import { syncShopify, type SyncResult } from "./shopify/sync";
 
@@ -68,6 +69,7 @@ export async function runNightly(orgId: string, now = new Date()): Promise<Night
   const couponsExpired = await expireCoupons(orgId, now);
   const birthdays = await queueBirthdays(orgId, now);
   await pruneOtpCodes(orgId, now);
+  await pruneRateHits(orgId, now);
   const cleared = await client.importBatch.deleteMany({ where: { status: "PREVIEW", createdAt: { lt: new Date(now.getTime() - 24 * 3600_000) } } });
   await pruneJobRuns(orgId, now);
   const drift = await ledgerDrift(orgId);
@@ -92,15 +94,39 @@ export async function runNightly(orgId: string, now = new Date()): Promise<Night
 export async function runFrequent(now = new Date()): Promise<{ reminders: number; outbox: OutboxRun; email: OutboxRun }> {
   const orgs = await prisma.organization.findMany({ where: { isActive: true }, select: { id: true } });
   let reminders = 0;
-  for (const o of orgs) reminders += await queueReminders(o.id, now);
+  // One org's failure must not stop the others' reminders.
+  for (const o of orgs) {
+    try {
+      reminders += await queueReminders(o.id, now);
+    } catch (e) {
+      console.error("[jobs] reminders failed for", o.id, e instanceof Error ? e.message : e);
+    }
+  }
   const outbox = await processOutbox({ limit: 200, now });
   const email = await processEmails({ limit: 50 });
   return { reminders, outbox, email };
 }
 
-export async function runNightlyAll(now = new Date()): Promise<NightlyReport[]> {
+export type NightlyOutcome = NightlyReport | { orgId: string; error: string };
+
+/**
+ * Every org's nightly run, each recorded on that org only (its own report, not
+ * the others'), and one org's failure doesn't stop the rest.
+ */
+export async function runNightlyAll(now = new Date()): Promise<NightlyOutcome[]> {
   const orgs = await prisma.organization.findMany({ where: { isActive: true }, select: { id: true } });
-  const out: NightlyReport[] = [];
-  for (const o of orgs) out.push(await runNightly(o.id, now));
+  const out: NightlyOutcome[] = [];
+  for (const o of orgs) {
+    const startedAt = new Date();
+    try {
+      const report = await runNightly(o.id, now);
+      out.push(report);
+      await recordJobRun("nightly", { startedAt, ok: true, detail: report, orgIds: [o.id] });
+    } catch (e) {
+      const error = e instanceof Error ? e.message : String(e);
+      out.push({ orgId: o.id, error });
+      await recordJobRun("nightly", { startedAt, ok: false, error, orgIds: [o.id] }).catch(() => undefined);
+    }
+  }
   return out;
 }

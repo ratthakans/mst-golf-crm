@@ -19,7 +19,7 @@ export interface LineUser {
 }
 
 export type Customer =
-  | { kind: "member"; memberId: string } // signed in with a mobile number
+  | { kind: "member"; memberId: string; proven: boolean } // signed in with a mobile number (proven by SMS code, or typed while codes are off)
   | { kind: "phone"; phone: string; proven: boolean } // signed in with a number (proven by SMS code, or typed while codes are off), sign-up not finished
   | ({ kind: "line" } & LineUser); // signed in with LINE
 
@@ -40,7 +40,8 @@ export async function signCustomerSession(c: Customer): Promise<{ token: string;
   const key = secretKey();
   if (!key) throw new Error("CUSTOMER_AUTH_SECRET is not configured (32+ characters)");
   const maxAge = c.kind === "phone" ? PHONE_TTL_SECONDS : MEMBER_TTL_SECONDS;
-  const claims = c.kind === "line" ? { typ: "line", name: c.name, picture: c.picture } : c.kind === "phone" ? { typ: "phone", proven: c.proven } : { typ: c.kind };
+  const claims =
+    c.kind === "line" ? { typ: "line", name: c.name, picture: c.picture } : c.kind === "phone" ? { typ: "phone", proven: c.proven } : { typ: c.kind, pv: c.proven };
   const sub = c.kind === "member" ? c.memberId : c.kind === "phone" ? c.phone : c.sub;
   const token = await new SignJWT(claims).setProtectedHeader({ alg: "HS256" }).setSubject(sub).setIssuedAt().setExpirationTime(`${maxAge}s`).sign(key);
   return { token, maxAge };
@@ -57,7 +58,8 @@ export async function verifyCustomerSession(token: string | undefined): Promise<
   try {
     const { payload } = await jwtVerify(token, key, { algorithms: ["HS256"] });
     if (!payload.sub) return null;
-    if (payload.typ === "member") return { kind: "member", memberId: payload.sub };
+    // Member cookies from before the "pv" claim were all issued without an SMS code.
+    if (payload.typ === "member") return { kind: "member", memberId: payload.sub, proven: payload.pv === true };
     if (payload.typ === "phone") return { kind: "phone", phone: payload.sub, proven: payload.proven === true };
     // "line", and cookies issued before sign-in by phone existed.
     return {
@@ -69,6 +71,16 @@ export async function verifyCustomerSession(token: string | undefined): Promise<
   } catch {
     return null;
   }
+}
+
+/**
+ * Whether a session still counts for this tenant. Sessions made by typing a
+ * number while SMS codes were off stop working the moment codes are switched
+ * on, and LINE sessions only work while LINE is on.
+ */
+export function sessionUsable(features: { otp: boolean; line: boolean }, c: Customer): boolean {
+  if (c.kind === "line") return features.line;
+  return !features.otp || c.proven;
 }
 
 /** Who the current request belongs to (server components and route handlers). */
