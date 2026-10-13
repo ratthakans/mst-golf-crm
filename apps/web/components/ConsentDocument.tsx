@@ -21,7 +21,8 @@ export function ConsentDocument({
         ) : (
           sections.map((s) => (
             <section key={s.title} className="consent-doc">
-              <h2>{s.title}</h2>
+              {/* one document: the page heading already names it */}
+              {sections.length > 1 && <h2>{s.title}</h2>}
               <p className="hint">
                 ฉบับ {s.version} · มีผลตั้งแต่ {formatThaiDate(new Date(s.effectiveAt))}
               </p>

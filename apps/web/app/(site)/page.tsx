@@ -4,6 +4,7 @@ import { localDateKey } from "@mstgolf/core";
 import { SectionHead } from "@/components/SectionHead";
 import { SheetHead } from "@/components/SheetHead";
 import { Photo } from "@/components/Photo";
+import { PromoCards } from "@/components/PromoCards";
 import { servicePhotos, sitePhotos } from "@/lib/images";
 import { EXCLUSIVE_BRANDS } from "@mstgolf/shared/site";
 import { homeCopy, siteServices } from "@/lib/content";
@@ -11,7 +12,6 @@ import { formatBaht, formatBahtWhole, formatHm, formatPoints, hoursLines, openin
 import { getLanes, getOrg, getStore, siteOrigin } from "@/lib/org";
 import { lanesToShow } from "@/lib/lanes";
 import { currentPromotions } from "@/lib/posts";
-import { endsSoon, promoHref, untilText } from "@/lib/promo";
 
 export const revalidate = 300;
 
@@ -30,11 +30,12 @@ export const metadata: Metadata = {
 // one line per tier, and the store. Green is kept for the primary action;
 // every number comes from the back office or live data.
 export default async function HomePage() {
-  const [org, store, lanes, origin, promos] = await Promise.all([getOrg(), getStore(), getLanes(), siteOrigin(), currentPromotions(3)]);
+  const [org, store, lanes, origin, promos] = await Promise.all([getOrg(), getStore(), getLanes(), siteOrigin(), currentPromotions(4)]);
   const s = org.settings;
   const photos = sitePhotos(s.site);
   const svcPhotos = servicePhotos(photos);
-  const services = siteServices(s.site.copy).filter((svc) => svc.slug !== "golf-simulator"); // the sim has its own block
+  const services = siteServices(s.site.copy);
+  const shown = promos.slice(0, 3);
   const copy = homeCopy(s.site.copy, lanes.length || 3);
   const address = s.site.address ?? store?.address ?? null;
   const hours = store ? hoursLines(store.openHours) : [];
@@ -99,31 +100,11 @@ export default async function HomePage() {
         media={<Photo photo={photos.hero} ratio="16 / 9" priority sizes="100vw" position="50% 22%" />}
       />
 
-      {promos.length > 0 && (
+      {shown.length > 0 && (
         <section className="q-sec" aria-labelledby="promos-h">
           <div className="wrap">
-            <SectionHead id="promos-h" label="Promotions" title="โปรโมชันเดือนนี้" link={{ href: "/promotions", text: "ดูทั้งหมด" }} />
-            {/* the layout follows the count: one wide card, two halves, or three columns */}
-            <ul className={`n-promos n-promos-${promos.length}`}>
-              {promos.map((p) => (
-                <li key={p.slug}>
-                  <Link href={`/promotions/${p.slug}`} className="n-promo">
-                    <span className="n-promo-img">
-                      {/* eslint-disable-next-line @next/next/no-img-element -- promotion covers come from MST's uploads */}
-                      {p.coverUrl ? <img src={p.coverUrl} alt="" loading="lazy" /> : null}
-                    </span>
-                    <span className="n-promo-copy">
-                      <span className={`n-promo-until${endsSoon(p.endsAt, now) ? " soon" : ""}`}>{untilText(p.endsAt, now)}</span>
-                      <span className="n-promo-title">{p.title}</span>
-                      {p.excerpt && <span className="n-promo-text">{p.excerpt}</span>}
-                      <span className="n-go" aria-hidden="true">
-                        ดูรายละเอียด →
-                      </span>
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
+            <SectionHead id="promos-h" label="Promotions" title="โปรโมชันเดือนนี้" link={promos.length > shown.length ? { href: "/promotions", text: "ดูทั้งหมด" } : undefined} />
+            <PromoCards promos={shown} now={now} label="โปรโมชันเดือนนี้" />
           </div>
         </section>
       )}
@@ -133,9 +114,6 @@ export default async function HomePage() {
           <div className="wrap n-night-row">
             <Photo photo={photos.simBays} ratio="4 / 5" className="n-night-img" sizes="(min-width: 900px) 45vw, 100vw" />
             <div className="n-night-copy">
-              <p className="q-label" lang="en">
-                Golf Simulator
-              </p>
               <h2 id="sim-h" className="q-title">
                 ซิมกอล์ฟ จองได้ทันที
               </h2>
@@ -191,25 +169,28 @@ export default async function HomePage() {
       )}
 
       <section className="q-sec" aria-labelledby="svc-h">
-        <div className="wrap">
-          <SectionHead id="svc-h" label="In store" title={copy.servicesTitle} link={{ href: "/services", text: "บริการทั้งหมด" }} />
-          <ul className="n-svc">
-            {services.map((svc) => (
-              <li key={svc.slug}>
-                <Link href={`/services#${svc.slug}`} className="n-svc-item">
-                  <Photo photo={svcPhotos[svc.slug] ?? photos.proShop} ratio="3 / 2" sizes="(min-width: 900px) 50vw, 100vw" />
-                  <span className="n-svc-name">
-                    <span lang="en">{svc.name}</span>
-                    <span className="n-svc-thai">{svc.thai}</span>
-                  </span>
-                  <span className="n-svc-short">{svc.short}</span>
-                  <span className="n-go" aria-hidden="true">
-                    ดูรายละเอียด →
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
+        <div className="wrap n-index">
+          <Photo photo={svcPhotos["club-fitting"] ?? photos.fitting} ratio="4 / 5" className="n-index-img" sizes="(min-width: 900px) 40vw, 100vw" />
+          <div>
+            <SectionHead id="svc-h" label="In store" title={copy.servicesTitle} />
+            {/* the three services as an index: a name, one line, the way in */}
+            <ul className="n-index-list">
+              {services.map((svc) => (
+                <li key={svc.slug}>
+                  <Link href={svc.slug === "golf-simulator" ? "/golf-simulator" : `/services#${svc.slug}`} className="n-index-row">
+                    <span className="n-index-name">
+                      <span lang="en">{svc.name}</span>
+                      <span className="n-index-thai">{svc.thai}</span>
+                    </span>
+                    <span className="n-index-short">{svc.short}</span>
+                    <span className="n-index-arrow" aria-hidden="true">
+                      →
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </section>
 
@@ -237,9 +218,7 @@ export default async function HomePage() {
           </ul>
           {copy.brands.length > 0 && (
             <div className="n-brands">
-              <h3 className="q-label" lang="en">
-                Also in store
-              </h3>
+              <h3 className="n-brands-h">แบรนด์อื่นในร้าน</h3>
               {/* one slow line of names until MST sends the logos; still for reduced motion */}
               <div className="n-brands-view">
               <div className="n-brands-track">

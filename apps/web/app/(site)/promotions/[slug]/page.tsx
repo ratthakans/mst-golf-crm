@@ -118,15 +118,8 @@ export default async function PromotionPage({ params }: { params: { slug: string
               </div>
             )}
             <p className="pg-foot">
-              <span>สมาชิกได้แต้มทุกการซื้อ</span>
-              <Link href="/rewards" className="text-link">
-                สิทธิ์สมาชิก
-              </Link>
               <Link href="/promotions" className="text-link">
                 โปรโมชันอื่น
-              </Link>
-              <Link href="/contact" className="text-link">
-                สอบถามร้าน
               </Link>
             </p>
           </div>

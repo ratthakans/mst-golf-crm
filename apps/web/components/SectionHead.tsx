@@ -1,16 +1,14 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
-// One section head for the whole site: a small tracked label, the section
-// title, and an optional "see all" link on the right. Every section uses it,
-// so the page reads as one system.
-export function SectionHead({ id, label, title, lede, link }: { id: string; label: string; title: ReactNode; lede?: ReactNode; link?: { href: string; text: string } }) {
+// One section head for the whole site: the title, an optional lede, and an
+// optional "see all" link on the right. No eyebrow label above the title
+// (13 Oct 2026): a tracked English label on every section read as a template.
+// `label` is kept so call sites name their section, but it is not rendered.
+export function SectionHead({ id, title, lede, link }: { id: string; label?: string; title: ReactNode; lede?: ReactNode; link?: { href: string; text: string } }) {
   return (
     <div className="q-head">
       <div className="q-head-copy">
-        <p className="q-label" lang="en">
-          {label}
-        </p>
         <h2 id={id} className="q-title">
           {title}
         </h2>

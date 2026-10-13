@@ -32,9 +32,10 @@ export function SheetHead({
   const Title = titleAs;
   const copy = (
     <>
-      {(label || kicker) && (
+      {/* the tracked label only over a photo hero; plain heads start with the title */}
+      {((full && label) || kicker) && (
         <p className="sh-label">
-          {label && <span lang="en">{label}</span>}
+          {full && label && <span lang="en">{label}</span>}
           {kicker && <span className={`sh-kicker${kickerSoon ? " soon" : ""}`}>{kicker}</span>}
         </p>
       )}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { IconCheck, IconClose } from "@/components/icons";
+import { IconCheck, IconClose, IconGift } from "@/components/icons";
 import { api } from "@/lib/client";
 import { formatBaht, formatPoints, formatThaiDate } from "@/lib/format";
 import type { RedemptionRow, RedemptionStatus, RewardItem, RewardsData } from "@/lib/types";
@@ -64,6 +64,7 @@ export function RewardsApp({ initial, contact, stores }: { initial: RewardsData;
 
   return (
     <div className="member rewards">
+      <h1 className="panel-title">แลกรางวัล</h1>
       <section className="rw-balance" aria-label="แต้มของฉัน">
         <div className="balance">
           <span>แต้มคงเหลือ</span>
@@ -200,9 +201,17 @@ function RewardThumb({ item }: { item: { imageUrl: string | null; kind: string; 
     // eslint-disable-next-line @next/next/no-img-element
     return <img className="rw-thumb" src={item.imageUrl} alt="" width={64} height={64} loading="lazy" />;
   }
-  return (
-    <span className="rw-thumb rw-thumb-blank" aria-hidden="true">
-      {item.kind === "COUPON" ? (item.valueSatang ? formatBaht(item.valueSatang) : "คูปอง") : "ของรางวัล"}
+  // A coupon is drawn as a coupon (the value on a ticket), a gift gets an icon — same as the public /rewards page.
+  return item.kind === "COUPON" ? (
+    <span className="rw-thumb rw-thumb-coupon" aria-hidden="true">
+      <span className="rw-thumb-kind" lang="en">
+        COUPON
+      </span>
+      {item.valueSatang ? formatBaht(item.valueSatang) : "คูปอง"}
+    </span>
+  ) : (
+    <span className="rw-thumb rw-thumb-gift" aria-hidden="true">
+      <IconGift size={28} />
     </span>
   );
 }

@@ -6,7 +6,8 @@ import { IconGift } from "@/components/icons";
 import { SectionHead } from "@/components/SectionHead";
 import { SheetHead } from "@/components/SheetHead";
 import { TierTable } from "@/components/TierTable";
-import { formatBaht, formatPoints } from "@/lib/format";
+import { formatBaht, formatBahtWhole, formatPoints } from "@/lib/format";
+import { tierClass } from "@/components/TierCards";
 import { getOrg } from "@/lib/org";
 
 export const revalidate = 300;
@@ -51,27 +52,56 @@ export default async function RewardsInfoPage() {
           <ol className="earn-steps">
             <li>
               <b>สมัครฟรี</b>
-              <span>ใส่เบอร์มือถือ{s.features.otp ? " รับรหัสทาง SMS" : ""} ได้บัตรสมาชิกพร้อม QR ทันที และแต้มต้อนรับ {formatPoints(s.welcomeBonus)} แต้ม</span>
+              <span>ใช้เบอร์มือถือ ได้บัตร QR และ {formatPoints(s.welcomeBonus)} แต้มทันที</span>
             </li>
             <li>
               <b>แจ้งเบอร์หรือแสดง QR ตอนจ่ายเงิน</b>
               <span>
-                แต้มฐาน {earnRateText(s.pointsPerBaht)} (คิดต่อบิล) คูณอัตราตามระดับ
-                {s.site.shopUrl ? " · ซื้อที่ร้านออนไลน์ก็ได้แต้มเหมือนกัน (หลังพ้นช่วงคืนสินค้า)" : ""}
+                แต้มฐาน {earnRateText(s.pointsPerBaht)} คูณอัตราตามระดับ{s.site.shopUrl ? " · ซื้อออนไลน์ก็ได้แต้ม" : ""}
               </span>
             </li>
             <li>
               <b>ใช้แต้ม</b>
-              <span>แลกคูปองส่วนลดหรือของรางวัลในหน้าสมาชิก{birthday > 1 ? ` · เดือนเกิดรับแต้ม ×${birthday}` : ""}{s.birthdayBonus > 0 ? ` และโบนัสวันเกิด ${formatPoints(s.birthdayBonus)} แต้ม` : ""}</span>
+              <span>แลกคูปองหรือของรางวัลในหน้าสมาชิก{birthday > 1 ? ` · เดือนเกิดแต้ม ×${birthday}` : ""}</span>
             </li>
           </ol>
         </div>
       </section>
 
-      <section className="q-sec q-alt" aria-labelledby="tiers-h">
+      <section className="q-sec" aria-labelledby="tiers-h">
         <div className="wrap">
           <SectionHead id="tiers-h" label="Tiers" title="ระดับสมาชิก" lede="ระดับคิดจากยอดซื้อสุทธิ 12 เดือนล่าสุด ไม่ใช่แต้มคงเหลือ แลกรางวัลแล้วระดับไม่ลด" />
-          <TierTable tiers={s.tiers} pointsPerBaht={s.pointsPerBaht} />
+          {/* one card per tier: the perk that matters large, the rest as short lines */}
+          <ul className="sm-prices rw-tiers">
+            {s.tiers.map((t) => {
+              const entry = t.minSpend12m === 0;
+              const perks = [
+                `แต้ม ×${t.pointRate} ทุกการซื้อ`,
+                t.benefits.simDiscountPct ? `ซิมกอล์ฟลด ${t.benefits.simDiscountPct}%` : null,
+                `จองซิมล่วงหน้า ${t.benefits.simBookingDaysAhead} วัน`,
+                t.benefits.birthdayPointMultiplier > 1 ? `เดือนเกิดแต้ม ×${t.benefits.birthdayPointMultiplier}` : null,
+              ].filter(Boolean) as string[];
+              return (
+                <li key={t.key} className={`sm-price tier-${tierClass(t.key)}`}>
+                  <span className="n-tier-name" lang="en">
+                    {t.name}
+                  </span>
+                  <span className="sm-price-big mono">{entry ? formatPoints(s.welcomeBonus) : `${t.benefits.discountPct}%`}</span>
+                  <span className="sm-price-what">{entry ? "แต้มต้อนรับเมื่อสมัคร" : "ส่วนลดสินค้าในร้าน"}</span>
+                  <ul className="rw-perks">
+                    {perks.map((p) => (
+                      <li key={p}>{p}</li>
+                    ))}
+                  </ul>
+                  <span className="rw-min">{entry ? "สมัครฟรี" : `ยอดซื้อ ${formatBahtWhole(t.minSpend12m)}+ ใน 12 เดือน`}</span>
+                </li>
+              );
+            })}
+          </ul>
+          <details className="rw-compare">
+            <summary>เทียบสิทธิ์ทุกระดับในตาราง</summary>
+            <TierTable tiers={s.tiers} pointsPerBaht={s.pointsPerBaht} />
+          </details>
         </div>
       </section>
 

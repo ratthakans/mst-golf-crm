@@ -5,7 +5,7 @@ import "./customer.css";
 import { AppBar, AppTabs } from "@/components/customer/AppTabs";
 import { LogoutButton } from "@/components/customer/LogoutButton";
 import { Logo } from "@/components/Logo";
-import { currentMember, customerLabel } from "@/lib/member";
+import { currentMember } from "@/lib/member";
 import { getOrg, loginSetup } from "@/lib/org";
 
 export const dynamic = "force-dynamic";
@@ -18,7 +18,6 @@ export default async function CustomerLayout({ children }: { children: React.Rea
   const { customer, member } = await currentMember();
   const liffId = customer?.kind === "line" && !inLine ? (await loginSetup(org.id)).liffId : null;
   const unread = member ? await unreadCount(org.id, member.id) : 0;
-  const label = customerLabel(customer, member);
 
   return (
     <div className="capp">
@@ -31,20 +30,13 @@ export default async function CustomerLayout({ children }: { children: React.Rea
       <main id="main" className="capp-main">
         {children}
       </main>
+      {/* one quiet line: back to the website, contact, privacy, and log out */}
       <footer className="capp-footer">
-        {customer && !inLine && (
-          <div className="capp-account">
-            <span className="muted">
-              {customer.kind === "line" ? "เข้าสู่ระบบด้วย LINE" : "เข้าสู่ระบบแล้ว"}
-              {label ? ` · ${label}` : ""}
-            </span>
-            <LogoutButton liffId={liffId} />
-          </div>
-        )}
         <nav className="capp-links" aria-label="ลิงก์เว็บไซต์">
           <Link href="/">หน้าเว็บ MST Golf</Link>
           <Link href="/contact">ติดต่อเรา</Link>
           <Link href="/privacy">ความเป็นส่วนตัว</Link>
+          {customer && !inLine && <LogoutButton liffId={liffId} />}
         </nav>
       </footer>
       <AppBar unread={unread} signedIn={!!member} />

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { IconClose, IconMenu } from "./icons";
-import { NAV } from "@/lib/nav";
+import { HEADER_NAV, NAV } from "@/lib/nav";
 
 // Desktop: the page links in the header row. Phone: a menu button that opens
 // the same links full-screen (plus booking and membership).
@@ -29,7 +29,7 @@ export function SiteMenu({ shopUrl, store }: { shopUrl: string | null; store?: {
   return (
     <>
       <nav className="site-nav" aria-label="เมนูหลัก">
-        {NAV.filter((n) => n.href !== "/").map((n) => (
+        {NAV.filter((n) => HEADER_NAV.includes(n.href)).map((n) => (
           <Link key={n.href} href={n.href} className="site-nav-link" aria-current={active(n.href) ? "page" : undefined}>
             {n.label}
           </Link>

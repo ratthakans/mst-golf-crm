@@ -73,10 +73,10 @@ export const DEFAULT_SERVICES: Service[] = [
 ];
 
 export const DEFAULT_HOME_COPY = {
-  heroTitle: "ร้านกอล์ฟที่ให้คุณ",
-  heroHighlight: "ลองก่อนเลือก",
+  heroTitle: "เลือกไม้จากวงสวิง",
+  heroHighlight: "ของคุณเอง",
   heroLede: (lanes: number) => `อุปกรณ์กอล์ฟ ฟิตติ้งไม้ให้เข้ากับวงสวิง และ Golf Simulator ${lanes} lane — อยู่ในร้านเดียว ใจกลางถนนพระราม 4`,
-  servicesTitle: "ครบตั้งแต่เลือกไม้ จนถึงวันออกรอบ",
+  servicesTitle: "ทุกอย่างอยู่ในร้านเดียว",
   servicesLede: "สามบริการที่ต่อกันเป็นเส้นเดียว เลือกของในร้าน ฟิตติ้งไม้ให้เข้ากับวงสวิง แล้วซ้อมต่อบนซิมได้ในที่เดียว",
   // Placeholder from the MST Golf group's line-up — MST Thailand confirms what this store carries.
   // The brands on mstgolf.co.th ("The biggest brands in golf, all in one store"), Oct 2026.

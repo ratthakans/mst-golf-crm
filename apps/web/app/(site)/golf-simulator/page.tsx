@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { formatThaiDate, priceFor } from "@mstgolf/core";
+import { SectionHead } from "@/components/SectionHead";
 import { SheetHead } from "@/components/SheetHead";
 import { SimScorecard } from "@/components/SimScorecard";
 import { lanesToShow } from "@/lib/lanes";
@@ -30,7 +31,6 @@ export default async function SimulatorPage() {
   const hours = store ? hoursLines(store.openHours) : [];
   const now = new Date();
   const day = lanes.length ? await lanesToShow(org.id, now) : null;
-  const prices = Array.from(new Set(lanes.map((l) => l.hourlyPriceSatang))).sort((x, y) => x - y);
 
   const rules: Array<[string, string]> = [
     ["ช่องเวลา", `ครั้งละ ${b.slotMinutes} นาที ตรงชั่วโมง ตามเวลาเปิดร้าน จองติดกันได้`],
@@ -43,10 +43,11 @@ export default async function SimulatorPage() {
     ["ชำระเงิน", "ที่ร้านตอนเช็กอิน ไม่ต้องจ่ายออนไลน์"],
   ];
 
+  const cap = Math.max(0, ...lanes.map((l) => l.capacity));
+
   return (
     <>
       <SheetHead
-        label="Golf Simulator"
         title="Golf Simulator"
         lede={`ซ้อมหรือเล่นสนามจำลองได้ทุกวัน${hours[0] ? ` (${hours[0]})` : ""} จองบนเว็บไซต์ด้วยตารางเดียวกับที่ร้านใช้ ช่องว่างจองได้ทันที`}
         actions={
@@ -64,91 +65,70 @@ export default async function SimulatorPage() {
       />
 
       {day && (
-        <section className="section section-rule" aria-labelledby="today-h">
-          <div className="wrap two-col">
-            <div>
-              <h2 id="today-h">ช่องว่าง{day.word}</h2>
-              <p className="muted">ตารางเดียวกับหน้าจอง · กดช่องว่างที่หน้าจองแล้วยืนยันได้ทันที</p>
-            </div>
+        <section className="q-sec" aria-labelledby="today-h">
+          <div className="wrap">
+            <SectionHead
+              id="today-h"
+              title={`ช่องว่าง${day.word}`}
+              lede="ตารางเดียวกับหน้าจอง แตะช่องว่างแล้วยืนยันได้ทันที"
+              link={{ href: "/app/booking", text: "ดูวันอื่น" }}
+            />
             <SimScorecard avail={day.avail} dateLabel={`${day.word} · ${formatThaiDate(day.at, { weekday: true, year: false })}`} />
           </div>
         </section>
       )}
 
-      <section className="section section-rule" aria-labelledby="lanes-h">
-        <div className="wrap two-col">
-          <div>
-            <h2 id="lanes-h">Lane และราคา</h2>
-            <p className="muted">ราคาต่อชั่วโมงต่อ lane ไม่ว่าจะมากี่คน</p>
-          </div>
-          <table className="table">
-            <thead>
-              <tr>
-                <th scope="col">Lane</th>
-                <th scope="col">จำนวนคน</th>
-                <th scope="col" className="r">
-                  ราคา / ชม.
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {lanes.map((l) => (
-                <tr key={l.id}>
-                  <td>{l.name}</td>
-                  <td className="num">สูงสุด {l.capacity} คน</td>
-                  <td className="r num">{formatBaht(l.hourlyPriceSatang)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
       {base !== null && (
-        <section className="section section-rule" aria-labelledby="disc-h">
-          <div className="wrap two-col">
-            <div>
-              <h2 id="disc-h">ส่วนลดตามระดับสมาชิก</h2>
-              <p className="muted">ระบบคิดส่วนลดให้อัตโนมัติและแสดงราคาก่อนยืนยันทุกครั้ง{samePrice ? "" : " (ตัวอย่างคิดจากราคา lane แรก)"}</p>
-            </div>
-            <table className="table">
-              <thead>
-                <tr>
-                  <th scope="col">ระดับ</th>
-                  <th scope="col">ส่วนลด</th>
-                  <th scope="col">จองล่วงหน้า</th>
-                  <th scope="col" className="r">
-                    ราคา / ชม.
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {s.tiers.map((t) => (
-                  <tr key={t.key}>
-                    <td>
-                      <span className={`tier-dot tier-${tierClass(t.key)}`} aria-hidden="true" />
-                      {t.name}
-                    </td>
-                    <td className="num">{t.benefits.simDiscountPct ? `${t.benefits.simDiscountPct}%` : "—"}</td>
-                    <td className="num">{t.benefits.simBookingDaysAhead} วัน</td>
-                    <td className="r num">
-                      <b>{formatBaht(priceFor(base, b.slotMinutes, t.benefits.simDiscountPct))}</b>
-                    </td>
+        <section className="q-sec n-ruled" aria-labelledby="price-h">
+          <div className="wrap">
+            <SectionHead
+              id="price-h"
+              title="ราคา"
+              lede={`ต่อ lane ต่อชั่วโมง ไม่ว่าจะมากี่คน${cap ? ` · สูงสุด ${cap} คนต่อ lane` : ""} · สมาชิกได้ส่วนลดอัตโนมัติ${samePrice ? "" : " (คิดจากราคา lane แรก)"}`}
+            />
+            <ul className="sm-prices">
+              {s.tiers.map((t) => (
+                <li key={t.key} className={`sm-price tier-${tierClass(t.key)}`}>
+                  <span className="n-tier-name" lang="en">
+                    {t.name}
+                  </span>
+                  <span className="sm-price-big mono">{formatBaht(priceFor(base, b.slotMinutes, t.benefits.simDiscountPct))}</span>
+                  <span className="sm-price-what">
+                    {t.benefits.simDiscountPct ? `ลด ${t.benefits.simDiscountPct}%` : "ราคาปกติ"} · จองล่วงหน้า {t.benefits.simBookingDaysAhead} วัน
+                  </span>
+                </li>
+              ))}
+            </ul>
+            {!samePrice && (
+              <table className="table sm-lanes">
+                <thead>
+                  <tr>
+                    <th scope="col">Lane</th>
+                    <th scope="col">จำนวนคน</th>
+                    <th scope="col" className="r">
+                      ราคา / ชม.
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {lanes.map((l) => (
+                    <tr key={l.id}>
+                      <td>{l.name}</td>
+                      <td className="num">สูงสุด {l.capacity} คน</td>
+                      <td className="r num">{formatBaht(l.hourlyPriceSatang)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
         </section>
       )}
 
-      <section className="section section-rule" aria-labelledby="rules-h">
-        <div className="wrap two-col">
-          <div>
-            <h2 id="rules-h">กติกาการจอง</h2>
-            <p className="muted">ลูกค้าจองเองต้องเป็นสมาชิก (สมัครฟรีด้วยเบอร์มือถือ) walk-in และโทรจองติดต่อที่ร้าน</p>
-          </div>
-          <dl className="rules">
+      <section className="q-sec n-ruled" aria-labelledby="rules-h">
+        <div className="wrap">
+          <SectionHead id="rules-h" title="กติกาการจอง" lede="ลูกค้าจองเองต้องเป็นสมาชิก (สมัครฟรีด้วยเบอร์มือถือ) · walk-in และโทรจองติดต่อที่ร้าน" />
+          <dl className="sm-rules">
             {rules.map(([k, v]) => (
               <div key={k}>
                 <dt>{k}</dt>
@@ -167,7 +147,7 @@ export default async function SimulatorPage() {
               <Link href="/app/booking" className="btn btn-primary">
                 จองซิม
               </Link>
-              <Link href="/app/member" className="text-link">
+              <Link href="/register" className="text-link">
                 ยังไม่เป็นสมาชิก? สมัครฟรี
               </Link>
             </div>

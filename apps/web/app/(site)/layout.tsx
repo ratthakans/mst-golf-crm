@@ -37,83 +37,73 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
 
       <main id="main">{children}</main>
 
-      {/* CVI band: the white logo on the green box, and the Let's Golf tagline. */}
-      <section className="brand-band" aria-label="MST Golf">
-        <div className="wrap brand-band-row">
-          {/* eslint-disable-next-line @next/next/no-img-element -- the CVI logo, shown in its white "green box" version */}
-          <img src="/mst-logo.png" alt="MST Golf" className="logo-white" width={161} height={30} />
-          <div className="brand-band-tag">
+      {/* One footer in the CVI green: the white logo and Let's Golf, the store,
+          then every link on one wrapping line. */}
+      <footer className="ft">
+        <div className="wrap ft-top">
+          {/* eslint-disable-next-line @next/next/no-img-element -- the CVI logo, white on the green box */}
+          <img src="/mst-logo.png" alt="MST Golf" className="ft-logo" width={161} height={30} />
+          <div className="ft-tag">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/lets-golf-white.png" alt="Let's Golf" width={112} height={86} />
+            <img src="/lets-golf-white.png" alt="Let's Golf" width={92} height={71} />
             <p lang="en">Let&rsquo;s belong. Let&rsquo;s improve. Let&rsquo;s enjoy every moment.</p>
           </div>
         </div>
-      </section>
-
-      {/* Colophon: the store's details on the left, the links in three short groups. */}
-      <footer className="site-footer colophon">
-        <div className="wrap colophon-grid">
-          <div className="colophon-store">
-            <p className="colophon-name">{store?.name ?? org.name}</p>
+        <div className="wrap ft-main">
+          <div className="ft-store">
+            <p className="ft-name">{store?.name ?? org.name}</p>
             {address && <p>{address}</p>}
             {hours.map((h) => (
               <p key={h}>{h}</p>
             ))}
-            {site.phone && (
-              <p>
-                โทร <a href={`tel:${site.phone.replace(/[^\d+]/g, "")}`} className="num">{site.phone}</a>
-              </p>
-            )}
-            {site.mapsUrl && (
-              <p>
-                <a href={site.mapsUrl} rel="noopener" target="_blank">เปิดแผนที่ Google Maps ↗</a>
-              </p>
-            )}
-            {(site.facebookUrl || site.instagramUrl) && (
-              <p className="colophon-social">
-                {site.facebookUrl && (
-                  <a href={site.facebookUrl} rel="noopener" target="_blank">
-                    Facebook ↗
-                  </a>
-                )}
-                {site.instagramUrl && (
-                  <a href={site.instagramUrl} rel="noopener" target="_blank">
-                    Instagram ↗
-                  </a>
-                )}
-              </p>
-            )}
-            {org.settings.features.line && site.lineOaUrl && (
-              <p>
-                <a href={site.lineOaUrl} rel="noopener" target="_blank">เพิ่มเพื่อน LINE OA</a>
-              </p>
-            )}
-          </div>
-          <nav className="colophon-nav" aria-label="ลิงก์ท้ายเว็บ">
-            <div>
-              <p className="colophon-h" lang="en">Store</p>
-              {NAV.map((n) => (
-                <Link key={n.href} href={n.href}>{n.label}</Link>
-              ))}
-              {site.shopUrl && (
-                <a href={site.shopUrl} rel="noopener" target="_blank">ร้านออนไลน์ ↗</a>
+            <p className="ft-inline">
+              {site.phone && (
+                <a href={`tel:${site.phone.replace(/[^\d+]/g, "")}`} className="num">
+                  โทร {site.phone}
+                </a>
               )}
-            </div>
-            <div>
-              <p className="colophon-h" lang="en">Members</p>
-              <Link href="/register">สมัครสมาชิก</Link>
-              <Link href="/app/member">บัตรสมาชิก</Link>
-              <Link href="/app/booking">จองซิมกอล์ฟ</Link>
-              <Link href="/app/rewards">แลกรางวัล</Link>
-            </div>
-            <div>
-              <p className="colophon-h" lang="en">Legal</p>
-              <Link href="/terms">ข้อกำหนดสมาชิก</Link>
-              <Link href="/privacy">นโยบายความเป็นส่วนตัว</Link>
-            </div>
+              {site.mapsUrl && (
+                <a href={site.mapsUrl} rel="noopener" target="_blank">
+                  Google Maps ↗
+                </a>
+              )}
+              {site.facebookUrl && (
+                <a href={site.facebookUrl} rel="noopener" target="_blank">
+                  Facebook ↗
+                </a>
+              )}
+              {site.instagramUrl && (
+                <a href={site.instagramUrl} rel="noopener" target="_blank">
+                  Instagram ↗
+                </a>
+              )}
+              {org.settings.features.line && site.lineOaUrl && (
+                <a href={site.lineOaUrl} rel="noopener" target="_blank">
+                  LINE OA ↗
+                </a>
+              )}
+            </p>
+          </div>
+          <nav className="ft-links" aria-label="ลิงก์ท้ายเว็บ">
+            {NAV.filter((n) => n.href !== "/").map((n) => (
+              <Link key={n.href} href={n.href}>
+                {n.label}
+              </Link>
+            ))}
+            <Link href="/register">สมัครสมาชิก</Link>
+            <Link href="/app/member">บัตรสมาชิก</Link>
+            {site.shopUrl && (
+              <a href={site.shopUrl} rel="noopener" target="_blank">
+                ร้านออนไลน์ ↗
+              </a>
+            )}
           </nav>
-          <p className="colophon-fine">
-            © {new Date().getFullYear()} {org.name} · ราคาและเวลาเปิดบนหน้านี้มาจากระบบของร้านโดยตรง
+        </div>
+        <div className="wrap ft-fine">
+          <p>© {new Date().getFullYear()} {org.name}</p>
+          <p className="ft-legal">
+            <Link href="/terms">ข้อกำหนดสมาชิก</Link>
+            <Link href="/privacy">นโยบายความเป็นส่วนตัว</Link>
           </p>
         </div>
       </footer>

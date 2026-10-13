@@ -7,3 +7,6 @@ export const NAV = [
   { href: "/blog", label: "บทความ" },
   { href: "/contact", label: "ติดต่อเรา" },
 ];
+
+/** The four links in the desktop header; the rest live in the footer and the phone menu. */
+export const HEADER_NAV = ["/services", "/golf-simulator", "/rewards", "/contact"];

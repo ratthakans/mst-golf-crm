@@ -370,6 +370,7 @@ export function BookingApp(props: Props) {
   }
 
   const allPast = !!avail && avail.open && avail.slots.length > 0 && avail.slots.every((s) => s.lanes.every((l) => l.state === "past"));
+  const open = avail ? avail.slots.filter((s) => !s.lanes.every((l) => l.state === "past")) : [];
 
   return (
     <div className="booking" ref={topRef}>
@@ -432,9 +433,10 @@ export function BookingApp(props: Props) {
                   {l.name}
                 </span>
               ))}
-              {avail.slots.map((s, i) => {
+              {/* hours already gone today are left out, not drawn as dead cells */}
+              {open.map((s, i) => {
                 const part = dayPart(s.label);
-                const first = i === 0 || dayPart(avail.slots[i - 1]!.label) !== part;
+                const first = i === 0 || dayPart(open[i - 1]!.label) !== part;
                 return (
                   <Fragment key={s.startAt}>
                     {first && <span className="slots-part">{part}</span>}

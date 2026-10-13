@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { PromoSheet } from "@/components/PromoSheet";
+import { PromoCards } from "@/components/PromoCards";
 import { SheetHead } from "@/components/SheetHead";
 import { getOrg } from "@/lib/org";
 import { currentPromotions } from "@/lib/posts";
@@ -28,7 +28,7 @@ export default async function PromotionsPage() {
       <section className="pg-body">
         <div className="wrap">
           {promos.length ? (
-            <PromoSheet promos={promos} now={now} full label="โปรโมชันที่กำลังมี" />
+            <PromoCards promos={promos} now={now} list label="โปรโมชันที่กำลังมี" />
           ) : (
             <p className="empty">ยังไม่มีโปรโมชันในช่วงนี้ — ดูสิทธิ์สมาชิกและรางวัลที่แลกได้ระหว่างนี้</p>
           )}
