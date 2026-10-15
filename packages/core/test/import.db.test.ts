@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from "vitest";
-import { commitImport, createMemberAtCounter, db, ledgerDrift, previewImport, rollbackImport, signUp, staffUpdateMember } from "../src";
+import { commitImport, createMemberAtCounter, db, fromLocal, ledgerDrift, previewImport, rollbackImport, runNightly, signUp, staffUpdateMember } from "../src";
 import { enc, makeOrg } from "./fixtures";
 
 let t: Awaited<ReturnType<typeof makeOrg>>;
@@ -116,5 +116,29 @@ describe("POS import", () => {
     expect(p.encoding).toBe("windows-874");
     expect(p.mapping.billTotal).toBe("Total");
     expect(p.counts.salesSatang).toBe(123_450);
+  });
+
+  it("refuses bills dated in the future, such as a misread year", async () => {
+    const now = fromLocal(2026, 10, 15, 12, 0);
+    const csv = [HEAD, "F001,01/10/2027,10:00,ขาย,,X,X,1,100,100,", "F002,1/10/69,10:00,ขาย,,X,X,1,100,100,"].join("\n");
+    const p = await previewImport(t.orgId, t.actor, { storeId: t.storeId, fileName: "future.csv", bytes: enc(csv), now });
+    expect(p.counts.invalid).toBe(1);
+    expect(p.problems.some((x) => x.invoiceNo === "F001" && x.message.includes("อนาคต"))).toBe(true);
+  });
+
+  it("history from two years back earns no tier, and the monthly review drops a tier no spend supports", async () => {
+    const now = fromLocal(2026, 10, 15, 12, 0);
+    const csv = [HEAD, "H001,10/03/2024,10:00,ขาย,,X,Old Driver,1,150000,150000,MSTMEMBER:0855554444"].join("\n");
+    const p = await previewImport(t.orgId, t.actor, { storeId: t.storeId, fileName: "history.csv", bytes: enc(csv), mode: "HISTORY", now });
+    const r = await commitImport(t.orgId, t.actor, p.batchId, now);
+    expect(r.tierUps).toBe(0);
+    const old = await db(t.orgId).member.findFirst({ where: { identities: { some: { value: "0855554444" } } } });
+    expect(old?.tier).toBe("member");
+    expect(old?.lifetimeSatang).toBe(150_000 * 100);
+
+    // A Gold left over from before the fix, with no purchase in 13 months, is reviewed on the 1st.
+    await db(t.orgId).member.updateMany({ where: { id: old!.id }, data: { tier: "gold" } });
+    await runNightly(t.orgId, fromLocal(2026, 11, 1, 2, 0));
+    expect((await db(t.orgId).member.findFirst({ where: { id: old!.id } }))?.tier).toBe("member");
   });
 });

@@ -158,4 +158,18 @@ describe("rewards", () => {
     expect(email.status).toBe("SENT");
     expect(keys).toContain(email.id);
   });
+
+  it("saving a reward never writes back the stock the page loaded with", async () => {
+    const bag = await saveReward(t.orgId, t.actor, null, { kind: "PHYSICAL", name: "Golf bag", costPoints: 100, stock: 5 });
+    await adjustRewardStock(t.orgId, t.actor, bag.id, -2, "two went out while the editor was open");
+    await saveReward(t.orgId, t.actor, bag.id, { kind: "PHYSICAL", name: "Golf bag (stand)", costPoints: 100, stock: 5 });
+    const after = await db(t.orgId).reward.findFirstOrThrow({ where: { id: bag.id } });
+    expect(after.name).toBe("Golf bag (stand)");
+    expect(after.stock).toBe(3);
+    // Switching to unlimited and back to limited still goes through save.
+    await saveReward(t.orgId, t.actor, bag.id, { kind: "PHYSICAL", name: "Golf bag (stand)", costPoints: 100, stock: null });
+    expect((await db(t.orgId).reward.findFirstOrThrow({ where: { id: bag.id } })).stock).toBeNull();
+    await saveReward(t.orgId, t.actor, bag.id, { kind: "PHYSICAL", name: "Golf bag (stand)", costPoints: 100, stock: 4 });
+    expect((await db(t.orgId).reward.findFirstOrThrow({ where: { id: bag.id } })).stock).toBe(4);
+  });
 });

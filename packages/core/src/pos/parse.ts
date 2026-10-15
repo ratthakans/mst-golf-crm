@@ -1,7 +1,7 @@
 import type { PosMapping, PosSettings } from "@mstgolf/shared";
 import { normalizeThaiMobile } from "@mstgolf/shared/phone";
 import { toSatang } from "../money";
-import { fromLocal } from "../time";
+import { fromLocal, localParts } from "../time";
 
 // Turns CSV rows into bills. A bill is every row sharing an invoice number and
 // type; a file with one row per bill works the same way (one line per bill).
@@ -43,7 +43,7 @@ export interface ParsedBill {
 export interface RowError {
   rowNumber: number;
   invoiceNo: string | null;
-  code: "NO_INVOICE" | "BAD_DATE" | "BAD_AMOUNT" | "REF_REQUIRED" | "MIXED_BILL";
+  code: "NO_INVOICE" | "BAD_DATE" | "FUTURE_DATE" | "BAD_AMOUNT" | "REF_REQUIRED" | "MIXED_BILL";
   message: string;
   raw: Record<string, string>;
 }
@@ -51,6 +51,7 @@ export interface RowError {
 export const ROW_ERROR_TEXT: Record<RowError["code"], string> = {
   NO_INVOICE: "ไม่มีเลขที่บิล",
   BAD_DATE: "วันที่อ่านไม่ได้",
+  FUTURE_DATE: "วันที่อยู่ในอนาคต — ตรวจปีในไฟล์ (พ.ศ./ค.ศ.)",
   BAD_AMOUNT: "ยอดเงินอ่านไม่ได้",
   REF_REQUIRED: "บิลคืน/ยกเลิกไม่มีเลขบิลอ้างอิง",
   MIXED_BILL: "บิลเดียวกันมีหลายวันที่หรือหลายประเภท",
@@ -83,8 +84,11 @@ export function readMemberRef(remark: string | undefined, column: string | undef
   return { raw, kind: "invalid", value: raw };
 }
 
-/** "01/10/2026", "1/10/2569", "2026-10-01", "2026-10-01 18:05", "01-10-2026 18:05:33" → local instant. */
-export function parsePosDate(dateRaw: string, timeRaw?: string): Date | null {
+/**
+ * "01/10/2026", "1/10/2569", "1/10/69", "2026-10-01", "2026-10-01 18:05", "01-10-2026 18:05:33" → local instant.
+ * A two-digit year may be either era ("69" = 2569 BE = 2026; "26" = 2026): the reading nearest `now` wins.
+ */
+export function parsePosDate(dateRaw: string, timeRaw?: string, now = new Date()): Date | null {
   const s = dateRaw.trim();
   let y: number, mo: number, d: number;
   let rest = "";
@@ -101,7 +105,12 @@ export function parsePosDate(dateRaw: string, timeRaw?: string): Date | null {
     mo = Number(m[2]);
     y = Number(m[3]);
     rest = m[4] ?? "";
-    if (y < 100) y += 2000;
+    if (y < 100) {
+      const thisYear = localParts(now).year;
+      const ce = 2000 + y;
+      const be = 2500 + y - 543;
+      y = Math.abs(ce - thisYear) <= Math.abs(be - thisYear) ? ce : be;
+    }
   }
   if (y > 2400) y -= 543; // Buddhist era
   const t = /(\d{1,2}):(\d{2})(?::(\d{2}))?/.exec(timeRaw?.trim() || rest);
@@ -136,7 +145,7 @@ export interface ParseResult {
   lineCount: number;
 }
 
-export function parseBills(headers: string[], rows: string[][], mapping: PosMapping, pos: PosSettings): ParseResult {
+export function parseBills(headers: string[], rows: string[][], mapping: PosMapping, pos: PosSettings, now = new Date()): ParseResult {
   const col = (field: keyof PosMapping) => {
     const h = mapping[field];
     return h ? headers.indexOf(h) : -1;
@@ -188,8 +197,10 @@ export function parseBills(headers: string[], rows: string[][], mapping: PosMapp
     const fail = (code: RowError["code"]) =>
       errors.push({ rowNumber, invoiceNo: invoiceNo || null, code, message: ROW_ERROR_TEXT[code], raw: rawRecord });
     if (!invoiceNo) return fail("NO_INVOICE");
-    const at = parsePosDate(get(row, idx.date), idx.time >= 0 ? get(row, idx.time) : undefined);
+    const at = parsePosDate(get(row, idx.date), idx.time >= 0 ? get(row, idx.time) : undefined, now);
     if (!at) return fail("BAD_DATE");
+    // A day of slack for a till clock ahead of ours; anything later is a misread year.
+    if (at.getTime() > now.getTime() + 24 * 3600_000) return fail("FUTURE_DATE");
 
     const qtyRaw = get(row, idx.qty);
     const qty = qtyRaw ? Math.round(Number(qtyRaw.replace(/,/g, ""))) : 1;

@@ -60,6 +60,13 @@ describe("POS parsing", () => {
     expect(parsePosDate("2026-10-01 18:05:00")?.toISOString()).toBe(want);
     expect(parsePosDate("31/02/2026")).toBeNull();
   });
+  it("reads a two-digit year as whichever era is nearest today", () => {
+    const now = fromLocal(2026, 10, 15, 12, 0);
+    const want = fromLocal(2026, 10, 1, 18, 5).toISOString();
+    expect(parsePosDate("1/10/69", "18:05", now)?.toISOString()).toBe(want); // พ.ศ. 2569
+    expect(parsePosDate("1/10/26", "18:05", now)?.toISOString()).toBe(want); // ค.ศ. 2026
+    expect(parsePosDate("1/10/68", "18:05", now)?.getTime()).toBe(fromLocal(2025, 10, 1, 18, 5).getTime());
+  });
   it("reads bill types", () => {
     expect(readBillType("ขาย")).toBe("SALE");
     expect(readBillType("คืนสินค้า")).toBe("RETURN");

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { assertUnderLimit, clearHits, isCoreError, RATE, recordHit } from "@mstgolf/core";
+import { safeNextPath } from "@mstgolf/shared";
 import { hashPassword, verifyPassword } from "@mstgolf/shared/password";
 import { audit, clientIp, startSession } from "../../../../lib/auth";
 import { currentOrg } from "../../../../lib/org";
@@ -14,11 +15,6 @@ const WINDOW = 15 * RATE.MINUTE;
 let dummyHash: Promise<string> | null = null;
 const dummy = () => (dummyHash ??= hashPassword("not-a-real-password-" + Math.random()));
 import { authConfigured } from "../../../../lib/session-token";
-
-/** Only same-site paths, never "//evil.com". */
-function safeNext(next: unknown): string {
-  return typeof next === "string" && next.startsWith("/") && !next.startsWith("//") ? next : "/";
-}
 
 export async function POST(req: Request) {
   if (!authConfigured()) {
@@ -57,5 +53,5 @@ export async function POST(req: Request) {
   await updateUser(user.id, { lastLoginAt: new Date() });
   await startSession(user);
   await audit(user, { action: "auth.login", entity: "user", entityId: user.id });
-  return NextResponse.json({ ok: true, next: user.mustChangePassword ? "/account/password" : safeNext(body.next) });
+  return NextResponse.json({ ok: true, next: user.mustChangePassword ? "/account/password" : safeNextPath(body.next) });
 }

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { cache } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -18,7 +18,7 @@ const loadPost = cache(async (slug: string) => {
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const post = await loadPost(params.slug);
-  if (!post) return { title: "ไม่พบบทความ", robots: { index: false } };
+  if (!post || post.category === "PROMOTION") return { title: "ไม่พบบทความ", robots: { index: false } };
   const description = post.excerpt || post.body.replace(/[#*_>`[\]()!-]/g, " ").replace(/\s+/g, " ").trim().slice(0, 150);
   return {
     title: post.title,
@@ -40,6 +40,8 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 export default async function PostPage({ params }: { params: { slug: string } }) {
   const post = await loadPost(params.slug);
   if (!post) notFound();
+  // Promotions live at /promotions/<slug>, which hides them outside their dates.
+  if (post.category === "PROMOTION") permanentRedirect(`/promotions/${post.slug}`);
 
   return (
     <article className="article">

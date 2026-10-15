@@ -181,8 +181,12 @@ export interface HoldInput {
   source: "LINE" | "WEB";
 }
 
+const ONLINE_OFF = "ระบบจองออนไลน์ยังไม่เปิด กรุณาโทรจองกับร้าน";
+
 export async function holdSlot(orgId: string, input: HoldInput, now = new Date()): Promise<BookingView> {
   const { settings } = await getOrg(orgId);
+  // The page hides when online booking is off; an open tab or a direct call must not get through either.
+  if (!settings.features.booking) throw new CoreError("FORBIDDEN", ONLINE_OFF);
   const rules = settings.booking;
   const startAt = new Date(input.startAt);
   if (Number.isNaN(startAt.getTime())) throw new CoreError("INVALID_INPUT", "เวลาไม่ถูกต้อง");
@@ -245,6 +249,7 @@ export async function holdSlot(orgId: string, input: HoldInput, now = new Date()
 
 export async function confirmHold(orgId: string, memberId: string, bookingId: string, now = new Date()): Promise<BookingView> {
   const { settings } = await getOrg(orgId);
+  if (!settings.features.booking) throw new CoreError("FORBIDDEN", ONLINE_OFF);
   return inTx(orgId, async (tx) => {
     const b = await tx.booking.findFirst({ where: { id: bookingId, memberId }, include: { lane: true } });
     if (!b) throw new CoreError("NOT_FOUND", "ไม่พบการจอง");

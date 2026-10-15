@@ -164,9 +164,11 @@ export async function saveReward(orgId: string, actor: Actor, id: string | null,
       if (used) throw new CoreError("INVALID_INPUT", "รางวัลนี้มีคนแลกแล้ว เปลี่ยนประเภทไม่ได้ — สร้างรางวัลใหม่แทน");
     }
     const { orgId: _o, ...rest } = data;
-    // An unchanged stock field must not overwrite what redemptions took meanwhile.
+    // A limited stock moves only through adjustRewardStock: the form's number is
+    // what the page loaded, so writing it back would undo redemptions made since.
+    // Saving may only switch between unlimited (null) and limited.
     const { stock, ...others } = rest;
-    const patch = stock === before.stock ? others : rest;
+    const patch = (stock === null) !== (before.stock === null) ? rest : others;
     const updated = await tx.reward.update({ where: { id: before.id }, data: patch });
     await writeAudit(tx, orgId, actor, { action: "reward.update", entity: "reward", entityId: id, before, after: patch });
     return updated;

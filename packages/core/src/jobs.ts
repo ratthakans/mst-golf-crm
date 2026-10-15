@@ -1,4 +1,4 @@
-import { isMonthlyTierReview } from "@mstgolf/shared/tiers";
+import { isMonthlyTierReview, lowestTier } from "@mstgolf/shared/tiers";
 import { prisma } from "@mstgolf/database";
 import { closeFinishedBookings, queueReminders } from "./booking";
 import { SYSTEM } from "./context";
@@ -49,9 +49,14 @@ export async function runNightly(orgId: string, now = new Date()): Promise<Night
     shopify = { error: e instanceof Error ? e.message : String(e) };
     console.error(`[nightly] shopify sync failed for org ${orgId}`, shopify.error);
   }
-  // Spend changes overnight only for members whose purchases are ageing out of the window.
+  // Spend changes overnight only for members whose purchases are ageing out of the
+  // window — plus anyone above the lowest tier, so a tier with no spend behind it
+  // still meets the monthly review.
   const members = await client.member.findMany({
-    where: { status: "ACTIVE", lastPurchaseAt: { gte: new Date(now.getTime() - THIRTEEN_MONTHS) } },
+    where: {
+      status: "ACTIVE",
+      OR: [{ lastPurchaseAt: { gte: new Date(now.getTime() - THIRTEEN_MONTHS) } }, { tier: { not: lowestTier(settings.tiers).key } }],
+    },
     select: { id: true },
   });
   let tierDowns = 0;

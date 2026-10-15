@@ -79,7 +79,7 @@ export function fileHash(bytes: Uint8Array): string {
 export async function previewImport(
   orgId: string,
   actor: Actor,
-  input: { storeId: string; fileName: string; bytes: Uint8Array; mode?: ImportMode; mapping?: PosMapping },
+  input: { storeId: string; fileName: string; bytes: Uint8Array; mode?: ImportMode; mapping?: PosMapping; now?: Date },
 ): Promise<PreviewResult> {
   const { settings } = await getOrg(orgId);
   const client = db(orgId);
@@ -105,7 +105,7 @@ export async function previewImport(
 
   const parsed = problemsWithMapping.length
     ? { bills: [], errors: [] as RowError[], lineCount: table.length - 1 }
-    : parseBills(headers, table.slice(1), mapping, settings.pos);
+    : parseBills(headers, table.slice(1), mapping, settings.pos, input.now);
 
   const staged = await stageBatch(orgId, actor, {
     storeId: store.id,
@@ -335,7 +335,7 @@ interface MemberState {
   tierUp: string | null;
 }
 
-export async function commitImport(orgId: string, actor: Actor, batchId: string): Promise<ImportCounts> {
+export async function commitImport(orgId: string, actor: Actor, batchId: string, now = new Date()): Promise<ImportCounts> {
   const { settings } = await getOrg(orgId);
   const counts = await inTx(
     orgId,
@@ -351,7 +351,6 @@ export async function commitImport(orgId: string, actor: Actor, batchId: string)
       if (claimed.count !== 1) throw new CoreError("IMPORT_STATE", "รอบนี้นำเข้าไปแล้วหรือถูกยกเลิก");
       const history = batch.mode === "HISTORY";
       const store = await tx.store.findFirst({ where: { id: batch.storeId }, select: { name: true } });
-      const now = new Date();
 
       const rows = await tx.importRow.findMany({ where: { batchId: batch.id, status: { in: ["OK", "UNMATCHED"] } } });
       let bills = rows.map((r) => ({ rowId: r.id, bill: r.raw as unknown as StoredBill, status: r.status }));
@@ -440,7 +439,12 @@ export async function commitImport(orgId: string, actor: Actor, batchId: string)
         for (const p of prior) state.get(p.memberId!)?.sales.push({ at: p.occurredAt.getTime(), net: p.netSatang });
       }
       // Spend as of a bill counts what came before it; spend "now" also counts bills stamped later than the server clock.
-      const spendAt = (s: MemberState, at: number) => s.sales.reduce((sum, x) => (x.at > at - YEAR_MS && x.at <= at ? sum + x.net : sum), 0);
+      // Only the trailing 12 months to now ranks a member: a back-dated bill (history,
+      // a late file) must not award a tier its 12-month spend no longer earns.
+      const spendAt = (s: MemberState, at: number) => {
+        const from = Math.max(at, now.getTime()) - YEAR_MS;
+        return s.sales.reduce((sum, x) => (x.at > from && x.at <= at ? sum + x.net : sum), 0);
+      };
       const spendNowOf = (s: MemberState) => s.sales.reduce((sum, x) => (x.at > now.getTime() - YEAR_MS ? sum + x.net : sum), 0);
 
       // Points already earned / reversed on originals (for partial returns).

@@ -16,6 +16,7 @@ import {
   queueReminders,
   signUp,
   staffCreateBooking,
+  updateSettings,
 } from "../src";
 import { makeOrg } from "./fixtures";
 
@@ -136,5 +137,19 @@ describe("booking", () => {
     await db(t.orgId).booking.updateMany({ data: { createdAt: now } });
     expect(await queueReminders(t.orgId, reminderTime)).toBe(1);
     expect(await queueReminders(t.orgId, reminderTime)).toBe(0);
+  });
+
+  it("online booking switched off refuses holds and confirms, staff bookings still work", async () => {
+    const m = members[7]!;
+    const held = await holdSlot(t.orgId, { memberId: m, laneId: t.lanes[2]!.id, startAt: at(5, 12), partySize: 1, source: "WEB" }, now);
+    await updateSettings(t.orgId, (cur) => ({ features: { ...(cur.features ?? {}), booking: false } as never }));
+    try {
+      await expect(holdSlot(t.orgId, { memberId: m, laneId: t.lanes[2]!.id, startAt: at(5, 13), partySize: 1, source: "WEB" }, now)).rejects.toMatchObject({ code: "FORBIDDEN" });
+      await expect(confirmHold(t.orgId, m, held.id, now)).rejects.toMatchObject({ code: "FORBIDDEN" });
+      const phone = await staffCreateBooking(t.orgId, t.actor, { laneId: t.lanes[2]!.id, startAt: at(5, 14), partySize: 1, source: "PHONE", guestName: "โทรจอง" }, now);
+      expect(phone.status).toBe("CONFIRMED");
+    } finally {
+      await updateSettings(t.orgId, (cur) => ({ features: { ...(cur.features ?? {}), booking: true } as never }));
+    }
   });
 });
