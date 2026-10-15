@@ -228,7 +228,7 @@ export function BookingApp(props: Props) {
       void load(date, true);
       return;
     }
-    if (res.code === "HOLD_EXPIRED" || res.code === "NOT_FOUND") {
+    if (res.code === "HOLD_EXPIRED" || res.code === "NOT_FOUND" || res.code === "SLOT_UNAVAILABLE") {
       backToGrid({ kind: "warn", text: res.error });
       return;
     }

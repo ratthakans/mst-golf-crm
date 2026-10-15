@@ -4,7 +4,7 @@ import { normalizeThaiMobile } from "@mstgolf/shared/phone";
 import { findTier, lowestTier } from "@mstgolf/shared/tiers";
 import { writeAudit } from "./audit";
 import type { Actor } from "./context";
-import { db, inTx, lockMembers, type Tx } from "./db";
+import { db, inTx, lockLane, lockMembers, type Tx } from "./db";
 import { CoreError, isUniqueViolation } from "./errors";
 import { recordEvent } from "./events";
 import { enqueue } from "./notify/outbox";
@@ -252,6 +252,11 @@ export async function confirmHold(orgId: string, memberId: string, bookingId: st
     if (b.status !== "HELD" || !b.heldUntil || b.heldUntil <= now) {
       throw new CoreError("HOLD_EXPIRED", "หมดเวลายืนยัน ช่องนี้หลุดแล้ว กรุณาเลือกใหม่");
     }
+    // Staff may have closed the lane while this hold was open: the lane lock
+    // waits for a block being written, then the check sees it.
+    await lockLane(tx, orgId, b.laneId);
+    const block = await tx.laneBlock.findFirst({ where: { laneId: b.laneId, startAt: { lt: b.endAt }, endAt: { gt: b.startAt } } });
+    if (block) throw new CoreError("SLOT_UNAVAILABLE", "lane นี้ปิดในช่วงเวลานั้น กรุณาเลือกช่องอื่น");
     const done = await tx.booking.updateMany({ where: { id: b.id, status: "HELD" }, data: { status: "CONFIRMED", heldUntil: null } });
     if (done.count !== 1) throw new CoreError("HOLD_EXPIRED", "หมดเวลายืนยัน กรุณาเลือกใหม่");
     await recordEvent(tx, orgId, memberId, "BOOKING_CREATED", { bookingId: b.id, laneId: b.laneId, startAt: b.startAt.toISOString(), source: b.source });
@@ -527,6 +532,7 @@ export async function blockLane(
   orgId: string,
   actor: Actor,
   input: { laneId: string; startAt: string; endAt: string; reason: BlockReason; note?: string | null },
+  now = new Date(),
 ): Promise<{ id: string }> {
   const startAt = new Date(input.startAt);
   const endAt = new Date(input.endAt);
@@ -534,8 +540,15 @@ export async function blockLane(
   return inTx(orgId, async (tx) => {
     const lane = await tx.lane.findFirst({ where: { id: input.laneId } });
     if (!lane) throw new CoreError("NOT_FOUND", "ไม่พบ lane");
+    await lockLane(tx, orgId, lane.id);
+    // A live hold counts: its customer may still confirm it.
     const clash = await tx.booking.findMany({
-      where: { laneId: lane.id, status: { in: ["CONFIRMED", "CHECKED_IN"] }, startAt: { lt: endAt }, endAt: { gt: startAt } },
+      where: {
+        laneId: lane.id,
+        OR: [{ status: { in: ["CONFIRMED", "CHECKED_IN"] } }, { status: "HELD", heldUntil: { gt: now } }],
+        startAt: { lt: endAt },
+        endAt: { gt: startAt },
+      },
       select: { startAt: true },
     });
     if (clash.length) {

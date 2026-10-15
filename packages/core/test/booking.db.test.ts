@@ -83,6 +83,22 @@ describe("booking", () => {
     await expect(blockLane(t.orgId, t.actor, { laneId: t.lanes[0]!.id, startAt: at(2, 16), endAt: at(2, 19), reason: "EVENT" })).rejects.toMatchObject({ code: "BOOKING_RULE" });
   });
 
+  it("a live hold stops staff closing the lane; a hold inside a closed lane cannot be confirmed", async () => {
+    const m = members[6]!;
+    const lane = t.lanes[1]!.id;
+    const held = await holdSlot(t.orgId, { memberId: m, laneId: lane, startAt: at(4, 15), partySize: 1, source: "WEB" }, now);
+    await expect(blockLane(t.orgId, t.actor, { laneId: lane, startAt: at(4, 14), endAt: at(4, 17), reason: "MAINTENANCE" }, now)).rejects.toMatchObject({ code: "BOOKING_RULE" });
+
+    // The block landed anyway (written while the hold was being made): confirming is refused.
+    await db(t.orgId).laneBlock.create({ data: { orgId: t.orgId, laneId: lane, startAt: new Date(at(4, 14)), endAt: new Date(at(4, 17)), reason: "MAINTENANCE" } });
+    await expect(confirmHold(t.orgId, m, held.id, now)).rejects.toMatchObject({ code: "SLOT_UNAVAILABLE" });
+    expect((await db(t.orgId).booking.findFirst({ where: { id: held.id } }))!.status).toBe("HELD");
+
+    // Once the hold has lapsed it no longer stops a block.
+    const later = new Date(now.getTime() + 6 * 60_000);
+    await expect(blockLane(t.orgId, t.actor, { laneId: lane, startAt: at(4, 15), endAt: at(4, 16), reason: "EVENT" }, later)).resolves.toMatchObject({ id: expect.any(String) });
+  });
+
   it("members cancel up to 2 hours before; later they must call", async () => {
     const m = members[5]!;
     const b = await holdSlot(t.orgId, { memberId: m, laneId: t.lanes[1]!.id, startAt: at(1, 11), partySize: 1, source: "LINE" }, now);

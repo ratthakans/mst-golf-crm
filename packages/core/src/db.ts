@@ -29,6 +29,11 @@ export async function lockMembers(tx: Tx, orgId: string, ids: string[]): Promise
   }
 }
 
+/** Serializes the writers that must agree on a lane's blocks and bookings (block vs. confirm). */
+export async function lockLane(tx: Tx, orgId: string, laneId: string): Promise<void> {
+  await tx.$queryRaw`SELECT "id" FROM ${table("lanes")} WHERE "id" = ${laneId} AND "orgId" = ${orgId} FOR UPDATE`;
+}
+
 /** One writer at a time per org for a named job (imports, settings): a transaction-scoped advisory lock. */
 export async function lockOrgJob(tx: Tx, orgId: string, job: string): Promise<void> {
   await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`${orgId}:${job}`}))`;
