@@ -74,6 +74,9 @@ export function SignupForm({ prefillName, verifiedPhone, phoneProven, welcomePoi
         email: email.trim() || null,
         acceptTerms: accept,
         marketing: optIn,
+        // The versions this page showed: recorded as what the customer agreed to.
+        termsVersion: terms?.version ?? null,
+        marketingVersion: marketing?.version ?? null,
         inLine: looksLikeLineApp(),
       },
     });

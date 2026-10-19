@@ -11,6 +11,8 @@ interface SignupBody {
   email: string | null;
   acceptTerms: boolean;
   marketing: boolean;
+  termsVersion: string | null;
+  marketingVersion: string | null;
   inLine: boolean;
 }
 
@@ -36,6 +38,7 @@ export async function POST(req: NextRequest) {
       pictureUrl: viaLine ? customer.picture : null,
       acceptTerms: body.acceptTerms === true,
       marketing: body.marketing === true,
+      shownVersions: { TERMS: str(body.termsVersion, 40) || null, MARKETING: str(body.marketingVersion, 40) || null },
     });
     kickOutbox();
     const res = json({ outcome: result.outcome, welcomePoints: result.welcomePoints, member: await loadCard(org.id, result.member.id) }, 201);

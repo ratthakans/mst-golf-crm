@@ -7,7 +7,7 @@ This runbook tells ORIONS and the store's Super Admin how to fix common problems
 | Where | What |
 |---|---|
 | Back office | Vercel `mst-golf-crm` (apps/web-admin) |
-| Website + customer pages | Vercel `mst-golf-web` (apps/web) |
+| Website + customer pages | Vercel `mst-golf-web` (apps/web) · build command `pnpm run build` (the default `turbo run build` fails: it builds `packages/database` before the Prisma client exists) · until go-live its Production points at the `preview` schema so MST can test at `mst-golf-web-ratthakans.vercel.app` |
 | Database | Neon, one database with a schema per environment: `public` = production · `preview` · `dev` · `test_core` |
 | 15-minute cron + backup | GitHub Actions `cron-frequent.yml` · `backup.yml` (secrets: `ADMIN_URL` `CRON_SECRET` `DATABASE_URL_UNPOOLED` `BACKUP_BLOB_TOKEN` `BACKUP_PASSPHRASE`) |
 | Nightly cron | Vercel Cron `/api/cron/nightly` 02:00 Bangkok |
@@ -159,3 +159,4 @@ DATABASE_SCHEMA=public pnpm --filter @mstgolf/database admin:create <email>
 - Vercel › project › Deployments › choose the last good deployment › **Promote to Production** (instant rollback).
 - If a database migration shipped with that deploy, rolling back the app does not roll back the schema. Tell ORIONS to check that the old code still works with the new schema.
 - `main` = production for both projects. Merge only after the preview has passed UAT.
+- Until go-live, `mst-golf-web` Production is deployed by hand from `phase1` against the `preview` schema (a test site). On go-live day set its `DATABASE_SCHEMA` to `public` before the merge.

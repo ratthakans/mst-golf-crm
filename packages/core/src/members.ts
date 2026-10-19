@@ -152,11 +152,17 @@ async function recordConsents(
   memberId: string,
   channel: MemberSource,
   consents: { terms?: boolean; marketing?: boolean },
+  shown?: { TERMS?: string | null; MARKETING?: string | null },
 ): Promise<void> {
   for (const purpose of ["TERMS", "MARKETING"] as const) {
     const granted = purpose === "TERMS" ? consents.terms : consents.marketing;
     if (granted === undefined) continue;
     const text = await currentConsentVersion(tx, purpose);
+    // The record must be the text the customer saw (docs/PRODUCT.md §3.2).
+    const saw = shown?.[purpose];
+    if (saw && saw !== text.version) {
+      throw new CoreError("INVALID_INPUT", "ข้อกำหนดเพิ่งมีการปรับปรุง กรุณาโหลดหน้านี้ใหม่ อ่าน แล้วยืนยันอีกครั้ง");
+    }
     await tx.consent.create({
       data: { orgId, memberId, purpose, version: text.version, granted, textSnapshot: text.body, channel },
     });
@@ -234,6 +240,8 @@ export interface SignupInput {
   pictureUrl?: string | null; // LINE profile picture
   acceptTerms: boolean;
   marketing: boolean;
+  /** Consent text versions the sign-up page showed; a newer text published meanwhile must be read first. */
+  shownVersions?: { TERMS?: string | null; MARKETING?: string | null };
 }
 
 export interface SignupResult {
@@ -324,7 +332,7 @@ export async function signUp(orgId: string, input: SignupInput): Promise<SignupR
         await recordEvent(tx, orgId, memberId, "REGISTER", { channel: input.channel });
       }
 
-      await recordConsents(tx, orgId, memberId, input.channel, { terms: true, marketing: input.marketing });
+      await recordConsents(tx, orgId, memberId, input.channel, { terms: true, marketing: input.marketing }, input.shownVersions);
       const welcomePoints = await awardWelcome(tx, orgId, memberId, settings);
       const member = await loadSummary(tx, memberId);
       await enqueue(tx, orgId, [

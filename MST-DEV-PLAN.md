@@ -2,7 +2,7 @@
 
 **สถานะงาน สิ่งที่เหลือ และขั้นตอนเปิดใช้**
 
-`v6 · 12 ต.ค. 2026 · branch phase1 · ใช้งานผ่านเว็บไซต์ทั้งหมด (LINE ปิดไว้ก่อน) · CVI ของ MST Golf · แทน v5`
+`v7 · 20 ต.ค. 2026 · branch phase1 · ใช้งานผ่านเว็บไซต์ทั้งหมด (LINE ปิดไว้ก่อน) · CVI ของ MST Golf · แทน v6`
 
 > เอกสารคู่กัน: [`docs/PRODUCT.md`](docs/PRODUCT.md) = ระบบทำอะไร กติกาทุกข้อ · เอกสารนี้ = แผนงาน
 > เอกสารภายใน — วันที่ในข้อ 5 เป็นเป้าของเราเอง ไม่อยู่ในใบเสนอราคา
@@ -101,7 +101,7 @@
 |---|---|---|---|
 | 1 | ตั้ง GitHub secrets: `ADMIN_URL` `CRON_SECRET` `DATABASE_URL_UNPOOLED` `BACKUP_BLOB_TOKEN` `BACKUP_PASSPHRASE` + สร้าง Blob ส่วนตัวสำหรับ backup · ทดสอบกู้คืน 1 ครั้ง | – | ½ วัน |
 | 2 | สร้าง Blob สาธารณะ `PUBLIC_BLOB_READ_WRITE_TOKEN` ให้อัปโหลดรูปปกบทความได้ | – | 1 ชม. |
-| 3 | ผูก Neon integration กับ `mst-golf-web` หรือใส่ env production เอง · `CUSTOMER_AUTH_SECRET` · `ENCRYPTION_KEY` ตัวเดียวกันทั้งสองโปรเจกต์ (เก็บสำรองไว้ — หายแล้วถอดรหัส LINE ไม่ได้) | – | ½ วัน |
+| 3 | 🟡 โปรเจกต์ Vercel `mst-golf-web` สร้างแล้ว 15 ต.ค. (root `apps/web` · build command `pnpm run build` — ค่าเริ่มต้น `turbo run build` ล้มเพราะ build `packages/database` ก่อนสร้าง Prisma client) · Production ชี้ schema `preview` ให้ MST ทดลองที่ `mst-golf-web-ratthakans.vercel.app` · `DATABASE_URL` `ENCRYPTION_KEY` `CUSTOMER_AUTH_SECRET` ใส่แล้วเฉพาะ Production — เหลือ: ใส่ใน Preview ด้วย · `ENCRYPTION_KEY` ตัวเดียวกันทั้งสองโปรเจกต์ (เก็บสำรองไว้ — หายแล้วถอดรหัส LINE ไม่ได้) | – | ¼ วัน |
 | 4 | ✅ ปรับหน้าเว็บ: รายการบทความมีรูปปก · บทความตัวอย่าง 3 เรื่องใน demo · ช่องจองของลูกค้าแสดง "ของคุณ" · หลังบ้านแก้รูป/ข้อความเว็บ (ไอคอน LINE ทางการ ทำพร้อมงาน LINE) | – | เสร็จ 27 ก.ย. |
 | 5 | ทดสอบสมัคร/เข้าสู่ระบบด้วย SMS จริงบน iOS + Android (Safari/Chrome) · ตั้ง `SMS_*` และ `RESEND_API_KEY`/`EMAIL_FROM` ทั้งสองโปรเจกต์ | บัญชี SMS + Resend | ½ วัน |
 | 5b | ⏸ ทดสอบ LIFF บน LINE จริง — เมื่อเปิด LINE | credentials จากทีม LINE | ½ วัน |
@@ -109,6 +109,8 @@
 | 7 | ย้ายข้อมูลเดิม (ถ้ามี): รายชื่อสมาชิก · แต้มยกมา (`OPENING`) · ยอดย้อนหลัง 12 เดือนโหมด history | ไฟล์จาก MST | 1 วัน |
 | 8 | ใส่เนื้อหาจริง: ข้อความเว็บ · รูปจริงแทน mockup · บทความตั้งต้น · ข้อความ PDPA ที่ผ่านฝ่ายกฎหมาย | เนื้อหาจาก MST | ½ วัน |
 | 9 | ต่อโดเมน | โดเมนจาก MST | 1 ชม. |
+| 16 | ✅ รีวิวโค้ดทุก flow + แผนทดสอบ 124 ข้อ (Claude Docs) · แก้แล้ว 20/22 ข้อ (`64c7dac` `c559559` `b938d4e` `e0d23dc` + บันทึกเวอร์ชันข้อความยินยอมที่ลูกค้าเห็น) · เหลือ R-06 ส่วนลดในบิล (รอไฟล์ POS จริง) และ R-22 ตัวคูณโบนัสวันเกิด (รอ MST) | – | เสร็จ 20 ต.ค. |
+| 17 | ตั้ง GitHub secret `DATABASE_URL_TEST` (schema `test_core`) — ตอนนี้ CI ข้ามเทสต์บนฐานข้อมูลทั้งหมด | – | 15 นาที |
 | 15 | ✅ คู่มือและ UAT ฉบับใช้งานผ่านเว็บ (แทนขั้นตอน LINE) · ปรับหน้าเว็บ Quiet premium + Futura · ข้อมูลร้านจริงจาก mstgolf.co.th · ตัดบริการคอร์สเรียน (MST ไม่มีคลาส) · preview อัปเดตข้อมูลร้าน/โปรโมชัน/รางวัลตัวอย่าง | – | เสร็จ 13 ต.ค. |
 | 10 | ✅ คู่มือ 7 หน้า `docs/mst-golf-manual.pdf`: เคาน์เตอร์ · ซิม · นำเข้า POS · เว็บไซต์ · ผู้ดูแลระบบ · ตอบลูกค้า (ภาพหน้าจอจริง) | – | เสร็จ 27 ก.ย. |
 | 11 | ✅ UAT 42 ข้อ + ใบลงนาม `docs/mst-golf-uat.pdf` (ข้อที่ต้องใช้ LINE แยกไว้) | – | เสร็จ 27 ก.ย. |
@@ -142,6 +144,7 @@
 - [ ] ทดสอบบนมือถือจริง (เบอร์ + SMS → สมัคร → บัตร → จอง → การแจ้งเตือน/อีเมล)
 - [ ] ซ้อมย้ายข้อมูลเดิมบน preview → ตรวจยอดรวม (สมาชิก · แต้ม · ยอดขาย) กับ MST
 
+- [ ] `mst-golf-web` Production: เปลี่ยน `DATABASE_SCHEMA` จาก `preview` เป็น `public` (ตอนทดลองชี้ preview ไว้)
 - [ ] ลบหรือเปลี่ยนรหัสบัญชีทดสอบ `mstadmin` (มีเฉพาะ preview/dev รหัสสั้นกว่ากติกา 10 ตัว) — production สร้างแอดมินด้วย `admin:create`
 
 ### วันเปิด
@@ -203,13 +206,13 @@
 | ระดับ | สถานะ | คำสั่ง |
 |---|---|---|
 | Unit (เงิน เวลา อ่าน CSV วันที่ เบอร์ แต้ม slug ระดับ รหัสผ่าน) | ✅ | `pnpm --filter @mstgolf/core test` · `pnpm --filter @mstgolf/shared test` |
-| Integration บน Postgres จริง (สมาชิก 11 · นำเข้า 6 · จอง 7 · LINE outbox 2 · เนื้อหาเว็บ/ความพร้อม/สถานะ 4) | ✅ 30/30 | `pnpm test:db` |
+| Integration บน Postgres จริง (สมาชิก · นำเข้า · จอง · รางวัล · LINE outbox · เนื้อหาเว็บ/ความพร้อม/สถานะ) | ⬜ ผ่านล่าสุด 30/30 ก่อนรอบรีวิว · เทสต์ที่เพิ่ม 15–20 ต.ค. ยังไม่ได้รัน | `pnpm test:db` · CI รันเองเมื่อมี `DATABASE_URL_TEST` |
 | Concurrency: จองช่องเดียว 20 คำขอพร้อมกัน | ✅ | อยู่ใน `booking.db.test.ts` |
 | สิทธิ์ 5 ตำแหน่งทุกหน้า | ✅ | `packages/core/scripts/role-check.ts` + smoke |
 | หน้าเว็บ/หลังบ้าน build + ทุกหน้า 200 | ✅ | `next build` ทั้งสองแอป |
 | มือถือ 320/375 px | ✅ | headless Chrome |
 | LIFF ใน LINE จริง | ⬜ | รอ credentials |
-| ไฟล์ POS จริง | ⬜ | รอไฟล์ |
+| ไฟล์ POS จริง | ⬜ | POS คือ Zeoniq — รอไฟล์ export หรือ API (กำลังเจรจา) |
 | UAT กับ MST | ⬜ | สคริปต์ข้อ 3.1 #11 |
 
 ---

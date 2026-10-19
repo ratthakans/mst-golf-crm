@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, it } from "vitest";
 import { prisma } from "@mstgolf/database";
-import { adjustPoints, createMemberAtCounter, eraseMember, ledgerDrift, mergeMembers, signUp, updateOwnProfile, db } from "../src";
+import { adjustPoints, createMemberAtCounter, eraseMember, ledgerDrift, mergeMembers, publishConsentText, signUp, updateOwnProfile, db } from "../src";
 import { makeOrg } from "./fixtures";
 
 let t: Awaited<ReturnType<typeof makeOrg>>;
@@ -116,5 +116,16 @@ describe("merge and erase", () => {
 
   it("ledger sums equal every cached balance", async () => {
     expect(await ledgerDrift(t.orgId)).toEqual([]);
+  });
+
+  it("records the consent text version the sign-up page showed, and refuses one replaced meanwhile", async () => {
+    const body = "ข้อกำหนดการเป็นสมาชิก MST Golf ฉบับทดสอบ สำหรับเทสต์อัตโนมัติ";
+    await publishConsentText(t.orgId, t.actor, { purpose: "TERMS", title: "ข้อกำหนด", body });
+    const newer = await publishConsentText(t.orgId, t.actor, { purpose: "TERMS", title: "ข้อกำหนด", body: body + " (ปรับปรุง)" });
+    const base = { lineUserId: "U-consent", channel: "LINE" as const, fullName: "Read First", phone: "0855512345", acceptTerms: true, marketing: false };
+    await expect(signUp(t.orgId, { ...base, shownVersions: { TERMS: "v1" } })).rejects.toMatchObject({ code: "INVALID_INPUT" });
+    const ok = await signUp(t.orgId, { ...base, shownVersions: { TERMS: newer.version } });
+    const consent = await db(t.orgId).consent.findFirst({ where: { memberId: ok.member.id, purpose: "TERMS" } });
+    expect(consent?.version).toBe(newer.version);
   });
 });
