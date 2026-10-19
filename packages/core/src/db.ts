@@ -24,9 +24,10 @@ export async function inTx<T>(orgId: string, fn: (tx: Tx) => Promise<T>, opts: {
  * transaction, ids sorted so two transactions never lock in opposite order.
  */
 export async function lockMembers(tx: Tx, orgId: string, ids: string[]): Promise<void> {
-  for (const id of [...new Set(ids)].sort()) {
-    await tx.$queryRaw`SELECT "id" FROM ${table("members")} WHERE "id" = ${id} AND "orgId" = ${orgId} FOR UPDATE`;
-  }
+  const sorted = [...new Set(ids)].sort();
+  if (!sorted.length) return;
+  // One statement, rows taken in id order (an import may lock thousands).
+  await tx.$queryRaw`SELECT "id" FROM ${table("members")} WHERE "id" = ANY(${sorted}::text[]) AND "orgId" = ${orgId} ORDER BY "id" FOR UPDATE`;
 }
 
 /** Serializes the writers that must agree on a lane's blocks and bookings (block vs. confirm). */

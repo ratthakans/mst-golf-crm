@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from "vitest";
-import { commitImport, createMemberAtCounter, db, fromLocal, ledgerDrift, previewImport, rollbackImport, runNightly, signUp, staffUpdateMember } from "../src";
+import { commitImport, createMemberAtCounter, db, fromLocal, ledgerDrift, mergeMembers, previewImport, rollbackImport, runNightly, signUp, staffUpdateMember } from "../src";
 import { enc, makeOrg } from "./fixtures";
 
 let t: Awaited<ReturnType<typeof makeOrg>>;
@@ -140,5 +140,23 @@ describe("POS import", () => {
     await db(t.orgId).member.updateMany({ where: { id: old!.id }, data: { tier: "gold" } });
     await runNightly(t.orgId, fromLocal(2026, 11, 1, 2, 0));
     expect((await db(t.orgId).member.findFirst({ where: { id: old!.id } }))?.tier).toBe("member");
+  });
+
+  it("rolling back a batch after its member was merged takes the points from the survivor", async () => {
+    const keeper = await createMemberAtCounter(t.orgId, t.actor, { fullName: "Keeper", phone: "0811110000", consentConfirmed: true, marketing: false });
+    const csv = [HEAD, "M001,05/10/2026,10:00,ขาย,,X,Bag,1,5000,5000,MSTMEMBER:0811119999"].join("\n");
+    const p = await previewImport(t.orgId, t.actor, { storeId: t.storeId, fileName: "merge-then-rollback.csv", bytes: enc(csv) });
+    await commitImport(t.orgId, t.actor, p.batchId);
+    const posOnly = await db(t.orgId).member.findFirstOrThrow({ where: { identities: { some: { value: "0811119999" } } } });
+    expect(posOnly.points).toBe(5000);
+    await mergeMembers(t.orgId, t.actor, { survivorId: keeper.member.id, mergedId: posOnly.id, reason: "คนเดียวกัน" });
+    await rollbackImport(t.orgId, t.actor, p.batchId, "ไฟล์ผิด");
+    const [k, gone] = await Promise.all([
+      db(t.orgId).member.findFirstOrThrow({ where: { id: keeper.member.id } }),
+      db(t.orgId).member.findFirstOrThrow({ where: { id: posOnly.id } }),
+    ]);
+    expect(k.points).toBe(1600);
+    expect(gone.points).toBe(0);
+    expect(await ledgerDrift(t.orgId)).toEqual([]);
   });
 });

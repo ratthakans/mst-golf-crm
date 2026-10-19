@@ -2,6 +2,7 @@ import { beforeAll, describe, expect, it } from "vitest";
 import {
   adjustPoints,
   assertUnderLimit,
+  claimAttempt,
   cancelByStaff,
   clearHits,
   createMemberAtCounter,
@@ -35,6 +36,14 @@ describe("durable rate limits", () => {
     await recordHit(t.orgId, "t_ip", ["1.1.1.1", null]);
     await expect(assertUnderLimit(t.orgId, "t_ip", [{ key: "1.1.1.1", max: 1, windowMs: 60_000 }], "x")).rejects.toMatchObject({ code: "OTP_RATE" });
     await expect(assertUnderLimit(t.orgId, "t_ip", [{ key: "2.2.2.2", max: 1, windowMs: 60_000 }, { key: null, max: 0, windowMs: 1 }], "x")).resolves.toBeUndefined();
+  });
+
+  it("a burst of parallel login attempts lets at most the limit through", async () => {
+    const limits = [{ key: "user:burst", max: 5, windowMs: 60_000 }];
+    const results = await Promise.allSettled(Array.from({ length: 12 }, () => claimAttempt(t.orgId, "t_login", limits, "พักก่อน")));
+    expect(results.filter((r) => r.status === "fulfilled").length).toBeLessThanOrEqual(5);
+    await clearHits(t.orgId, "t_login", "user:burst");
+    await expect(claimAttempt(t.orgId, "t_login", limits, "พักก่อน")).resolves.toBeUndefined();
   });
 });
 

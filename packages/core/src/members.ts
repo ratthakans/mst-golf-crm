@@ -277,6 +277,14 @@ export async function signUp(orgId: string, input: SignupInput): Promise<SignupR
             conflictMemberId: owner.id,
           });
         }
+        if (lineUserId && !phoneVerified) {
+          // A LINE sign-up types the phone; nothing proves it is theirs. Linking would
+          // hand a counter or POS member's points to whoever knows the number, so the
+          // store confirms it instead (docs/PRODUCT.md §3.2: the phone is proven first).
+          throw new CoreError("PHONE_TAKEN", "เบอร์นี้เป็นสมาชิกของร้านอยู่แล้ว — ร้านจะตรวจสอบและผูกบัญชี LINE ให้ หรือเข้าสู่ระบบด้วยเบอร์นี้บนเว็บไซต์", {
+            conflictMemberId: owner.id,
+          });
+        }
         // Counter- or POS-created member signing up: same member, same points and history.
         if (lineUserId) {
           await tx.memberIdentity.create({
@@ -728,33 +736,32 @@ function actorUserIdOf(actor: Actor): string | null {
 export async function eraseMember(orgId: string, actor: Actor, memberId: string, reason: string): Promise<{ pictureUrl: string | null }> {
   if (!reason.trim()) throw new CoreError("INVALID_INPUT", "ต้องใส่เหตุผล");
   return inTx(orgId, async (tx) => {
+    // An import or merge touching this member waits, so nothing lands on the row after it is wiped.
+    await lockMembers(tx, orgId, [memberId]);
     const m = await tx.member.findFirst({ where: { id: memberId, status: "ACTIVE" } });
     if (!m) throw new CoreError("NOT_FOUND", "ไม่พบสมาชิก");
-    await tx.memberIdentity.deleteMany({ where: { memberId: m.id } });
+    // Accounts merged into this one are the same person: their rows are wiped too.
+    const mergedRows = await tx.member.findMany({ where: { mergedIntoId: m.id }, select: { id: true } });
+    const ids = [m.id, ...mergedRows.map((r) => r.id)];
+    await tx.memberIdentity.deleteMany({ where: { memberId: { in: ids } } });
     await tx.sale.updateMany({ where: { memberId: m.id }, data: { memberId: null, memberRef: null } });
     await tx.booking.updateMany({
       where: { memberId: m.id, status: { in: ["HELD", "CONFIRMED"] } },
       data: { status: "CANCELLED", cancelReason: "ลบข้อมูลสมาชิก", cancelledBy: actorUserIdOf(actor) },
     });
     await tx.booking.updateMany({ where: { memberId: m.id }, data: { memberId: null, guestName: null, guestPhone: null } });
-    await tx.notification.updateMany({ where: { memberId: m.id, status: "PENDING" }, data: { status: "SKIPPED", lastError: "ลบข้อมูลสมาชิก" } });
     // Reward requests keep their record for the accounts, without the delivery address.
     await tx.redemption.updateMany({ where: { memberId: m.id, status: "ISSUED" }, data: { status: "CANCELLED", note: "ลบข้อมูลสมาชิก" } });
     await tx.redemption.updateMany({ where: { memberId: m.id }, data: { delivery: Prisma.DbNull } });
-    await tx.member.update({
-      where: { id: m.id },
-      data: {
-        status: "ERASED",
-        erasedAt: new Date(),
-        displayName: "ลบข้อมูลแล้ว",
-        firstName: null,
-        lastName: null,
-        birthday: null,
-        email: null,
-        pictureUrl: null,
-        attributes: {},
-      },
-    });
+    const wiped = { displayName: "ลบข้อมูลแล้ว", firstName: null, lastName: null, birthday: null, email: null, pictureUrl: null, attributes: {} };
+    await tx.member.update({ where: { id: m.id }, data: { status: "ERASED", erasedAt: new Date(), ...wiped } });
+    if (mergedRows.length) await tx.member.updateMany({ where: { id: { in: mergedRows.map((r) => r.id) } }, data: { erasedAt: new Date(), ...wiped } });
+    // Copies of the name, phone or email kept elsewhere. Inbox messages go (no one
+    // reads them any more); review items and earlier audit entries stay — who did
+    // what, when — with their snapshots of this person cleared.
+    await tx.notification.deleteMany({ where: { memberId: { in: ids } } });
+    await tx.reviewItem.updateMany({ where: { memberId: { in: ids } }, data: { payload: { erased: true } } });
+    await tx.auditLog.updateMany({ where: { entity: "member", entityId: { in: ids } }, data: { before: Prisma.DbNull, after: Prisma.DbNull } });
     await writeAudit(tx, orgId, actor, { action: "member.erase", entity: "member", entityId: m.id, before: { code: m.code }, reason });
     return { pictureUrl: m.pictureUrl };
   });

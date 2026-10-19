@@ -42,6 +42,22 @@ export async function takeHit(orgId: string, bucket: string, limits: Limit[], me
   await recordHit(orgId, bucket, limits.map((l) => l.key), now);
 }
 
+/**
+ * Count first, then check — for limits that must hold under a burst (staff
+ * login). Each request inserts its own hit before counting, so parallel
+ * requests all see each other and at most `max` get through. The caller
+ * clears the key when the attempt succeeds.
+ */
+export async function claimAttempt(orgId: string, bucket: string, limits: Limit[], message: string, now = new Date()): Promise<void> {
+  await recordHit(orgId, bucket, limits.map((l) => l.key), now);
+  const client = db(orgId);
+  for (const l of limits) {
+    if (!l.key) continue;
+    const n = await client.rateHit.count({ where: { bucket, key: l.key, createdAt: { gte: new Date(now.getTime() - l.windowMs) } } });
+    if (n > l.max) throw new CoreError("OTP_RATE", message);
+  }
+}
+
 /** Nightly: attempts older than two days no longer count for anything. */
 export async function pruneRateHits(orgId: string, now = new Date()): Promise<number> {
   return (await db(orgId).rateHit.deleteMany({ where: { createdAt: { lt: new Date(now.getTime() - 48 * HOUR) } } })).count;

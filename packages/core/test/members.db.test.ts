@@ -32,19 +32,17 @@ describe("sign-up", () => {
     await expect(signUp(t.orgId, { lineUserId: "U-x", channel: "LINE", fullName: "A B", phone: "0891112200", acceptTerms: false, marketing: false })).rejects.toMatchObject({ code: "INVALID_INPUT" });
   });
 
-  it("links LINE to a counter-created member with the same phone — no second welcome bonus", async () => {
+  it("a LINE sign-up never takes over a counter member by typing their phone — the store reviews it", async () => {
     const counter = await createMemberAtCounter(t.orgId, t.actor, { fullName: "ธนา รุ่งเรือง", phone: "0865554433", consentConfirmed: true, marketing: false });
     expect(counter.welcomePoints).toBe(1600);
-    const linked = await signUp(t.orgId, { lineUserId: "U-dana", channel: "LINE", fullName: "ธนา รุ่งเรือง", phone: "086 555 4433", acceptTerms: true, marketing: true });
-    expect(linked.outcome).toBe("linked");
-    expect(linked.member.id).toBe(counter.member.id);
-    expect(linked.member.points).toBe(1600);
-    expect(linked.welcomePoints).toBe(0);
+    await expect(signUp(t.orgId, { lineUserId: "U-dana", channel: "LINE", fullName: "ธนา รุ่งเรือง", phone: "086 555 4433", acceptTerms: true, marketing: true })).rejects.toMatchObject({ code: "PHONE_TAKEN" });
+    expect(await db(t.orgId).memberIdentity.count({ where: { memberId: counter.member.id, type: "LINE" } })).toBe(0);
+    expect(await db(t.orgId).reviewItem.count({ where: { kind: "PHONE_CONFLICT", status: "OPEN", memberId: counter.member.id } })).toBe(1);
   });
 
   it("never hands a phone owned by another LINE account to a new one", async () => {
     await expect(signUp(t.orgId, { lineUserId: "U-thief", channel: "LINE", fullName: "Other Person", phone: "0891112233", acceptTerms: true, marketing: false })).rejects.toMatchObject({ code: "PHONE_TAKEN" });
-    const reviews = await db(t.orgId).reviewItem.count({ where: { kind: "PHONE_CONFLICT", status: "OPEN" } });
+    const reviews = await db(t.orgId).reviewItem.count({ where: { kind: "PHONE_CONFLICT", status: "OPEN", payload: { path: ["lineUserId"], equals: "U-thief" } } });
     expect(reviews).toBe(1);
   });
 
@@ -96,6 +94,24 @@ describe("merge and erase", () => {
     // the phone can sign up again as a new person
     const again = await signUp(t.orgId, { lineUserId: "U-erase-2", channel: "LINE", fullName: "New Person", phone: "0945556677", acceptTerms: true, marketing: false });
     expect(again.outcome).toBe("created");
+  });
+
+  it("erasing a member also wipes accounts merged into it, review items, audit snapshots and inbox", async () => {
+    const keep = await createMemberAtCounter(t.orgId, t.actor, { fullName: "Pat Private", phone: "0817778888", consentConfirmed: true, marketing: false });
+    const dup = await createMemberAtCounter(t.orgId, t.actor, { fullName: "Pat Private", phone: "0827778888", consentConfirmed: true, marketing: false });
+    await db(t.orgId).member.updateMany({ where: { id: dup.member.id }, data: { email: "pat@example.com" } });
+    await mergeMembers(t.orgId, t.actor, { survivorId: keep.member.id, mergedId: dup.member.id, reason: "ซ้ำ" });
+    await signUp(t.orgId, { lineUserId: "U-pat", channel: "LINE", fullName: "Pat Private", phone: "0817778888", acceptTerms: true, marketing: false }).catch(() => null); // leaves a PHONE_CONFLICT review item
+    await eraseMember(t.orgId, t.actor, keep.member.id, "ลูกค้าขอลบ");
+    const merged = await prisma.member.findUnique({ where: { id: dup.member.id } });
+    expect(merged?.displayName).toBe("ลบข้อมูลแล้ว");
+    expect(merged?.email).toBeNull();
+    const ids = [keep.member.id, dup.member.id];
+    const reviews = await db(t.orgId).reviewItem.findMany({ where: { memberId: { in: ids } } });
+    expect(reviews.every((r) => JSON.stringify(r.payload) === JSON.stringify({ erased: true }))).toBe(true);
+    const audits = await db(t.orgId).auditLog.findMany({ where: { entity: "member", entityId: { in: ids }, action: { not: "member.erase" } } });
+    expect(audits.every((a) => a.before === null && a.after === null)).toBe(true);
+    expect(await db(t.orgId).notification.count({ where: { memberId: { in: ids } } })).toBe(0);
   });
 
   it("ledger sums equal every cached balance", async () => {

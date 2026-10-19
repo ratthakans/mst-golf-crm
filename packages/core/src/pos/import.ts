@@ -4,7 +4,7 @@ import type { PosMapping } from "@mstgolf/shared";
 import { findTier, lowestTier, reviewTier, tierProgress, tierRank } from "@mstgolf/shared/tiers";
 import { writeAudit } from "../audit";
 import type { Actor } from "../context";
-import { createManyChunked, db, inTx, lockOrgJob, type Tx } from "../db";
+import { createManyChunked, db, inTx, lockMembers, lockOrgJob, type Tx } from "../db";
 import { CoreError } from "../errors";
 import { newId } from "../ids";
 import { findMemberIdByIdentity, insertMember, refreshMemberSpend } from "../members";
@@ -417,10 +417,17 @@ export async function commitImport(orgId: string, actor: Actor, batchId: string,
       const state = new Map<string, MemberState>();
       if (memberIds.size) {
         const ids = [...memberIds];
+        // A merge or erase of one of these members waits for this commit, or this
+        // commit waits for it — then sees the member is gone and asks for a re-run,
+        // which finds the phone on the surviving member.
+        await lockMembers(tx, orgId, ids);
         const [members, prior] = await Promise.all([
-          tx.member.findMany({ where: { id: { in: ids } }, select: { id: true, tier: true, points: true, birthday: true, lifetimeSatang: true, lastPurchaseAt: true } }),
+          tx.member.findMany({ where: { id: { in: ids } }, select: { id: true, status: true, tier: true, points: true, birthday: true, lifetimeSatang: true, lastPurchaseAt: true } }),
           tx.sale.findMany({ where: { memberId: { in: ids }, status: "POSTED", occurredAt: { gt: windowFrom } }, select: { memberId: true, occurredAt: true, netSatang: true } }),
         ]);
+        if (members.some((m) => m.status !== "ACTIVE")) {
+          throw new CoreError("IMPORT_STATE", "มีสมาชิกในรอบนี้ถูกรวมบัญชีหรือลบข้อมูลระหว่างนำเข้า — กดนำเข้าอีกครั้ง");
+        }
         for (const m of members) {
           state.set(m.id, {
             id: m.id,
@@ -706,14 +713,24 @@ export async function rollbackImport(orgId: string, actor: Actor, batchId: strin
       const txs = saleIds.length
         ? await tx.pointTransaction.groupBy({ by: ["memberId"], where: { saleId: { in: saleIds } }, _sum: { delta: true } })
         : [];
-      let pointsReversed = 0;
+      // Points earned by a member who was merged since moved to the survivor with
+      // the merge, so the reversal is taken from the survivor too.
+      const owed = new Map<string, number>();
       for (const t of txs) {
         const delta = -(t._sum.delta ?? 0);
         if (delta === 0) continue;
+        const to = await survivorOf(tx, t.memberId);
+        owed.set(to, (owed.get(to) ?? 0) + delta);
+      }
+      const affected = [...new Set(sales.flatMap((s) => (s.memberId ? [s.memberId] : [])))];
+      await lockMembers(tx, orgId, [...owed.keys(), ...affected]);
+      let pointsReversed = 0;
+      for (const [memberId, delta] of owed) {
+        if (delta === 0) continue;
         await tx.pointTransaction.create({
-          data: { orgId, memberId: t.memberId, type: "REVERSAL", delta, reason: "ROLLBACK", batchId: batch.id, note: reason, createdById: actor.kind === "staff" ? actor.userId : null },
+          data: { orgId, memberId, type: "REVERSAL", delta, reason: "ROLLBACK", batchId: batch.id, note: reason, createdById: actor.kind === "staff" ? actor.userId : null },
         });
-        await tx.member.update({ where: { id: t.memberId }, data: { points: { increment: delta } } });
+        await tx.member.update({ where: { id: memberId }, data: { points: { increment: delta } } });
         pointsReversed += -delta;
       }
       await tx.event.deleteMany({ where: { type: { in: ["PURCHASE", "RETURN", "TIER_UP"] }, payload: { path: ["batchId"], equals: batch.id } } });
@@ -722,7 +739,6 @@ export async function rollbackImport(orgId: string, actor: Actor, batchId: strin
         data: { status: "SKIPPED", lastError: "ยกเลิกรอบนำเข้า" },
       });
       await tx.sale.deleteMany({ where: { batchId: batch.id } });
-      const affected = [...new Set(sales.flatMap((s) => (s.memberId ? [s.memberId] : [])))];
       for (const memberId of affected) await refreshMemberSpend(tx, orgId, memberId, settings, { allowDowngrade: true });
       await writeAudit(tx, orgId, actor, {
         action: "import.rollback",
@@ -736,6 +752,17 @@ export async function rollbackImport(orgId: string, actor: Actor, batchId: strin
     },
     { timeout: 120_000 },
   );
+}
+
+/** Follows merges to the member that holds the account now. */
+async function survivorOf(tx: Tx, memberId: string): Promise<string> {
+  let id = memberId;
+  for (let hop = 0; hop < 10; hop++) {
+    const m = await tx.member.findFirst({ where: { id }, select: { status: true, mergedIntoId: true } });
+    if (m?.status !== "MERGED" || !m.mergedIntoId) return id;
+    id = m.mergedIntoId;
+  }
+  return id;
 }
 
 // ---------------------------------------------------------------------------

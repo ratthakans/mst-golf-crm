@@ -124,7 +124,11 @@ async function processOrgOutbox(
       continue;
     }
 
-    // Claim the row so a concurrent run cannot send it too.
+    // Claim the row so a concurrent run cannot send it too. A run that starts while
+    // this one is still sending can claim it again; the LINE retry key and the
+    // email idempotency key stop a second delivery, and every result below is
+    // written only while the row is still PENDING, so a late failure never
+    // overwrites SENT.
     const claimed = await client.notification.updateMany({
       where: { id: n.id, status: "PENDING", attempts: n.attempts },
       data: { attempts: { increment: 1 } },
@@ -134,18 +138,18 @@ async function processOrgOutbox(
     if (lineTo) {
       const res = await pushMessage(line!.accessToken, lineTo, renderNotification(kind, n.payload, ctx), retryKeyFor(n.id), opts.fetchImpl);
       if (res.ok) {
-        await client.notification.updateMany({ where: { id: n.id }, data: { status: "SENT", channel: "LINE", sentAt: new Date(), lastError: null } });
+        await client.notification.updateMany({ where: { id: n.id, status: "PENDING" }, data: { status: "SENT", channel: "LINE", sentAt: new Date(), lastError: null } });
         if (!member.lineReachable) await client.member.updateMany({ where: { id: n.memberId }, data: { lineReachable: true } });
         run.sent++;
       } else if (res.unreachable) {
-        await client.notification.updateMany({ where: { id: n.id }, data: { status: "FAILED", lastError: res.error } });
+        await client.notification.updateMany({ where: { id: n.id, status: "PENDING" }, data: { status: "FAILED", lastError: res.error } });
         await client.member.updateMany({ where: { id: n.memberId }, data: { lineReachable: false } });
         run.failed++;
       } else if (res.retry && n.attempts + 1 < MAX_ATTEMPTS) {
-        await client.notification.updateMany({ where: { id: n.id }, data: { lastError: res.error } });
+        await client.notification.updateMany({ where: { id: n.id, status: "PENDING" }, data: { lastError: res.error } });
         run.retrying++;
       } else {
-        await client.notification.updateMany({ where: { id: n.id }, data: { status: "FAILED", lastError: res.error } });
+        await client.notification.updateMany({ where: { id: n.id, status: "PENDING" }, data: { status: "FAILED", lastError: res.error } });
         run.failed++;
       }
       continue;
@@ -154,13 +158,13 @@ async function processOrgOutbox(
     const mail = renderMemberEmail(notificationContent(kind, n.payload, ctx), { storeName: ctx.storeName, brandColor: settings.brandColor });
     const res = await postEmail({ to: [emailTo!], ...mail, idempotencyKey: n.id }, opts.fetchImpl);
     if (res.ok) {
-      await client.notification.updateMany({ where: { id: n.id }, data: { status: "SENT", channel: "EMAIL", sentAt: new Date(), lastError: null } });
+      await client.notification.updateMany({ where: { id: n.id, status: "PENDING" }, data: { status: "SENT", channel: "EMAIL", sentAt: new Date(), lastError: null } });
       run.sent++;
     } else if (res.retry && n.attempts + 1 < MAX_ATTEMPTS) {
-      await client.notification.updateMany({ where: { id: n.id }, data: { lastError: res.error } });
+      await client.notification.updateMany({ where: { id: n.id, status: "PENDING" }, data: { lastError: res.error } });
       run.retrying++;
     } else {
-      await client.notification.updateMany({ where: { id: n.id }, data: { status: "FAILED", lastError: res.error } });
+      await client.notification.updateMany({ where: { id: n.id, status: "PENDING" }, data: { status: "FAILED", lastError: res.error } });
       run.failed++;
     }
   }

@@ -138,7 +138,9 @@ export async function postEmail(mail: OutgoingEmail, fetchImpl: typeof fetch = f
       body: JSON.stringify({ from: process.env.EMAIL_FROM, to: mail.to, subject: mail.subject, text: mail.text, html: mail.html }),
     });
     if (res.ok) return { ok: true };
-    return { ok: false, retry: res.status === 429 || res.status >= 500, error: `HTTP ${res.status}: ${(await res.text().catch(() => "")).slice(0, 300)}` };
+    // 409: the same idempotency key is still in flight from another run — that run
+    // finishes the send; this one tries again later instead of marking it failed.
+    return { ok: false, retry: res.status === 409 || res.status === 429 || res.status >= 500, error: `HTTP ${res.status}: ${(await res.text().catch(() => "")).slice(0, 300)}` };
   } catch (e) {
     return { ok: false, retry: true, error: e instanceof Error ? e.message : String(e) };
   }
@@ -185,13 +187,13 @@ export async function processEmails(opts: { limit?: number; fetchImpl?: typeof f
       const mail = m.kind === "CONTACT" ? renderContactEmail(m.payload as unknown as ContactPayload) : renderRedemptionEmail(m.payload as unknown as RedemptionRequestPayload, settings.redemption.backofficeUrl);
       const res = await postEmail({ to: m.to, ...mail, idempotencyKey: m.id }, opts.fetchImpl);
       if (res.ok) {
-        await client.emailMessage.updateMany({ where: { id: m.id }, data: { status: "SENT", sentAt: new Date(), lastError: null } });
+        await client.emailMessage.updateMany({ where: { id: m.id, status: "PENDING" }, data: { status: "SENT", sentAt: new Date(), lastError: null } });
         run.sent++;
       } else if (res.retry && m.attempts + 1 < MAX_ATTEMPTS) {
-        await client.emailMessage.updateMany({ where: { id: m.id }, data: { lastError: res.error } });
+        await client.emailMessage.updateMany({ where: { id: m.id, status: "PENDING" }, data: { lastError: res.error } });
         run.retrying++;
       } else {
-        await client.emailMessage.updateMany({ where: { id: m.id }, data: { status: "FAILED", lastError: res.error } });
+        await client.emailMessage.updateMany({ where: { id: m.id, status: "PENDING" }, data: { status: "FAILED", lastError: res.error } });
         run.failed++;
       }
     }
