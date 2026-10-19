@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
 import { updateOwnProfile, type ProfileInput } from "@mstgolf/core";
-import { handle, json, readJson, requireMember, str } from "@/lib/api";
+import { handle, isLineClient, json, readJson, requireMember, str } from "@/lib/api";
 import { loadCard } from "@/lib/views";
 
 // PATCH { fullName?, email?, birthday?, marketing?, emailNotify? } — the member edits their
@@ -16,7 +16,7 @@ export async function PATCH(req: NextRequest) {
     if (typeof body.birthday === "string" && body.birthday && !member.birthday) input.birthday = str(body.birthday, 20);
     if (typeof body.marketing === "boolean") input.marketing = body.marketing;
     if (typeof body.emailNotify === "boolean") input.emailNotify = body.emailNotify;
-    await updateOwnProfile(orgId, member.id, input);
+    await updateOwnProfile(orgId, member.id, input, isLineClient(req) ? "LINE" : "WEB");
     return json({ member: await loadCard(orgId, member.id) });
   });
 }

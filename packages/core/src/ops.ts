@@ -246,11 +246,13 @@ export async function readiness(orgId: string, now = new Date()): Promise<ReadyI
 export async function confirmReadiness(orgId: string, actor: Actor, key: string, confirmed: boolean): Promise<void> {
   if (!(CONFIRMABLE as readonly string[]).includes(key)) throw new CoreError("INVALID_INPUT", "รายการนี้ยืนยันเองไม่ได้");
   if (actor.kind !== "staff") throw new CoreError("FORBIDDEN", "เฉพาะพนักงาน");
-  const { settings } = await getOrg(orgId);
   const user = await db(orgId).user.findFirst({ where: { id: actor.userId }, select: { name: true, email: true } });
-  const current = { ...(settings.raw.readiness ?? {}) };
-  if (confirmed) current[key] = { at: new Date().toISOString(), by: user?.name || user?.email || "พนักงาน" };
-  else delete current[key];
-  await updateSettings(orgId, { readiness: current });
+  // Patched on the stored value under the org lock: two confirmations at once both stay.
+  await updateSettings(orgId, (cur) => {
+    const current = { ...(cur.readiness ?? {}) };
+    if (confirmed) current[key] = { at: new Date().toISOString(), by: user?.name || user?.email || "พนักงาน" };
+    else delete current[key];
+    return { readiness: current };
+  });
   await inTx(orgId, (tx) => writeAudit(tx, orgId, actor, { action: confirmed ? "readiness.confirm" : "readiness.unconfirm", entity: "settings", entityId: key }));
 }

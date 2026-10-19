@@ -1,6 +1,7 @@
 import { createHash, randomInt, timingSafeEqual } from "node:crypto";
 import { db } from "./db";
 import { CoreError } from "./errors";
+import { newId } from "./ids";
 import { parsePhone } from "./members";
 import { sendSms, smsShowsCode } from "./notify/sms";
 import { getOrg } from "./settings";
@@ -11,7 +12,10 @@ import { getOrg } from "./settings";
 
 const CODE_TTL_MS = 5 * 60_000;
 const RESEND_AFTER_MS = 60_000;
-const MAX_PER_PHONE_PER_DAY = 5;
+// Per number from one IP, and per number overall: someone typing a stranger's
+// number can use up their own share, not lock the owner out for the day.
+const MAX_PER_PHONE_PER_IP_PER_DAY = 5;
+const MAX_PER_PHONE_PER_DAY = 15;
 const MAX_PER_IP_PER_HOUR = 20;
 const MAX_TRIES = 5;
 
@@ -34,16 +38,21 @@ export async function requestOtp(orgId: string, rawPhone: string, opts: { ip?: s
     const wait = Math.ceil((RESEND_AFTER_MS - (now.getTime() - last.createdAt.getTime())) / 1000);
     throw new CoreError("OTP_RATE", `ขอรหัสใหม่ได้ในอีก ${wait} วินาที`, { retryAfter: wait });
   }
-  const today = await client.otpCode.count({ where: { phone, createdAt: { gte: new Date(now.getTime() - 24 * 3600_000) } } });
-  if (today >= MAX_PER_PHONE_PER_DAY) throw new CoreError("OTP_RATE", "ขอรหัสครบจำนวนต่อวันแล้ว กรุณาลองพรุ่งนี้หรือติดต่อร้าน");
+  const dayAgo = new Date(now.getTime() - 24 * 3600_000);
+  const today = await client.otpCode.count({ where: { phone, createdAt: { gte: dayAgo } } });
+  const todayHere = opts.ip ? await client.otpCode.count({ where: { phone, ip: opts.ip, createdAt: { gte: dayAgo } } }) : today;
+  if (today >= MAX_PER_PHONE_PER_DAY || todayHere >= MAX_PER_PHONE_PER_IP_PER_DAY) {
+    throw new CoreError("OTP_RATE", "ขอรหัสครบจำนวนต่อวันแล้ว กรุณาลองพรุ่งนี้หรือติดต่อร้าน");
+  }
   if (opts.ip) {
     const fromIp = await client.otpCode.count({ where: { ip: opts.ip, createdAt: { gte: new Date(now.getTime() - 3600_000) } } });
     if (fromIp >= MAX_PER_IP_PER_HOUR) throw new CoreError("OTP_RATE", "มีการขอรหัสจากเครื่องนี้มากเกินไป กรุณาลองใหม่ภายหลัง");
   }
 
   const code = String(randomInt(0, 1_000_000)).padStart(6, "0");
-  const row = await client.otpCode.create({ data: { orgId, phone, codeHash: "", expiresAt: new Date(now.getTime() + CODE_TTL_MS), ip: opts.ip ?? null, createdAt: now } });
-  await client.otpCode.updateMany({ where: { id: row.id }, data: { codeHash: hash(row.id, code) } });
+  // The hash is written with the row: a verify can never meet a row without one.
+  const id = newId();
+  const row = await client.otpCode.create({ data: { id, orgId, phone, codeHash: hash(id, code), expiresAt: new Date(now.getTime() + CODE_TTL_MS), ip: opts.ip ?? null, createdAt: now } });
   const { name } = await getOrg(orgId);
   try {
     await sendSms(phone, `รหัสเข้าสู่ระบบ ${name}: ${code} (ใช้ได้ 5 นาที) อย่าบอกรหัสนี้กับผู้อื่น`, opts.fetchImpl);

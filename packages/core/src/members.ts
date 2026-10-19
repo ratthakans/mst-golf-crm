@@ -448,7 +448,7 @@ export interface ProfileInput {
 }
 
 /** The member edits their own profile. Birthday can be set once (it drives the birthday bonus); after that only staff change it. */
-export async function updateOwnProfile(orgId: string, memberId: string, input: ProfileInput): Promise<MemberSummary> {
+export async function updateOwnProfile(orgId: string, memberId: string, input: ProfileInput, channel: "LINE" | "WEB" = "WEB"): Promise<MemberSummary> {
   return inTx(orgId, async (tx) => {
     const m = await tx.member.findFirst({ where: { id: memberId, status: "ACTIVE" }, include: memberInclude });
     if (!m) throw new CoreError("NOT_FOUND", "ไม่พบสมาชิก");
@@ -468,7 +468,8 @@ export async function updateOwnProfile(orgId: string, memberId: string, input: P
       await recordEvent(tx, orgId, m.id, "PROFILE_UPDATE", { fields: Object.keys(data) });
     }
     if (input.marketing !== undefined && input.marketing !== (m.consents[0]?.granted ?? false)) {
-      await recordConsents(tx, orgId, m.id, m.identities.some((i) => i.type === "LINE") ? "LINE" : "WEB", { marketing: input.marketing });
+      // Recorded with the channel the member changed it on, not the identities they have.
+      await recordConsents(tx, orgId, m.id, channel, { marketing: input.marketing });
     }
     return loadSummary(tx, m.id);
   });

@@ -604,7 +604,11 @@ export async function updateRedemption(
     if (!allowed.includes(input.status)) {
       throw new CoreError("INVALID_INPUT", `เปลี่ยนจาก "${REDEMPTION_STATUS_LABEL[r.status]}" เป็น "${REDEMPTION_STATUS_LABEL[input.status]}" ไม่ได้`);
     }
-    if (REFUNDED.includes(input.status) && !note) throw new CoreError("INVALID_INPUT", "ใส่เหตุผล — ลูกค้าจะเห็นข้อความนี้ใน LINE");
+    if (REFUNDED.includes(input.status) && !note) throw new CoreError("INVALID_INPUT", "ใส่เหตุผล — ลูกค้าจะเห็นข้อความนี้");
+    // An expired coupon never refunds (docs/PRODUCT.md §11), even before the nightly job marks it.
+    if (REFUNDED.includes(input.status) && r.status === "ISSUED" && r.expiresAt && r.expiresAt <= now) {
+      throw new CoreError("INVALID_INPUT", "คูปองนี้หมดอายุแล้ว — ไม่คืนแต้ม");
+    }
     if (input.status === "SHIPPED" && !trackingNo && !r.trackingNo) throw new CoreError("INVALID_INPUT", "ใส่เลขพัสดุก่อนเปลี่ยนเป็นจัดส่งแล้ว");
     await moveStatus(
       tx,
@@ -865,11 +869,10 @@ export async function saveRedemptionSettings(orgId: string, actor: Actor, input:
   const { settings } = await getOrg(orgId);
   const url = input.backofficeUrl?.trim().replace(/\/$/, "");
   if (url && !/^https?:\/\/[^\s/]+$/.test(url)) throw new CoreError("INVALID_INPUT", "ลิงก์หลังบ้านต้องเป็น https://โดเมน");
-  const next = {
-    alertEmails: input.alertEmails === undefined ? settings.redemption.alertEmails : cleanAlertEmails(input.alertEmails),
-    backofficeUrl: url || settings.redemption.backofficeUrl,
-  };
-  const resolved = await updateSettings(orgId, { redemption: next });
-  await inTx(orgId, (tx) => writeAudit(tx, orgId, actor, { action: "settings.redemption", entity: "settings", before: settings.redemption, after: next }));
+  const emails = input.alertEmails === undefined ? undefined : cleanAlertEmails(input.alertEmails);
+  const resolved = await updateSettings(orgId, (cur) => ({
+    redemption: { ...cur.redemption, alertEmails: emails ?? cur.redemption?.alertEmails ?? [], ...(url ? { backofficeUrl: url } : {}) },
+  }));
+  await inTx(orgId, (tx) => writeAudit(tx, orgId, actor, { action: "settings.redemption", entity: "settings", before: settings.redemption, after: resolved.redemption }));
   return resolved;
 }

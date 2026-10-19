@@ -122,8 +122,9 @@ export async function saveSite(orgId: string, actor: Actor, input: SiteSettings)
     if (!/^https:\/\/[^\s]+$/.test(s)) throw new CoreError("INVALID_INPUT", `${label} ต้องขึ้นต้นด้วย https://`);
     return s.replace(/\/$/, "");
   };
-  const site: SiteSettings = {
-    ...settings.site, // photos and copy are saved by saveSiteContent
+  // Only the link fields: photos and copy are saved by saveSiteContent, patched
+  // onto the stored value under the org lock so a parallel save of either keeps both.
+  const links: SiteSettings = {
     lineOaUrl: url(input.lineOaUrl, "ลิงก์ LINE OA"),
     mapsUrl: url(input.mapsUrl, "ลิงก์ Google Maps"),
     facebookUrl: url(input.facebookUrl, "ลิงก์ Facebook"),
@@ -133,8 +134,8 @@ export async function saveSite(orgId: string, actor: Actor, input: SiteSettings)
     phone: input.phone?.trim() || undefined,
     address: input.address?.trim() || undefined,
   };
-  const next = await updateSettings(orgId, { site });
-  await audited(orgId, actor, "settings.site", settings.site, site);
+  const next = await updateSettings(orgId, (cur) => ({ site: { ...(cur.site ?? {}), ...links } }));
+  await audited(orgId, actor, "settings.site", settings.site, next.site);
   return next;
 }
 
@@ -178,8 +179,7 @@ export async function saveSiteContent(orgId: string, actor: Actor, input: SiteCo
     brands: clip(c.brands, 1000),
     services,
   };
-  const site: SiteSettings = { ...settings.site, photos, copy };
-  const next = await updateSettings(orgId, { site });
+  const next = await updateSettings(orgId, (cur) => ({ site: { ...(cur.site ?? {}), photos, copy } }));
   await audited(orgId, actor, "settings.site_content", { photos: settings.site.photos ?? {}, copy: settings.site.copy ?? {} }, { photos, copy });
   return next;
 }
@@ -332,8 +332,7 @@ export type { BlockReason };
 /** Turns the SMS code at website sign-in on or off (Settings › เว็บไซต์และร้าน). */
 export async function saveLoginRules(orgId: string, actor: Actor, input: { otp: boolean }): Promise<ResolvedSettings> {
   const { settings } = await getOrg(orgId);
-  const features = { ...(settings.raw.features ?? {}), otp: !!input.otp } as OrgSettings["features"];
-  const next = await updateSettings(orgId, { features });
+  const next = await updateSettings(orgId, (cur) => ({ features: { ...(cur.features ?? {}), otp: !!input.otp } as OrgSettings["features"] }));
   await audited(orgId, actor, "settings.login", { otp: settings.features.otp }, { otp: !!input.otp });
   return next;
 }

@@ -55,4 +55,18 @@ describe("job runs", () => {
     expect(Object.fromEntries(s.jobs.map((j) => [j.kind, j.state]))).toEqual({ nightly: "failed", frequent: "ok", backup: "late" });
     expect(s.jobs.find((j) => j.kind === "nightly")?.last?.error).toBe("boom");
   });
+
+  it("a contact-settings save and a content save at the same moment both survive, and so do two readiness ticks", async () => {
+    await Promise.all([
+      saveSite(t.orgId, t.actor, { phone: "02-333-4444" }),
+      saveSiteContent(t.orgId, t.actor, { photos: { hero: "https://x.public.blob.vercel-storage.com/site/b.jpg" }, copy: { heroTitle: "พร้อมกัน" } }),
+      confirmReadiness(t.orgId, t.actor, "store.hours", true),
+      confirmReadiness(t.orgId, t.actor, "store.lanes", true),
+    ]);
+    const { settings } = await getOrg(t.orgId);
+    expect(settings.site.phone).toBe("02-333-4444");
+    expect(settings.site.copy?.heroTitle).toBe("พร้อมกัน");
+    const ticks = (settings.raw.readiness ?? {}) as Record<string, unknown>;
+    expect(Object.keys(ticks)).toEqual(expect.arrayContaining(["store.hours", "store.lanes"]));
+  });
 });

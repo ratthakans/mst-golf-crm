@@ -172,4 +172,13 @@ describe("rewards", () => {
     await saveReward(t.orgId, t.actor, bag.id, { kind: "PHYSICAL", name: "Golf bag (stand)", costPoints: 100, stock: 4 });
     expect((await db(t.orgId).reward.findFirstOrThrow({ where: { id: bag.id } })).stock).toBe(4);
   });
+
+  it("staff can't refund a coupon that has already expired, even before the nightly job marks it", async () => {
+    const m = await signUp(t.orgId, { lineUserId: "U-rw-exp", channel: "LINE", fullName: "Late Comer", phone: "0891230009", acceptTerms: true, marketing: false });
+    const small = await saveReward(t.orgId, t.actor, null, { kind: "COUPON", name: "คูปอง ฿100", costPoints: 100, valueBaht: 100, validDays: 1 });
+    const r = await redeemReward(t.orgId, m.member.id, { rewardId: small.id, acceptTerms: true });
+    await db(t.orgId).redemption.updateMany({ where: { id: r.id }, data: { expiresAt: new Date(Date.now() - 60_000) } });
+    await expect(updateRedemption(t.orgId, t.actor, r.id, { status: "CANCELLED", note: "ลูกค้าขอคืน" })).rejects.toMatchObject({ code: "INVALID_INPUT" });
+    expect((await db(t.orgId).member.findFirstOrThrow({ where: { id: m.member.id } })).points).toBe(1600 - 100);
+  });
 });

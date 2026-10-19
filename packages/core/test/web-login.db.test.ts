@@ -135,4 +135,11 @@ describe("inbox and delivery without LINE", () => {
     expect(msgs).toHaveLength(1);
     expect(msgs[0]!.to).toEqual(["marketing@mst.test"]);
   });
+
+  it("one requester can't use up a number's daily codes for everyone", async () => {
+    const day = (h: number) => new Date(Date.UTC(2026, 9, 13, h, 0, 0));
+    for (let i = 0; i < 5; i++) await requestOtp(t.orgId, "0897779999", { ip: "6.6.6.6", now: day(i) });
+    await expect(requestOtp(t.orgId, "0897779999", { ip: "6.6.6.6", now: day(6) })).rejects.toMatchObject({ code: "OTP_RATE" });
+    await expect(requestOtp(t.orgId, "0897779999", { ip: "7.7.7.7", now: day(7) })).resolves.toMatchObject({ phone: "0897779999" });
+  });
 });

@@ -72,10 +72,23 @@ async function period(orgId: string, from: Date, to: Date, hours: OpenHours, lan
     if (b.status === "NO_SHOW") noShows++;
     else bookedHours += (b.endAt.getTime() - b.startAt.getTime()) / 3_600_000;
   }
+  // Sellable = open slots on every lane, less the part of each slot a lane block
+  // covers. A block outside opening hours (an all-day closure) takes nothing extra.
   let sellable = 0;
-  for (let d = startOfLocalDay(from); d < to; d = addDays(d, 1)) sellable += daySlots(d, hours, slotMinutes).length * (slotMinutes / 60) * laneCount;
-  const blockedHours = blocks.reduce((s, b) => s + (Math.min(b.endAt.getTime(), to.getTime()) - Math.max(b.startAt.getTime(), from.getTime())) / 3_600_000, 0);
-  sellable = Math.max(0, sellable - blockedHours);
+  const slotMs = slotMinutes * 60_000;
+  for (let d = startOfLocalDay(from); d < to; d = addDays(d, 1)) {
+    for (const s of daySlots(d, hours, slotMinutes)) {
+      const start = Math.max(s.getTime(), from.getTime());
+      const end = Math.min(s.getTime() + slotMs, to.getTime());
+      if (end <= start) continue;
+      sellable += ((end - start) / 3_600_000) * laneCount;
+      for (const b of blocks) {
+        const covered = Math.min(end, b.endAt.getTime()) - Math.max(start, b.startAt.getTime());
+        if (covered > 0) sellable -= covered / 3_600_000;
+      }
+    }
+  }
+  sellable = Math.max(0, sellable);
   return {
     newMembers: members.reduce((s, g) => s + g._count._all, 0),
     newBySource,

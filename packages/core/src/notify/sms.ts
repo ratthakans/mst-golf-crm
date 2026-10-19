@@ -25,7 +25,8 @@ export async function sendSms(to: string, message: string, fetchImpl: typeof fet
   const provider = smsProvider();
   if (!provider) throw new CoreError("SMS_UNAVAILABLE", "ระบบส่ง SMS ยังไม่พร้อม กรุณาติดต่อร้าน");
   if (provider === "mock") {
-    console.info(`[sms:mock] to ${to.slice(0, 3)}xxxx${to.slice(-3)}: ${message}`);
+    // The code never goes to the logs; the mock shows it on screen instead (smsShowsCode).
+    console.info(`[sms:mock] to ${to.slice(0, 3)}xxxx${to.slice(-3)}: ${message.replace(/\d{6}/g, "••••••")}`);
     return;
   }
   // ThaiBulkSMS API v2 — Basic auth with the key/secret pair, form-encoded body.

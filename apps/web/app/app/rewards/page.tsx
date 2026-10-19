@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "แลกรางวัล",
-  description: "ใช้แต้มสมาชิก MST Golf แลกคูปองส่วนลดและของรางวัล ติดตามสถานะได้ใน LINE",
+  description: "ใช้แต้มสมาชิก MST Golf แลกคูปองส่วนลดและของรางวัล ติดตามสถานะได้ในกล่องข้อความ",
   robots: { index: false, follow: false },
 };
 

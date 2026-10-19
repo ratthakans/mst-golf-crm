@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { hashPassword, temporaryPassword } from "@mstgolf/shared/password";
 import { audit, requireApi } from "../../../../../lib/auth";
 import { isRole } from "../../../../../lib/permissions";
-import { getUser, listUsers, updateUser } from "../../../../../lib/users";
+import { getUser, LastAdminError, listUsers, updateUser, updateUserKeepingAnAdmin } from "../../../../../lib/users";
 
 type Body =
   | { action: "role"; role: string }
@@ -37,14 +37,24 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
       if (removesLastAdmin && body.role !== "SUPER_ADMIN") {
         return NextResponse.json({ error: "ต้องมีผู้ดูแลระบบอย่างน้อย 1 คน" }, { status: 400 });
       }
-      await updateUser(target.id, { role: body.role });
+      try {
+        await updateUserKeepingAnAdmin(target.id, { role: body.role });
+      } catch (e) {
+        if (e instanceof LastAdminError) return NextResponse.json({ error: e.message }, { status: 400 });
+        throw e;
+      }
       await audit(admin, { action: "user.role_change", entity: "user", entityId: target.id, before: { role: target.role }, after: { role: body.role } });
       return NextResponse.json({ ok: true });
     }
     case "deactivate": {
       if (self) return NextResponse.json({ error: "ปิดบัญชีของตัวเองไม่ได้" }, { status: 400 });
       if (removesLastAdmin) return NextResponse.json({ error: "ต้องมีผู้ดูแลระบบอย่างน้อย 1 คน" }, { status: 400 });
-      await updateUser(target.id, { isActive: false, sessionVersion: target.sessionVersion + 1 });
+      try {
+        await updateUserKeepingAnAdmin(target.id, { isActive: false, sessionVersion: target.sessionVersion + 1 });
+      } catch (e) {
+        if (e instanceof LastAdminError) return NextResponse.json({ error: e.message }, { status: 400 });
+        throw e;
+      }
       await audit(admin, { action: "user.deactivate", entity: "user", entityId: target.id });
       return NextResponse.json({ ok: true });
     }

@@ -1,5 +1,5 @@
 import "server-only";
-import { db } from "@mstgolf/core";
+import { db, inTx, lockOrgJob } from "@mstgolf/core";
 import type { Role } from "./permissions";
 import { currentOrg } from "./org";
 
@@ -74,6 +74,32 @@ export async function updateUser(id: string, patch: UserPatch): Promise<UserReco
   const found = await db.user.findFirst({ where: { id } });
   if (!found) throw new Error("User not found");
   return (await db.user.update({ where: { id }, data: patch })) as UserRecord;
+}
+
+export class LastAdminError extends Error {
+  constructor() {
+    super("ต้องมีผู้ดูแลระบบอย่างน้อย 1 คน");
+  }
+}
+
+/**
+ * Role change or deactivation that must leave at least one active Super Admin.
+ * The check and the write run under one org lock, so two admins demoting each
+ * other at the same moment can't both pass.
+ */
+export async function updateUserKeepingAnAdmin(id: string, patch: Pick<UserPatch, "role" | "isActive" | "sessionVersion">): Promise<UserRecord> {
+  const { orgId } = await client();
+  return inTx(orgId, async (tx) => {
+    await lockOrgJob(tx, orgId, "super-admins");
+    const target = await tx.user.findFirst({ where: { id } });
+    if (!target) throw new Error("User not found");
+    const staysAdmin = (patch.role ?? target.role) === "SUPER_ADMIN" && (patch.isActive ?? target.isActive);
+    if (target.role === "SUPER_ADMIN" && target.isActive && !staysAdmin) {
+      const others = await tx.user.count({ where: { id: { not: id }, role: "SUPER_ADMIN", isActive: true } });
+      if (others === 0) throw new LastAdminError();
+    }
+    return (await tx.user.update({ where: { id: target.id }, data: patch })) as UserRecord;
+  });
 }
 
 export interface AuditRecord {

@@ -4,6 +4,7 @@ import { db, inTx, lockMembers } from "../db";
 import { CoreError } from "../errors";
 import { recordEvent } from "../events";
 import { postPoints } from "../points";
+import { claimAttempt } from "../ratelimit";
 import { cleanAlertEmails } from "../rewards";
 import { getOrg } from "../settings";
 import { localParts } from "../time";
@@ -130,11 +131,8 @@ export async function submitContact(orgId: string, input: ContactInput, now = ne
   if (!phone && !email) throw new CoreError("INVALID_INPUT", "ใส่เบอร์โทรหรืออีเมลอย่างน้อยหนึ่งอย่าง เพื่อให้เราติดต่อกลับได้");
   if (email) cleanAlertEmails([email]); // same address check as staff emails
   if (phone && phone.replace(/\D/g, "").length < 9) throw new CoreError("INVALID_INPUT", "เบอร์โทรไม่ถูกต้อง");
-  const client = db(orgId);
-  if (input.ip) {
-    const recent = await client.emailMessage.count({ where: { kind: "CONTACT", createdAt: { gte: new Date(now.getTime() - 3600_000) }, payload: { path: ["ip"], equals: input.ip } } });
-    if (recent >= 5) throw new CoreError("OTP_RATE", "ส่งข้อความหลายครั้งแล้ว กรุณาลองใหม่ภายหลัง หรือโทรหาร้าน");
-  }
+  // Counted before the check, so a burst of parallel posts can't get past 5 an hour.
+  await claimAttempt(orgId, "contact_form", [{ key: input.ip ?? null, max: 5, windowMs: 3600_000 }], "ส่งข้อความหลายครั้งแล้ว กรุณาลองใหม่ภายหลัง หรือโทรหาร้าน", now);
   await inTx(orgId, (tx) =>
     enqueueEmail(tx, orgId, {
       to,
