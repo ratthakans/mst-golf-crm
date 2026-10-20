@@ -36,7 +36,7 @@ export async function POST(req: Request) {
 เขียนให้ชวนให้ลูกค้าตอบกลับหรือแวะร้าน`;
 
   try {
-    const text = await generateText(MST_BRAND_SYSTEM, user, 400);
+    const text = await generateText(MST_BRAND_SYSTEM, user);
     return NextResponse.json({ configured: true, text });
   } catch (e) {
     return NextResponse.json(

@@ -329,6 +329,18 @@ export async function lineChannelStatus(orgId: string) {
 
 export type { BlockReason };
 
+/**
+ * Shows or hides the menus outside the Phase 1 contract — แผนลงมือ, กลุ่มลูกค้า,
+ * ระบบอัตโนมัติ (Settings › สถานะระบบ). They read the same data as the rest of
+ * the back office; the switch only decides whether staff see them.
+ */
+export async function saveIntelligenceFlag(orgId: string, actor: Actor, input: { on: boolean }): Promise<ResolvedSettings> {
+  const { settings } = await getOrg(orgId);
+  const next = await updateSettings(orgId, (cur) => ({ features: { ...(cur.features ?? {}), intelligence: !!input.on } as OrgSettings["features"] }));
+  await audited(orgId, actor, "settings.intelligence", { intelligence: settings.features.intelligence }, { intelligence: !!input.on });
+  return next;
+}
+
 /** Turns the SMS code at website sign-in on or off (Settings › เว็บไซต์และร้าน). */
 export async function saveLoginRules(orgId: string, actor: Actor, input: { otp: boolean }): Promise<ResolvedSettings> {
   const { settings } = await getOrg(orgId);

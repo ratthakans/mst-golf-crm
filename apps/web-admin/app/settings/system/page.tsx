@@ -4,6 +4,7 @@ import { allowPage } from "../../../lib/auth";
 import { currentOrg } from "../../../lib/org";
 import { Forbidden } from "../../Forbidden";
 import { formatDateTime, num } from "../../ui/format";
+import { IntelligenceForm } from "./IntelligenceForm";
 
 export const dynamic = "force-dynamic";
 
@@ -50,6 +51,7 @@ export default async function SystemPage() {
         <h1 style={{ marginTop: 6 }}>สถานะระบบ</h1>
         <p>งานตั้งเวลา การแจ้งเตือนลูกค้า การนำเข้า และค่าระบบ · ฐานข้อมูล schema <span className="mono">{s.env.DATABASE_SCHEMA}</span></p>
       </div>
+      <IntelligenceForm on={org.settings.features.intelligence} />
 
       <div className="card table-card">
         <h3 style={{ padding: "14px 16px 0" }}>งานตั้งเวลา</h3>

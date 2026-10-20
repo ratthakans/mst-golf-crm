@@ -33,7 +33,7 @@ export async function POST() {
   const user = `ข้อมูล CRM วันนี้:\n${facts}\n\nเขียนบรีฟประจำวันให้ผู้จัดการร้าน`;
 
   try {
-    const text = await generateText(BRIEFING_SYSTEM, user, 500);
+    const text = await generateText(BRIEFING_SYSTEM, user);
     return NextResponse.json({ configured: true, text });
   } catch (e) {
     return NextResponse.json(

@@ -6,6 +6,7 @@ import {
   saveLineChannel,
   saveNotificationToggles,
   saveRedemptionSettings,
+  saveIntelligenceFlag,
   saveLoginRules,
   savePointRules,
   savePosRules,
@@ -34,6 +35,9 @@ export async function PUT(req: Request, { params }: { params: { section: string 
         break;
       case "points":
         await savePointRules(org.id, actor, { welcomeBonus: Number(b.welcomeBonus), perBaht: Number(b.perBaht), birthdayBonus: b.birthdayBonus === undefined ? undefined : Number(b.birthdayBonus) });
+        break;
+      case "intelligence":
+        await saveIntelligenceFlag(org.id, actor, { on: b.on === true });
         break;
       case "login":
         await saveLoginRules(org.id, actor, { otp: b.otp === true });
